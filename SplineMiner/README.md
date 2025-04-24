@@ -5,40 +5,36 @@ A fun and interactive game designed to help players build intuition around splin
 
 ## MVP Features
 ### Initial Features
-- **Player Control**:
-  - Movement on track
-  - Movement when dismounted from the track system
-- **Collision**:
-  - Interaction with the floor
-- **Destructible Blocks**:
-  - Breakable world tiles for dynamic gameplay
+- [ ] **Player Control**:
+  - [ ] Movement on track
+  - [ ] Movement when dismounted from the track system
+- [ ] **Collision**:
+  - [ ] Interaction with the floor
+- [ ] **Destructible Blocks**:
+  - [ ] Breakable world tiles for dynamic gameplay
 
 ---
 
 ## Out of Scope
 The following features are not included in the current scope:
-- No enemies
-- No items or inventory system
-- No advanced lighting effects
+- [x] Enemies
+- [x] Items or inventory system
+- [x] Advanced lighting effects
 
 ---
 
 ## Requirements
 ### Core Mechanics
-- **Spline Interaction**:
-  - Drag and manipulate curves (does not need to be a mathematically correct spline)
-  - Simple 3-point drag system
-- **Track Placement**:
-  - Ability to place tracks dynamically
-- **Player Controls**:
-  - Keyboard-based control while on the track
-  - Dismounting from the track system
-- **Camera System**:
-  - Smooth and intuitive camera behavior
-- **Physics**:
-  - Collision physics with the floor
-  - Destructible world tiles for interactive environments
-
----
-
-This README has been updated to improve clarity and presentation. Let me know if you'd like further refinements!
+- [ ] **Spline Interaction**:
+  - [ ] Drag and manipulate curves (does not need to be a mathematically correct spline)
+  - [ ] Simple 3-point drag system
+- [ ] **Track Placement**:
+  - [ ] Ability to place tracks dynamically
+- [ ] **Player Controls**:
+  - [ ] Keyboard-based control while on the track
+  - [ ] Dismounting from the track system
+- [ ] **Camera System**:
+  - [ ] Smooth and intuitive camera behavior
+- [ ] **Physics**:
+  - [ ] Collision physics with the floor
+  - [ ] Destructible world tiles for interactive environments
