@@ -26,19 +26,15 @@ namespace SplineMiner
             // Initialize the track with predefined points
             _track = new Track(new List<Vector2>
                        {
-                           // Interesting shape: Star-like pattern
-                           new Vector2(400, 200), // Top point
-                           new Vector2(450, 300), // Upper-right
-                           new Vector2(550, 300), // Far-right
-                           new Vector2(475, 350), // Lower-right
-                           new Vector2(500, 450), // Bottom point
-                           new Vector2(400, 400), // Lower-middle-left
-                           new Vector2(300, 450), // Bottom-left
-                           new Vector2(325, 350), // Lower-left
-                           new Vector2(250, 300), // Far-left
-                           new Vector2(350, 300), // Upper-left
-                           new Vector2(400, 250), // Upper-middle
-                           new Vector2(400, 200), // Back to Top point (closing the shape)
+
+                          // Simple stretched out semi-sinusoidal pattern
+                          new Vector2(100, 300), // Start point
+                          new Vector2(200, 250), // First peak
+                          new Vector2(300, 350), // First trough
+                          new Vector2(400, 250), // Second peak
+                          new Vector2(500, 350), // Second trough
+                          new Vector2(600, 250), // Third peak
+                          new Vector2(700, 300), // End point
                        });
 
             // Initialize the player at the start of the track

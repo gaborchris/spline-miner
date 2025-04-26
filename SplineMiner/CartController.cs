@@ -14,7 +14,7 @@ namespace SplineMiner
         private int _currentTrackIndex = 0;
         InputManager _inputManager;
         private float _t = 0f;
-        private float _speed = 1; // Pixels per second
+        private float _speed = 300; // Pixels per second
 
         // CartController is only meant to exist on a track
         // There should be an entirely separate controler for when a player hops out the cart
@@ -39,7 +39,8 @@ namespace SplineMiner
             {
                 _t -= _speed * deltaTime;
             }
-            WorldPosition2D = track.GetPoint(_t);
+            //WorldPosition2D = track.GetPoint(_t);
+            WorldPosition2D = track.GetPointByDistance(_t);
 
 
         }
