@@ -6,8 +6,12 @@ A fun and interactive game designed to help players build intuition around splin
 ## MVP Features
 ### Initial Features
 - [ ] **Player Control**:
-  - [ ] Movement on track
+  - [x] Movement on track
   - [ ] Movement when dismounted from the track system
+- [ ] **Camera**:
+  - [ ] Camera follows player on track
+  - [ ] Camera follows player when dismounted]
+  - [ ] World spans a large area and camera can be moved around
 - [ ] **Collision**:
   - [ ] Interaction with the floor
 - [ ] **Destructible Blocks**:

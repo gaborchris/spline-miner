@@ -9,20 +9,19 @@ namespace SplineMiner
     public class CartController
     {
         // 
-        public float WorldPosition { get; private set; }
         private Vector2 WorldPosition2D;
         public Texture2D Texture { get; set; }
         private int _currentTrackIndex = 0;
         InputManager _inputManager;
-        private float _speed = 200f; // Pixels per second
+        private float _t = 0f;
+        private float _speed = 1; // Pixels per second
 
         // CartController is only meant to exist on a track
         // There should be an entirely separate controler for when a player hops out the cart
-        public CartController(float startPosition, InputManager inputManger)
+        public CartController(InputManager inputManger)
         {
-            WorldPosition = startPosition;
             _inputManager = inputManger;
-            WorldPosition2D = new Vector2(startPosition, 0); 
+            WorldPosition2D = new Vector2(0, 0); 
         }
 
         public void Update(GameTime gameTime, Track track)
@@ -34,14 +33,14 @@ namespace SplineMiner
 
             if (_inputManager.Forward())
             {
-                WorldPosition += _speed * deltaTime;
+                _t += _speed * deltaTime;
             }
             else if (_inputManager.Backward())
             {
-                WorldPosition -= _speed * deltaTime;
+                _t -= _speed * deltaTime;
             }
+            WorldPosition2D = track.GetPoint(_t);
 
-            WorldPosition2D.X = WorldPosition;
 
         }
 
