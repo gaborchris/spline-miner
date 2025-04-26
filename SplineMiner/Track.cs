@@ -9,6 +9,16 @@ namespace SplineMiner
     {
         public List<Vector2> Points { get; private set; }
 
+        /*
+        A track is a multidimensional line f(t) = (x(t), y(t))
+        where t is a parameter that varies over time.
+        The player position will initially change by a constant dt
+        but as gravity is added to the game, the amount a player can move will be constrained
+        by the steepness of the track at that point.
+
+        For the first iteration, we can just make the player move at a constant speed even the track is steep.
+         */
+
         public Track(List<Vector2> points)
         {
             Points = points;
