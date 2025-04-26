@@ -12,12 +12,22 @@ namespace SplineMiner
 
         /*
         A track is a multidimensional line f(t) = (x(t), y(t))
-        where t is a parameter that varies over time.
-        The player position will initially change by a constant dt
-        but as gravity is added to the game, the amount a player can move will be constrained
-        by the steepness of the track at that point.
+        where t is a parameter that can be queried. 
+
+        The player position will only change change by a constant dt
 
         For the first iteration, we can just make the player move at a constant speed even the track is steep.
+        
+        TODO: A lot of this code is buggy and experimental but does the basic features
+        Focus on implementing control of track first with UX and then get a proper interpolator function
+        Right now the cart jumps from point to point and will require some close debugging and mathematical
+        derivations.
+
+        It might be worth completely rewriting this class at some point, but the GetPoint method should remain.
+
+        In future, might add a gravity feature so that the amount a player can move will be constrained
+        by the steepness of the track at that point.
+
          */
 
         public Track(List<Vector2> points)
@@ -91,6 +101,68 @@ namespace SplineMiner
                 effects: SpriteEffects.None,
                 layerDepth: 0f
             );
+        }
+        private float ComputeArcLength(float tStart, float tEnd, int steps = 10)
+        {
+            float arcLength = 0f;
+            float dt = (tEnd - tStart) / steps;
+
+            Vector2 previousPoint = GetPoint(tStart);
+            for (int i = 1; i <= steps; i++)
+            {
+                float t = tStart + i * dt;
+                Vector2 currentPoint = GetPoint(t);
+
+                // Add the distance between the previous and current points
+                arcLength += Vector2.Distance(previousPoint, currentPoint);
+                previousPoint = currentPoint;
+            }
+
+            return arcLength;
+        }
+        private float MapDistanceToT(float distance, float totalLength, int binarySearchSteps = 20)
+        {
+            float tMin = 0f;
+            float tMax = ControlPoints.Count - 1;
+            float tMid = 0f;
+
+            for (int i = 0; i < binarySearchSteps; i++)
+            {
+                tMid = (tMin + tMax) / 2f;
+
+                // Compute the arc length from t=0 to tMid
+                float arcLength = ComputeArcLength(0f, tMid);
+
+                if (Math.Abs(arcLength - distance) < 0.01f) // Close enough
+                {
+                    break;
+                }
+                else if (arcLength < distance)
+                {
+                    tMin = tMid; // Search in the upper half
+                }
+                else
+                {
+                    tMax = tMid; // Search in the lower half
+                }
+            }
+
+            return tMid;
+        }
+        public Vector2 GetPointByDistance(float distance)
+        {
+            // Compute the total length of the curve on the fly
+            float totalLength = ComputeArcLength(0f, ControlPoints.Count - 1);
+
+            // Wrap the distance to ensure it loops around the track
+            distance = distance % totalLength;
+            if (distance < 0) distance += totalLength;
+
+            // Map the distance to a `t` value
+            float t = MapDistanceToT(distance, totalLength);
+
+            // Get the point corresponding to the `t` value
+            return GetPoint(t);
         }
     }
 }
