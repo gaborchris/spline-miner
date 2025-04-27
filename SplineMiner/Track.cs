@@ -9,6 +9,9 @@ namespace SplineMiner
     public class Track
     {
         public List<Vector2> ControlPoints { get; private set; }
+        private const float CONTROL_POINT_RADIUS = 10f;
+        private int _selectedPointIndex = -1;
+        private Texture2D _pointTexture;
 
         /*
         A track is a multidimensional line f(t) = (x(t), y(t))
@@ -35,9 +38,46 @@ namespace SplineMiner
             ControlPoints = points;
         }
 
+        public void LoadContent(GraphicsDevice graphicsDevice)
+        {
+            _pointTexture = new Texture2D(graphicsDevice, 1, 1);
+            _pointTexture.SetData(new[] { Color.White });
+        }
+
+        public int GetHoveredPointIndex(Vector2 mousePosition)
+        {
+            for (int i = 0; i < ControlPoints.Count; i++)
+            {
+                if (Vector2.Distance(ControlPoints[i], mousePosition) <= CONTROL_POINT_RADIUS)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public void SelectPoint(int index)
+        {
+            _selectedPointIndex = index;
+            Debug.WriteLine("Point selected: " + _selectedPointIndex);
+        }
+
+        public void MoveSelectedPoint(Vector2 position)
+        {
+            if (_selectedPointIndex >= 0 && _selectedPointIndex < ControlPoints.Count)
+            {
+                ControlPoints[_selectedPointIndex] = position;
+                Debug.WriteLine("Selected point moved to: " + position);    
+            }
+        }
+
+        public void ReleaseSelectedPoint()
+        {
+            _selectedPointIndex = -1;
+        }
+
         public Vector2 GetPoint(float t)
         {
-
             // Ensure there are at least 4 control points for Catmull-Rom
             if (ControlPoints.Count < 4)
                 throw new InvalidOperationException("At least 4 control points are required for Catmull-Rom splines.");
@@ -82,16 +122,36 @@ namespace SplineMiner
 
                 DrawLine(spriteBatch, point1, point2, Color.Black, 2);
             }
+
+            // Draw the control points
+            for (int i = 0; i < ControlPoints.Count; i++)
+            {
+                Color pointColor = i == _selectedPointIndex ? Color.Red : Color.Blue;
+                DrawCircle(spriteBatch, ControlPoints[i], CONTROL_POINT_RADIUS, pointColor);
+            }
+        }
+
+        private void DrawCircle(SpriteBatch spriteBatch, Vector2 center, float radius, Color color)
+        {
+            spriteBatch.Draw(
+                texture: _pointTexture,
+                position: center,
+                sourceRectangle: null,
+                color: color,
+                rotation: 0f,
+                origin: new Vector2(0.5f, 0.5f),
+                scale: new Vector2(radius * 2, radius * 2),
+                effects: SpriteEffects.None,
+                layerDepth: 0f
+            );
         }
 
         private void DrawLine(SpriteBatch spriteBatch, Vector2 start, Vector2 end, Color color, int thickness)
         {
             Vector2 edge = end - start;
             float angle = (float)System.Math.Atan2(edge.Y, edge.X);
-            var texture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
-            texture.SetData(new[] { Color.White }); 
             spriteBatch.Draw(
-                texture: texture,
+                texture: _pointTexture,
                 position: start,
                 sourceRectangle: null,
                 color: color,
@@ -102,6 +162,7 @@ namespace SplineMiner
                 layerDepth: 0f
             );
         }
+
         private float ComputeArcLength(float tStart, float tEnd, int steps = 10)
         {
             float arcLength = 0f;
