@@ -13,6 +13,7 @@ namespace SplineMiner
         private InputManager _inputManager;
         private CartController _player;
         private Track _track;
+        private int _hoveredPointIndex = -1;
 
         public Game1()
         {
@@ -28,13 +29,13 @@ namespace SplineMiner
                        {
 
                           // Simple stretched out semi-sinusoidal pattern
-                          new Vector2(100, 300), // Start point
-                          new Vector2(200, 250), // First peak
-                          new Vector2(300, 350), // First trough
-                          new Vector2(400, 250), // Second peak
-                          new Vector2(500, 350), // Second trough
-                          new Vector2(600, 250), // Third peak
-                          new Vector2(700, 300), // End point
+                          new(100, 300), // Start point
+                          new(200, 250), // First peak
+                          new(300, 350), // First trough
+                          new(400, 250), // Second peak
+                          new(500, 350), // Second trough
+                          new(600, 250), // Third peak
+                          new(700, 300), // End point
                        });
 
             // Initialize the player at the start of the track
@@ -48,10 +49,11 @@ namespace SplineMiner
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            
+            // Load track textures
+            _track.LoadContent(GraphicsDevice);
 
             // Load player texture (placeholder: a white rectangle)
-
-            // Create a 32x32 placeholder texture
             var w = 64;
             var h = (int)(w * 0.67);
             Texture2D minecartTexture = new Texture2D(GraphicsDevice, w, h);
@@ -65,7 +67,6 @@ namespace SplineMiner
 
             // Use this texture for your player or minecart
             _player.Texture = minecartTexture;
-
         }
 
         protected override void Update(GameTime gameTime)
@@ -73,18 +74,51 @@ namespace SplineMiner
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // Update player movement along the track
+            // Update input
             _inputManager.Update();
+            
+            // Handle mouse interaction with control points
+            HandleMouseInteraction();
+
+            // Update player movement along the track
             _player.Update(gameTime, _track);
 
             base.Update(gameTime);
+        }
+        
+        private void HandleMouseInteraction()
+        {
+            // Get the mouse position
+            Vector2 mousePosition = _inputManager.MousePosition;
+            
+            // Check if we're dragging a point
+            if (_inputManager.IsLeftMouseHeld())
+            {
+                _track.MoveSelectedPoint(mousePosition);
+            }
+            else if (_inputManager.IsLeftMousePressed())
+            {
+                // Check if we're clicking on a control point
+                int pointIndex = _track.GetHoveredPointIndex(mousePosition);
+                if (pointIndex != -1)
+                {
+                    _track.SelectPoint(pointIndex);
+                }
+            }
+            else if (_inputManager.IsLeftMouseReleased())
+            {
+                // Stop dragging
+                _track.ReleaseSelectedPoint();
+            }
+            
+            // Update hovered point for visual feedback
+            _hoveredPointIndex = _track.GetHoveredPointIndex(mousePosition);
         }
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
             _spriteBatch.Begin();
 
             // Draw the track
