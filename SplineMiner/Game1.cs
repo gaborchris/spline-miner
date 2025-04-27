@@ -15,6 +15,8 @@ namespace SplineMiner
         private CartController _player;
         private Track _track;
         private int _hoveredPointIndex = -1;
+        private SpriteFont _debugFont;
+        private bool _showDebugInfo = true;
 
         public Game1()
         {
@@ -28,7 +30,6 @@ namespace SplineMiner
             // Initialize the track with predefined points
             _track = new Track(new List<Vector2>
                        {
-
                           // Simple stretched out semi-sinusoidal pattern
                           new(100, 300), // Start point
                           new(200, 250), // First peak
@@ -40,7 +41,6 @@ namespace SplineMiner
                        });
 
             // Initialize the player at the start of the track
-
             _inputManager = new InputManager();
             _player = new CartController(_inputManager);
 
@@ -53,6 +53,9 @@ namespace SplineMiner
             
             // Load track textures
             _track.LoadContent(GraphicsDevice);
+
+            // Precalculate arc length for the track
+            _track.RecalculateArcLength();
 
             // Load player texture (placeholder: a white rectangle)
             var w = 64;
@@ -68,6 +71,16 @@ namespace SplineMiner
 
             // Use this texture for your player or minecart
             _player.Texture = minecartTexture;
+
+            // Create a simple debug font - since we don't have a real font loaded
+            try 
+            {
+                _debugFont = Content.Load<SpriteFont>("debug_font");
+            }
+            catch 
+            {
+                Debug.WriteLine("Debug font not found. Debug text will not be rendered.");
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -83,6 +96,12 @@ namespace SplineMiner
 
             // Update player movement along the track
             _player.Update(gameTime, _track);
+
+            // Toggle debug info with F1
+            if (_inputManager.IsKeyPressed(Keys.F1))
+            {
+                _showDebugInfo = !_showDebugInfo;
+            }
 
             base.Update(gameTime);
         }
@@ -128,6 +147,37 @@ namespace SplineMiner
 
             // Draw the player
             _player.Draw(_spriteBatch);
+
+            // Draw debug info
+            if (_showDebugInfo)
+            {
+                // Create a simple debug background
+                Texture2D debugBg = new Texture2D(GraphicsDevice, 1, 1);
+                debugBg.SetData(new[] { Color.Black * 0.7f });
+                
+                string[] debugInfo = {
+                    "Controls:",
+                    "T: Test cart movement",
+                    "V: Visualize equally spaced points",
+                    "F1: Toggle debug info",
+                    "Left/Right: Move cart"
+                };
+
+                float yPos = 10;
+                foreach (string line in debugInfo)
+                {
+                    // Simple text background since we don't have a font
+                    _spriteBatch.Draw(debugBg, new Rectangle(10, (int)yPos, 250, 20), Color.White);
+                    
+                    // If we do have the font, use it, otherwise just advance position
+                    if (_debugFont != null)
+                    {
+                        _spriteBatch.DrawString(_debugFont, line, new Vector2(15, yPos), Color.White);
+                    }
+                    
+                    yPos += 25;
+                }
+            }
 
             _spriteBatch.End();
 

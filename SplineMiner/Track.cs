@@ -12,6 +12,9 @@ namespace SplineMiner
         private const float CONTROL_POINT_RADIUS = 10f;
         private int _selectedPointIndex = -1;
         private Texture2D _pointTexture;
+        private List<Vector2> _debugPoints = new List<Vector2>();
+        private bool _enableDebugVisualization = true;
+        private float _totalArcLength = 0f;
 
         /*
         A track is a multidimensional line f(t) = (x(t), y(t))
@@ -22,7 +25,6 @@ namespace SplineMiner
         For the first iteration, we can just make the player move at a constant speed even the track is steep.
         
         TODO: A lot of this code is buggy and experimental but does the basic features
-        Focus on implementing control of track first with UX and then get a proper interpolator function
         Right now the cart jumps from point to point and will require some close debugging and mathematical
         derivations.
 
@@ -67,7 +69,10 @@ namespace SplineMiner
             if (_selectedPointIndex >= 0 && _selectedPointIndex < ControlPoints.Count)
             {
                 ControlPoints[_selectedPointIndex] = position;
-                Debug.WriteLine("Selected point moved to: " + position);    
+                Debug.WriteLine("Selected point moved to: " + position);
+                
+                // Recalculate arc length when points change
+                RecalculateArcLength();
             }
         }
 
@@ -123,6 +128,21 @@ namespace SplineMiner
                 DrawLine(spriteBatch, point1, point2, Color.Black, 2);
             }
 
+            // Draw debug points if enabled
+            if (_enableDebugVisualization)
+            {
+                foreach (var point in _debugPoints)
+                {
+                    DrawCircle(spriteBatch, point, 3, Color.Yellow);
+                }
+
+                // Limit the number of debug points to avoid performance issues
+                if (_debugPoints.Count > 200)
+                {
+                    _debugPoints.RemoveRange(0, 100);
+                }
+            }
+
             // Draw the control points
             for (int i = 0; i < ControlPoints.Count; i++)
             {
@@ -163,7 +183,7 @@ namespace SplineMiner
             );
         }
 
-        private float ComputeArcLength(float tStart, float tEnd, int steps = 10)
+        private float ComputeArcLength(float tStart, float tEnd, int steps = 40)
         {
             float arcLength = 0f;
             float dt = (tEnd - tStart) / steps;
@@ -175,17 +195,39 @@ namespace SplineMiner
                 Vector2 currentPoint = GetPoint(t);
 
                 // Add the distance between the previous and current points
-                arcLength += Vector2.Distance(previousPoint, currentPoint);
+                float segmentLength = Vector2.Distance(previousPoint, currentPoint);
+                arcLength += segmentLength;
+
+                if (_enableDebugVisualization && i % 5 == 0)
+                {
+                    // Store points for debug visualization
+                    _debugPoints.Add(currentPoint);
+                }
+
                 previousPoint = currentPoint;
             }
 
             return arcLength;
         }
-        private float MapDistanceToT(float distance, float totalLength, int binarySearchSteps = 20)
+        private float MapDistanceToT(float distance, float totalLength, int binarySearchSteps = 30)
         {
+            // Ensure we have a valid totalLength
+            if (totalLength <= 0)
+            {
+                Debug.WriteLine("Warning: Total arc length is zero or negative!");
+                return 0f;
+            }
+
+            // Calculate normalized target distance (0 to 1)
+            float normalizedTarget = distance / totalLength;
+            
+            // Clamp to valid range
+            normalizedTarget = Math.Clamp(normalizedTarget, 0f, 1f);
+            
             float tMin = 0f;
             float tMax = ControlPoints.Count - 1;
             float tMid = 0f;
+            float lastArcLength = 0f;
 
             for (int i = 0; i < binarySearchSteps; i++)
             {
@@ -193,12 +235,26 @@ namespace SplineMiner
 
                 // Compute the arc length from t=0 to tMid
                 float arcLength = ComputeArcLength(0f, tMid);
+                float normalizedArcLength = arcLength / totalLength;
 
-                if (Math.Abs(arcLength - distance) < 0.01f) // Close enough
+                // Debug every few steps
+                if (i % 10 == 0)
+                {
+                    Debug.WriteLine($"Binary search step {i}: t={tMid}, arcLength={arcLength}, target={distance}");
+                }
+
+                // Check if we're close enough
+                if (Math.Abs(normalizedArcLength - normalizedTarget) < 0.001f)
                 {
                     break;
                 }
-                else if (arcLength < distance)
+                // Check if we're making progress
+                else if (Math.Abs(lastArcLength - arcLength) < 0.0001f && i > 5)
+                {
+                    Debug.WriteLine("Warning: Binary search not making progress");
+                    break;
+                }
+                else if (normalizedArcLength < normalizedTarget)
                 {
                     tMin = tMid; // Search in the upper half
                 }
@@ -206,24 +262,61 @@ namespace SplineMiner
                 {
                     tMax = tMid; // Search in the lower half
                 }
+                
+                lastArcLength = arcLength;
             }
 
             return tMid;
         }
         public Vector2 GetPointByDistance(float distance)
         {
-            // Compute the total length of the curve on the fly
-            float totalLength = ComputeArcLength(0f, ControlPoints.Count - 1);
+            // If arc length hasn't been calculated yet, do it once
+            if (_totalArcLength <= 0)
+            {
+                RecalculateArcLength();
+            }
 
             // Wrap the distance to ensure it loops around the track
-            distance = distance % totalLength;
-            if (distance < 0) distance += totalLength;
+            distance = distance % _totalArcLength;
+            if (distance < 0) distance += _totalArcLength;
 
             // Map the distance to a `t` value
-            float t = MapDistanceToT(distance, totalLength);
+            float t = MapDistanceToT(distance, _totalArcLength);
 
             // Get the point corresponding to the `t` value
-            return GetPoint(t);
+            Vector2 point = GetPoint(t);
+            
+            // Debug every so often
+            if (Math.Floor(distance) % 50 == 0)
+            {
+                Debug.WriteLine($"Distance: {distance}, t: {t}, point: {point}");
+            }
+
+            return point;
+        }
+
+        // Add this new method to calculate the total arc length once
+        public void RecalculateArcLength()
+        {
+            _totalArcLength = ComputeArcLength(0f, ControlPoints.Count - 1, 100);
+            Debug.WriteLine($"Total arc length: {_totalArcLength}");
+        }
+
+        // Add a visualization to show equally spaced points along the track
+        public void VisualizeEquallySpacedPoints(int count)
+        {
+            _debugPoints.Clear();
+            
+            float totalLength = _totalArcLength > 0 ? _totalArcLength : ComputeArcLength(0f, ControlPoints.Count - 1);
+            float stepSize = totalLength / count;
+            
+            for (int i = 0; i < count; i++)
+            {
+                float distance = i * stepSize;
+                Vector2 point = GetPointByDistance(distance);
+                _debugPoints.Add(point);
+                Debug.WriteLine($"Equal spaced point {i}: distance={distance}, point={point}");
+            }
         }
     }
 }
