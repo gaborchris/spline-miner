@@ -318,5 +318,20 @@ namespace SplineMiner
                 Debug.WriteLine($"Equal spaced point {i}: distance={distance}, point={point}");
             }
         }
+
+        public void DeletePoint(int index)
+        {
+            if (index >= 0 && index < ControlPoints.Count)
+            {
+                ControlPoints.RemoveAt(index);
+                RecalculateArcLength();
+            }
+        }
+
+        public void AddPoint(Vector2 position)
+        {
+            ControlPoints.Add(position);
+            RecalculateArcLength();
+        }
     }
 }

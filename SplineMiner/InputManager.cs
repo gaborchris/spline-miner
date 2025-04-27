@@ -63,5 +63,15 @@ namespace SplineMiner
         {
             return _currentMouseState.LeftButton == ButtonState.Pressed;
         }
+
+        public bool IsMouseWheelScrolled()
+        {
+            return _currentMouseState.ScrollWheelValue != _previousMouseState.ScrollWheelValue;
+        }
+
+        public float GetMouseWheelDelta()
+        {
+            return (_currentMouseState.ScrollWheelValue - _previousMouseState.ScrollWheelValue) / 120f;
+        }
     }
 }

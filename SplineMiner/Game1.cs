@@ -17,6 +17,8 @@ namespace SplineMiner
         private int _hoveredPointIndex = -1;
         private SpriteFont _debugFont;
         private bool _showDebugInfo = true;
+        private UIManager _uiManager;
+        private SpriteFont _uiFont;
 
         public Game1()
         {
@@ -76,11 +78,15 @@ namespace SplineMiner
             try 
             {
                 _debugFont = Content.Load<SpriteFont>("debug_font");
+                _uiFont = Content.Load<SpriteFont>("debug_font");
             }
             catch 
             {
-                Debug.WriteLine("Debug font not found. Debug text will not be rendered.");
+                Debug.WriteLine("Fonts not found. Debug text and UI will not be rendered.");
             }
+
+            // Initialize UI manager
+            _uiManager = new UIManager(_uiFont);
         }
 
         protected override void Update(GameTime gameTime)
@@ -91,7 +97,10 @@ namespace SplineMiner
             // Update input
             _inputManager.Update();
             
-            // Handle mouse interaction with control points
+            // Update UI
+            _uiManager.Update(_inputManager);
+            
+            // Handle mouse interaction with control points based on current tool
             HandleMouseInteraction();
 
             // Update player movement along the track
@@ -111,25 +120,45 @@ namespace SplineMiner
             // Get the mouse position
             Vector2 mousePosition = _inputManager.MousePosition;
             
-            // Check if we're dragging a point
-            if (_inputManager.IsLeftMousePressed())
+            switch (_uiManager.CurrentTool)
             {
-                // Check if we're clicking on a control point
-                int pointIndex = _track.GetHoveredPointIndex(mousePosition);
-                Debug.WriteLine(pointIndex);
-                if (pointIndex != -1)
-                {
-                    _track.SelectPoint(pointIndex);
-                }
-            }
-            else if (_inputManager.IsLeftMouseHeld())
-            {
-                _track.MoveSelectedPoint(mousePosition);
-            }
-            else if (_inputManager.IsLeftMouseReleased())
-            {
-                // Stop dragging
-                _track.ReleaseSelectedPoint();
+                case UITool.EditTrack:
+                    if (_inputManager.IsLeftMousePressed())
+                    {
+                        // Check if we're clicking on a control point
+                        int pointIndex = _track.GetHoveredPointIndex(mousePosition);
+                        if (pointIndex != -1)
+                        {
+                            _track.SelectPoint(pointIndex);
+                        }
+                    }
+                    else if (_inputManager.IsLeftMouseHeld())
+                    {
+                        _track.MoveSelectedPoint(mousePosition);
+                    }
+                    else if (_inputManager.IsLeftMouseReleased())
+                    {
+                        _track.ReleaseSelectedPoint();
+                    }
+                    break;
+
+                case UITool.DeleteTrack:
+                    if (_inputManager.IsLeftMousePressed())
+                    {
+                        int pointIndex = _track.GetHoveredPointIndex(mousePosition);
+                        if (pointIndex != -1)
+                        {
+                            _track.DeletePoint(pointIndex);
+                        }
+                    }
+                    break;
+
+                case UITool.PlaceTrack:
+                    if (_inputManager.IsLeftMousePressed())
+                    {
+                        _track.AddPoint(mousePosition);
+                    }
+                    break;
             }
             
             // Update hovered point for visual feedback
@@ -148,6 +177,9 @@ namespace SplineMiner
             // Draw the player
             _player.Draw(_spriteBatch);
 
+            // Draw UI
+            _uiManager.Draw(_spriteBatch);
+
             // Draw debug info
             if (_showDebugInfo)
             {
@@ -160,7 +192,8 @@ namespace SplineMiner
                     "T: Test cart movement",
                     "V: Visualize equally spaced points",
                     "F1: Toggle debug info",
-                    "Left/Right: Move cart"
+                    "Left/Right: Move cart",
+                    $"Current Tool: {_uiManager.CurrentTool}"
                 };
 
                 float yPos = 10;
