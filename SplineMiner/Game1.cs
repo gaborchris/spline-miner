@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -92,18 +93,19 @@ namespace SplineMiner
             Vector2 mousePosition = _inputManager.MousePosition;
             
             // Check if we're dragging a point
-            if (_inputManager.IsLeftMouseHeld())
-            {
-                _track.MoveSelectedPoint(mousePosition);
-            }
-            else if (_inputManager.IsLeftMousePressed())
+            if (_inputManager.IsLeftMousePressed())
             {
                 // Check if we're clicking on a control point
                 int pointIndex = _track.GetHoveredPointIndex(mousePosition);
+                Debug.WriteLine(pointIndex);
                 if (pointIndex != -1)
                 {
                     _track.SelectPoint(pointIndex);
                 }
+            }
+            else if (_inputManager.IsLeftMouseHeld())
+            {
+                _track.MoveSelectedPoint(mousePosition);
             }
             else if (_inputManager.IsLeftMouseReleased())
             {

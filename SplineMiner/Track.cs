@@ -59,6 +59,7 @@ namespace SplineMiner
         public void SelectPoint(int index)
         {
             _selectedPointIndex = index;
+            Debug.WriteLine("Point selected: " + _selectedPointIndex);
         }
 
         public void MoveSelectedPoint(Vector2 position)
@@ -66,6 +67,7 @@ namespace SplineMiner
             if (_selectedPointIndex >= 0 && _selectedPointIndex < ControlPoints.Count)
             {
                 ControlPoints[_selectedPointIndex] = position;
+                Debug.WriteLine("Selected point moved to: " + position);    
             }
         }
 
