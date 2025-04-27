@@ -8,6 +8,11 @@ A fun and interactive game designed to help players build intuition around splin
 - [ ] **Player Control**:
   - [x] Movement on track
   - [ ] Movement when dismounted from the track system
+- [ ] **Spline System**:
+  - [ ] Basic spline system for track placement
+  - [ ] Ability to manipulate and drag splines
+  - [ ] Splines should only be moveable in pending placement state
+  - [ ] Once placed, splines should be fixed in position to prevent odd calculations.
 - [ ] **Camera**:
   - [ ] Camera follows player on track
   - [ ] Camera follows player when dismounted]
@@ -29,9 +34,9 @@ The following features are not included in the current scope:
 
 ## Requirements
 ### Core Mechanics
-- [ ] **Spline Interaction**:
-  - [ ] Drag and manipulate curves (does not need to be a mathematically correct spline)
-  - [ ] Simple 3-point drag system
+- [x] **Spline Interaction**:
+  - [x] Drag and manipulate curves (does not need to be a mathematically correct spline)
+  - [x] Simple 3-point drag system
 - [ ] **Track Placement**:
   - [ ] Ability to place tracks dynamically
 - [ ] **Player Controls**:
