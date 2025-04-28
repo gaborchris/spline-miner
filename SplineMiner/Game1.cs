@@ -14,7 +14,7 @@ namespace SplineMiner
 
         private InputManager _inputManager;
         private CartController _player;
-        private Track _track;
+        private SplineTrack _track;
         private int _hoveredPointIndex = -1;
         private SpriteFont _debugFont;
         private bool _showDebugInfo = true;
@@ -87,7 +87,7 @@ namespace SplineMiner
             _uiManager = new UIManager(_uiFont, GraphicsDevice);
             
             // Initialize the track with test data
-            _track = new Track(TestData.TestTrack.GetTestTrackNodes(), _uiManager);
+            _track = new SplineTrack(TestData.TestTrack.GetTestTrackNodes(), _uiManager);
             
             // Load track textures
             _track.LoadContent(GraphicsDevice);

@@ -6,7 +6,7 @@ namespace SplineMiner
 {
     public class TrackPreview
     {
-        private Track _parentTrack;
+        private SplineTrack _parentTrack;
         private Vector2? _previewPoint;
         private const float PREVIEW_ALPHA = 0.5f;
         private const int PREVIEW_SEGMENTS = 20;
@@ -16,7 +16,7 @@ namespace SplineMiner
 
         public bool IsHoveringEndpoint => _isHoveringEndpoint;
 
-        public TrackPreview(Track parentTrack, GraphicsDevice graphicsDevice)
+        public TrackPreview(SplineTrack parentTrack, GraphicsDevice graphicsDevice)
         {
             _parentTrack = parentTrack;
             _previewPoint = null;
