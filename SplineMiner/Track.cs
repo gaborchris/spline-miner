@@ -111,7 +111,7 @@ namespace SplineMiner
         /// that the user sees is exactly what gets placed when they click.
         /// </summary>
         /// <param name="position">The position where the point should be added</param>
-        public void AddPoint(Vector2 position)
+        public void PlaceNode(Vector2 position)
         {
             // Check if we're clicking on a shadow node
             int hoveredIndex = GetHoveredPointIndex(position);
