@@ -122,6 +122,17 @@ namespace SplineMiner
             
             switch (_uiManager.CurrentTool)
             {
+                case UITool.PlaceTrack:
+                    _track.UpdatePreview(mousePosition);
+                    if (_inputManager.IsLeftMousePressed())
+                    {
+                        if (_track.ControlPoints.Count == 0 || !_track.IsHoveringEndpoint)
+                        {
+                            _track.AddPoint(mousePosition);
+                        }
+                    }
+                    break;
+
                 case UITool.EditTrack:
                     if (_inputManager.IsLeftMousePressed())
                     {
@@ -150,13 +161,6 @@ namespace SplineMiner
                         {
                             _track.DeletePoint(pointIndex);
                         }
-                    }
-                    break;
-
-                case UITool.PlaceTrack:
-                    if (_inputManager.IsLeftMousePressed())
-                    {
-                        _track.AddPoint(mousePosition);
                     }
                     break;
             }
