@@ -44,14 +44,14 @@ namespace SplineMiner
             Color buttonColor = _isSelected ? _selectedColor : (_isHovered ? _hoverColor : _normalColor);
             
             // Draw button background
-            Texture2D pixel = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
+            Texture2D pixel = new(spriteBatch.GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
             spriteBatch.Draw(pixel, bounds, buttonColor);
 
             // Draw texture if available
             if (texture != null)
             {
-                Rectangle textureBounds = new Rectangle(
+                Rectangle textureBounds = new(
                     bounds.X + bounds.Width / 4,
                     bounds.Y + bounds.Height / 4,
                     bounds.Width / 2,
@@ -63,7 +63,7 @@ namespace SplineMiner
             {
                 // Draw button text if no texture
                 Vector2 textSize = font.MeasureString(text);
-                Vector2 textPosition = new Vector2(
+                Vector2 textPosition = new(
                     bounds.X + (bounds.Width - textSize.X) / 2,
                     bounds.Y + (bounds.Height - textSize.Y) / 2
                 );

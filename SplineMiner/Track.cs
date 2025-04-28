@@ -105,17 +105,25 @@ namespace SplineMiner
             _selectedNodeIndex = -1;
         }
 
+        /// <summary>
+        /// Adds a new point to the track. When clicking on a shadow node, all shadow nodes up to 
+        /// and including the clicked one are promoted to placed nodes. This ensures the spline preview
+        /// that the user sees is exactly what gets placed when they click.
+        /// </summary>
+        /// <param name="position">The position where the point should be added</param>
         public void AddPoint(Vector2 position)
         {
             // Check if we're clicking on a shadow node
             int hoveredIndex = GetHoveredPointIndex(position);
-            if (hoveredIndex != _placedNodes.Count)
+            if (hoveredIndex >= _placedNodes.Count && hoveredIndex < _placedNodes.Count + _shadowNodes.Count)
             {
-                return;
+                // Convert all shadow nodes up to and including the clicked one to placed nodes
+                int shadowIndex = hoveredIndex - _placedNodes.Count;
+                for (int i = 0; i <= shadowIndex; i++)
+                {
+                    _placedNodes.Add(new PlacedTrackNode(_shadowNodes[i].Position));
+                }
             }
-            // Convert shadow node to placed node
-            Vector2 shadowNodePos = _shadowNodes[0].Position;
-            _placedNodes.Add(new PlacedTrackNode(shadowNodePos));
 
             UpdateShadowNodes();
             RecalculateArcLength();
@@ -175,9 +183,8 @@ namespace SplineMiner
                 {
                     // Create combined array for shadow curve
                     var combinedPoints = new List<Vector2>();
-                    // Add last few placed nodes for proper curve connection
-                    combinedPoints.AddRange(_placedNodes.Skip(Math.Max(0, _placedNodes.Count - 3))
-                                                    .Select(n => n.Position));
+                    // Add only the last placed node for curve connection
+                    combinedPoints.Add(_placedNodes[^1].Position);
                     combinedPoints.AddRange(_shadowNodes.Select(n => n.Position));
 
                     if (combinedPoints.Count >= 4)
