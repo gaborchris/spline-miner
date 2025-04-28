@@ -16,32 +16,12 @@ namespace SplineMiner
         private bool _enableDebugVisualization = true;
         private float _totalArcLength = 0f;
         private TrackPreview _preview;
-        private const int SHADOW_NODE_COUNT = 2;
+        private const int MIN_SHADOW_NODES = 3; // Minimum needed for Catmull-Rom
 
-        public IReadOnlyList<ITrackNode> AllNodes => _placedNodes.Cast<ITrackNode>().Concat(_shadowNodes.Cast<ITrackNode>()).ToList();
         public IReadOnlyList<PlacedTrackNode> PlacedNodes => _placedNodes.AsReadOnly();
-        public bool HasShadowNodes => _shadowNodes.Count == SHADOW_NODE_COUNT;
-        public float TraversableLength => _totalArcLength * ((_placedNodes.Count - 1f) / (AllNodes.Count - 1f));
+        public IReadOnlyList<ShadowTrackNode> ShadowNodes => _shadowNodes.AsReadOnly();
+        public bool HasShadowNodes => _shadowNodes.Count >= MIN_SHADOW_NODES;
         public float TotalArcLength => _totalArcLength;
-
-        /*
-        A track is a multidimensional line f(t) = (x(t), y(t))
-        where t is a parameter that can be queried. 
-
-        The player position will only change change by a constant dt
-
-        For the first iteration, we can just make the player move at a constant speed even the track is steep.
-        
-        TODO: A lot of this code is buggy and experimental but does the basic features
-        Right now the cart jumps from point to point and will require some close debugging and mathematical
-        derivations.
-
-        It might be worth completely rewriting this class at some point, but the GetPoint method should remain.
-
-        In future, might add a gravity feature so that the amount a player can move will be constrained
-        by the steepness of the track at that point.
-
-         */
 
         public Track(List<Vector2> initialPoints)
         {
@@ -55,15 +35,15 @@ namespace SplineMiner
             _shadowNodes.Clear();
             if (_placedNodes.Count >= 2)
             {
-                // Create shadow nodes based on the direction of the last two placed nodes
+                // Get direction from last two placed nodes
                 Vector2 lastPos = _placedNodes[^1].Position;
                 Vector2 direction = lastPos - _placedNodes[^2].Position;
                 direction.Normalize();
 
-                // Add two shadow nodes
-                for (int i = 0; i < SHADOW_NODE_COUNT; i++)
+                // Add enough shadow nodes for proper Catmull-Rom interpolation
+                for (int i = 0; i < MIN_SHADOW_NODES; i++)
                 {
-                    Vector2 shadowPos = lastPos + direction * ((i + 1) * 50); // 50 pixels spacing
+                    Vector2 shadowPos = lastPos + direction * ((i + 1) * 50);
                     _shadowNodes.Add(new ShadowTrackNode(shadowPos));
                 }
             }
@@ -79,35 +59,42 @@ namespace SplineMiner
         public int GetHoveredPointIndex(Vector2 mousePosition)
         {
             const float HOVER_RADIUS = 10f;
-            for (int i = 0; i < AllNodes.Count; i++)
+            
+            // Check placed nodes first
+            for (int i = 0; i < _placedNodes.Count; i++)
             {
-                if (Vector2.Distance(AllNodes[i].Position, mousePosition) <= HOVER_RADIUS)
+                if (Vector2.Distance(_placedNodes[i].Position, mousePosition) <= HOVER_RADIUS)
                 {
                     return i;
                 }
             }
+            
+            // Then check shadow nodes
+            for (int i = 0; i < _shadowNodes.Count; i++)
+            {
+                if (Vector2.Distance(_shadowNodes[i].Position, mousePosition) <= HOVER_RADIUS)
+                {
+                    return i + _placedNodes.Count; // Offset by placed nodes count
+                }
+            }
+            
             return -1;
         }
 
         public void SelectPoint(int index)
         {
-            _selectedNodeIndex = index;
+            if (index >= _placedNodes.Count) // Only allow selecting shadow nodes
+            {
+                _selectedNodeIndex = index;
+            }
         }
 
         public void MoveSelectedPoint(Vector2 position)
         {
-            if (_selectedNodeIndex >= 0 && _selectedNodeIndex < AllNodes.Count)
+            if (_selectedNodeIndex >= _placedNodes.Count && _selectedNodeIndex < _placedNodes.Count + _shadowNodes.Count)
             {
-                if (_selectedNodeIndex < _placedNodes.Count)
-                {
-                    _placedNodes[_selectedNodeIndex].Position = position;
-                }
-                else
-                {
-                    int shadowIndex = _selectedNodeIndex - _placedNodes.Count;
-                    _shadowNodes[shadowIndex].Position = position;
-                }
-                UpdateShadowNodes();
+                int shadowIndex = _selectedNodeIndex - _placedNodes.Count;
+                _shadowNodes[shadowIndex].Position = position;
                 RecalculateArcLength();
             }
         }
@@ -134,26 +121,50 @@ namespace SplineMiner
             }
         }
 
-        public Vector2 GetPoint(float t)
+        private Vector2 GetPlacedTrackPoint(float t)
         {
-            var allPositions = AllNodes.Select(n => n.Position).ToList();
-            
-            // Ensure there are at least 4 control points for Catmull-Rom
-            if (allPositions.Count < 4)
+            if (_placedNodes.Count < 4)
                 throw new InvalidOperationException("At least 4 control points are required for Catmull-Rom splines.");
 
-            // Determine which segment of the spline `t` is in
             int segment = (int)Math.Floor(t);
             float localT = t - segment;
 
-            // Clamp segment index to valid range
-            int p0 = Math.Clamp(segment - 1, 0, allPositions.Count - 1);
-            int p1 = Math.Clamp(segment, 0, allPositions.Count - 1);
-            int p2 = Math.Clamp(segment + 1, 0, allPositions.Count - 1);
-            int p3 = Math.Clamp(segment + 2, 0, allPositions.Count - 1);
+            // Get points for Catmull-Rom calculation
+            int p0 = Math.Clamp(segment - 1, 0, _placedNodes.Count - 1);
+            int p1 = Math.Clamp(segment, 0, _placedNodes.Count - 1);
+            int p2 = Math.Clamp(segment + 1, 0, _placedNodes.Count - 1);
+            int p3 = Math.Clamp(segment + 2, 0, _placedNodes.Count - 1);
 
-            // Perform Catmull-Rom interpolation
-            return CatmullRom(allPositions[p0], allPositions[p1], allPositions[p2], allPositions[p3], localT);
+            return CatmullRom(
+                _placedNodes[p0].Position,
+                _placedNodes[p1].Position,
+                _placedNodes[p2].Position,
+                _placedNodes[p3].Position,
+                localT
+            );
+        }
+
+        private Vector2 GetShadowTrackPoint(float t)
+        {
+            if (_shadowNodes.Count < 4)
+                return _shadowNodes[^1].Position; // Return last shadow node if not enough for interpolation
+
+            int segment = (int)Math.Floor(t);
+            float localT = t - segment;
+
+            // Get points for Catmull-Rom calculation
+            int p0 = Math.Clamp(segment - 1, 0, _shadowNodes.Count - 1);
+            int p1 = Math.Clamp(segment, 0, _shadowNodes.Count - 1);
+            int p2 = Math.Clamp(segment + 1, 0, _shadowNodes.Count - 1);
+            int p3 = Math.Clamp(segment + 2, 0, _shadowNodes.Count - 1);
+
+            return CatmullRom(
+                _shadowNodes[p0].Position,
+                _shadowNodes[p1].Position,
+                _shadowNodes[p2].Position,
+                _shadowNodes[p3].Position,
+                localT
+            );
         }
 
         private Vector2 CatmullRom(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
@@ -171,39 +182,38 @@ namespace SplineMiner
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (AllNodes.Count < 4)
+            if (_placedNodes.Count < 4)
                 return;
 
-            // Draw the main track segments
+            // Draw placed track
             const int segments = 100;
-            float traversableRatio = (_placedNodes.Count - 1f) / (AllNodes.Count - 1f);
-            int traversableSegments = (int)(segments * traversableRatio);
-
-            // Draw traversable track
-            for (int i = 0; i < traversableSegments; i++)
+            for (int i = 0; i < segments; i++)
             {
-                float t1 = i / (float)segments;
-                float t2 = (i + 1) / (float)segments;
+                float t1 = i / (float)segments * (_placedNodes.Count - 1);
+                float t2 = (i + 1) / (float)segments * (_placedNodes.Count - 1);
 
-                Vector2 point1 = GetPoint(t1 * (AllNodes.Count - 1));
-                Vector2 point2 = GetPoint(t2 * (AllNodes.Count - 1));
+                Vector2 point1 = GetPlacedTrackPoint(t1);
+                Vector2 point2 = GetPlacedTrackPoint(t2);
 
                 DrawLine(spriteBatch, point1, point2, Color.Black, 2);
             }
 
-            // Draw shadow track with transparency
-            for (int i = traversableSegments; i < segments; i++)
+            // Draw shadow track if we have enough nodes
+            if (_shadowNodes.Count >= 4)
             {
-                float t1 = i / (float)segments;
-                float t2 = (i + 1) / (float)segments;
+                for (int i = 0; i < segments; i++)
+                {
+                    float t1 = i / (float)segments * (_shadowNodes.Count - 1);
+                    float t2 = (i + 1) / (float)segments * (_shadowNodes.Count - 1);
 
-                Vector2 point1 = GetPoint(t1 * (AllNodes.Count - 1));
-                Vector2 point2 = GetPoint(t2 * (AllNodes.Count - 1));
+                    Vector2 point1 = GetShadowTrackPoint(t1);
+                    Vector2 point2 = GetShadowTrackPoint(t2);
 
-                DrawLine(spriteBatch, point1, point2, Color.Gray * 0.5f, 2);
+                    DrawLine(spriteBatch, point1, point2, Color.Gray * 0.5f, 2);
+                }
             }
 
-            // Draw debug points if enabled
+            // Draw debug points
             if (_enableDebugVisualization)
             {
                 foreach (var point in _debugPoints)
@@ -217,10 +227,16 @@ namespace SplineMiner
                 }
             }
 
-            // Draw all nodes
-            for (int i = 0; i < AllNodes.Count; i++)
+            // Draw placed nodes
+            for (int i = 0; i < _placedNodes.Count; i++)
             {
-                AllNodes[i].Draw(spriteBatch, _pointTexture, i == _selectedNodeIndex);
+                _placedNodes[i].Draw(spriteBatch, _pointTexture, false);
+            }
+
+            // Draw shadow nodes
+            for (int i = 0; i < _shadowNodes.Count; i++)
+            {
+                _shadowNodes[i].Draw(spriteBatch, _pointTexture, i + _placedNodes.Count == _selectedNodeIndex);
             }
 
             // Draw preview if available
@@ -273,17 +289,16 @@ namespace SplineMiner
                 RecalculateArcLength();
             }
 
-            float maxDistance = _totalArcLength * ((_placedNodes.Count - 1f) / (AllNodes.Count - 1f));
-            distance = Math.Min(distance, maxDistance);
-            if (distance < 0) distance += maxDistance;
+            distance = Math.Min(distance, _totalArcLength);
+            if (distance < 0) distance += _totalArcLength;
 
             float t = MapDistanceToT(distance, _totalArcLength);
-            return GetPoint(t);
+            return GetPlacedTrackPoint(t);
         }
 
         public void RecalculateArcLength()
         {
-            _totalArcLength = ComputeArcLength(0f, AllNodes.Count - 1, 100);
+            _totalArcLength = ComputeArcLength(0f, _placedNodes.Count - 1, 100);
         }
 
         private float ComputeArcLength(float tStart, float tEnd, int steps = 40)
@@ -291,11 +306,11 @@ namespace SplineMiner
             float arcLength = 0f;
             float dt = (tEnd - tStart) / steps;
 
-            Vector2 previousPoint = GetPoint(tStart);
+            Vector2 previousPoint = GetPlacedTrackPoint(tStart);
             for (int i = 1; i <= steps; i++)
             {
                 float t = tStart + i * dt;
-                Vector2 currentPoint = GetPoint(t);
+                Vector2 currentPoint = GetPlacedTrackPoint(t);
                 arcLength += Vector2.Distance(previousPoint, currentPoint);
 
                 if (_enableDebugVisualization && i % 5 == 0)
@@ -311,16 +326,13 @@ namespace SplineMiner
 
         private float MapDistanceToT(float distance, float totalLength)
         {
-            if (totalLength <= 0)
-            {
-                return 0f;
-            }
+            if (totalLength <= 0) return 0f;
 
             float normalizedTarget = distance / totalLength;
             normalizedTarget = Math.Clamp(normalizedTarget, 0f, 1f);
             
             float tMin = 0f;
-            float tMax = AllNodes.Count - 1;
+            float tMax = _placedNodes.Count - 1;
             float tMid = 0f;
             float lastArcLength = 0f;
 
@@ -356,8 +368,7 @@ namespace SplineMiner
         public void VisualizeEquallySpacedPoints(int count)
         {
             _debugPoints.Clear();
-            float totalLength = _totalArcLength > 0 ? _totalArcLength : ComputeArcLength(0f, AllNodes.Count - 1);
-            float stepSize = totalLength / count;
+            float stepSize = _totalArcLength / count;
             
             for (int i = 0; i < count; i++)
             {

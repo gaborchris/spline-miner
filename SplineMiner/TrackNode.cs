@@ -5,20 +5,22 @@ namespace SplineMiner
 {
     public interface ITrackNode
     {
-        Vector2 Position { get; set; }
+        Vector2 Position { get; }
         void Draw(SpriteBatch spriteBatch, Texture2D texture, bool isSelected);
     }
 
     public class PlacedTrackNode : ITrackNode
     {
-        public Vector2 Position { get; set; }
+        private Vector2 _position;
         private const float NODE_RADIUS = 10f;
         private readonly Color _normalColor = Color.Blue;
         private readonly Color _selectedColor = Color.Red;
 
+        public Vector2 Position => _position;
+
         public PlacedTrackNode(Vector2 position)
         {
-            Position = position;
+            _position = position;
         }
 
         public void Draw(SpriteBatch spriteBatch, Texture2D texture, bool isSelected)
@@ -45,14 +47,20 @@ namespace SplineMiner
 
     public class ShadowTrackNode : ITrackNode
     {
-        public Vector2 Position { get; set; }
+        private Vector2 _position;
         private const float NODE_RADIUS = 10f;
         private readonly Color _normalColor = Color.Gray * 0.5f;
         private readonly Color _selectedColor = Color.Red * 0.5f;
 
+        public Vector2 Position 
+        { 
+            get => _position;
+            set => _position = value;
+        }
+
         public ShadowTrackNode(Vector2 position)
         {
-            Position = position;
+            _position = position;
         }
 
         public void Draw(SpriteBatch spriteBatch, Texture2D texture, bool isSelected)
