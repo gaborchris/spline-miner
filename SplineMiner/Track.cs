@@ -17,6 +17,7 @@ namespace SplineMiner
         private float _totalArcLength = 0f;
         private TrackPreview _preview;
         private const int MIN_SHADOW_NODES = 3; // Minimum needed for Catmull-Rom
+        private UITool _currentTool = UITool.Track;
 
         public IReadOnlyList<PlacedTrackNode> PlacedNodes => _placedNodes.AsReadOnly();
         public IReadOnlyList<ShadowTrackNode> ShadowNodes => _shadowNodes.AsReadOnly();
@@ -135,48 +136,12 @@ namespace SplineMiner
             int p2 = Math.Clamp(segment + 1, 0, _placedNodes.Count - 1);
             int p3 = Math.Clamp(segment + 2, 0, _placedNodes.Count - 1);
 
-            return CatmullRom(
+            return SplineUtils.CatmullRom(
                 _placedNodes[p0].Position,
                 _placedNodes[p1].Position,
                 _placedNodes[p2].Position,
                 _placedNodes[p3].Position,
                 localT
-            );
-        }
-
-        private Vector2 GetShadowTrackPoint(float t)
-        {
-            if (_shadowNodes.Count < 4)
-                return _shadowNodes[^1].Position; // Return last shadow node if not enough for interpolation
-
-            int segment = (int)Math.Floor(t);
-            float localT = t - segment;
-
-            // Get points for Catmull-Rom calculation
-            int p0 = Math.Clamp(segment - 1, 0, _shadowNodes.Count - 1);
-            int p1 = Math.Clamp(segment, 0, _shadowNodes.Count - 1);
-            int p2 = Math.Clamp(segment + 1, 0, _shadowNodes.Count - 1);
-            int p3 = Math.Clamp(segment + 2, 0, _shadowNodes.Count - 1);
-
-            return CatmullRom(
-                _shadowNodes[p0].Position,
-                _shadowNodes[p1].Position,
-                _shadowNodes[p2].Position,
-                _shadowNodes[p3].Position,
-                localT
-            );
-        }
-
-        private Vector2 CatmullRom(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
-        {
-            float t2 = t * t;
-            float t3 = t2 * t;
-
-            return 0.5f * (
-                (2 * p1) +
-                (-p0 + p2) * t +
-                (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
-                (-p0 + 3 * p1 - 3 * p2 + p3) * t3
             );
         }
 
@@ -187,29 +152,28 @@ namespace SplineMiner
 
             // Draw placed track
             const int segments = 100;
-            for (int i = 0; i < segments; i++)
+            Vector2[] placedPoints = _placedNodes.Select(n => n.Position).ToArray();
+            DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, placedPoints, segments, Color.Black, 2);
+
+            // Draw shadow track and nodes only when track tool is selected
+            if (_currentTool == UITool.Track && _shadowNodes.Count >= MIN_SHADOW_NODES)
             {
-                float t1 = i / (float)segments * (_placedNodes.Count - 1);
-                float t2 = (i + 1) / (float)segments * (_placedNodes.Count - 1);
+                // Create combined array for shadow curve
+                var combinedPoints = new List<Vector2>();
+                // Add last few placed nodes for proper curve connection
+                combinedPoints.AddRange(_placedNodes.Skip(Math.Max(0, _placedNodes.Count - 3))
+                                                  .Select(n => n.Position));
+                combinedPoints.AddRange(_shadowNodes.Select(n => n.Position));
 
-                Vector2 point1 = GetPlacedTrackPoint(t1);
-                Vector2 point2 = GetPlacedTrackPoint(t2);
-
-                DrawLine(spriteBatch, point1, point2, Color.Black, 2);
-            }
-
-            // Draw shadow track if we have enough nodes
-            if (_shadowNodes.Count >= 4)
-            {
-                for (int i = 0; i < segments; i++)
+                if (combinedPoints.Count >= 4)
                 {
-                    float t1 = i / (float)segments * (_shadowNodes.Count - 1);
-                    float t2 = (i + 1) / (float)segments * (_shadowNodes.Count - 1);
+                    DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, combinedPoints.ToArray(), segments, Color.Gray * 0.5f, 2);
+                }
 
-                    Vector2 point1 = GetShadowTrackPoint(t1);
-                    Vector2 point2 = GetShadowTrackPoint(t2);
-
-                    DrawLine(spriteBatch, point1, point2, Color.Gray * 0.5f, 2);
+                // Draw shadow nodes
+                foreach (var (node, index) in _shadowNodes.Select((n, i) => (n, i)))
+                {
+                    node.Draw(spriteBatch, _pointTexture, index + _placedNodes.Count == _selectedNodeIndex);
                 }
             }
 
@@ -218,7 +182,7 @@ namespace SplineMiner
             {
                 foreach (var point in _debugPoints)
                 {
-                    DrawCircle(spriteBatch, point, 3, Color.Yellow);
+                    DrawingHelpers.DrawCircle(spriteBatch, _pointTexture, point, 3, Color.Yellow);
                 }
 
                 if (_debugPoints.Count > 200)
@@ -228,51 +192,13 @@ namespace SplineMiner
             }
 
             // Draw placed nodes
-            for (int i = 0; i < _placedNodes.Count; i++)
+            foreach (var node in _placedNodes)
             {
-                _placedNodes[i].Draw(spriteBatch, _pointTexture, false);
-            }
-
-            // Draw shadow nodes
-            for (int i = 0; i < _shadowNodes.Count; i++)
-            {
-                _shadowNodes[i].Draw(spriteBatch, _pointTexture, i + _placedNodes.Count == _selectedNodeIndex);
+                node.Draw(spriteBatch, _pointTexture, false);
             }
 
             // Draw preview if available
             _preview?.Draw(spriteBatch);
-        }
-
-        private void DrawLine(SpriteBatch spriteBatch, Vector2 start, Vector2 end, Color color, int thickness)
-        {
-            Vector2 edge = end - start;
-            float angle = (float)Math.Atan2(edge.Y, edge.X);
-            spriteBatch.Draw(
-                texture: _pointTexture,
-                position: start,
-                sourceRectangle: null,
-                color: color,
-                rotation: angle,
-                origin: Vector2.Zero,
-                scale: new Vector2(edge.Length(), thickness),
-                effects: SpriteEffects.None,
-                layerDepth: 0f
-            );
-        }
-
-        private void DrawCircle(SpriteBatch spriteBatch, Vector2 center, float radius, Color color)
-        {
-            spriteBatch.Draw(
-                texture: _pointTexture,
-                position: center,
-                sourceRectangle: null,
-                color: color,
-                rotation: 0f,
-                origin: new Vector2(0.5f, 0.5f),
-                scale: new Vector2(radius * 2, radius * 2),
-                effects: SpriteEffects.None,
-                layerDepth: 0f
-            );
         }
 
         public void UpdatePreview(Vector2 mousePosition)
@@ -376,6 +302,11 @@ namespace SplineMiner
                 Vector2 point = GetPointByDistance(distance);
                 _debugPoints.Add(point);
             }
+        }
+
+        public void SetCurrentTool(UITool tool)
+        {
+            _currentTool = tool;
         }
     }
 }
