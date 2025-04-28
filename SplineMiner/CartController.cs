@@ -137,7 +137,7 @@ namespace SplineMiner
             }
 
             // Normal movement control
-            if (_inputManager.Forward() && track.HasShadowNodes)
+            if (_inputManager.Forward())
             {
                 float newT = _t + _speed * deltaTime;
                 // Only move forward if we haven't reached the traversable limit
