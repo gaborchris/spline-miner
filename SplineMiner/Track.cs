@@ -16,6 +16,10 @@ namespace SplineMiner
         private bool _enableDebugVisualization = true;
         private float _totalArcLength = 0f;
         private TrackPreview _preview;
+        private const int SHADOW_NODES = 2; // Number of nodes at the end that act as shadow nodes
+
+        public float TraversableLength => _totalArcLength * GetTraversableRatio();
+        public bool HasShadowNodes => ControlPoints.Count > SHADOW_NODES;
 
         /*
         A track is a multidimensional line f(t) = (x(t), y(t))
@@ -117,9 +121,16 @@ namespace SplineMiner
         }
         public void Draw(SpriteBatch spriteBatch)
         {
-            // Draw the track as a series of small line segments
+            if (ControlPoints.Count < 4)
+                return;
+
+            // Draw the main track segments
             const int segments = 100;
-            for (int i = 0; i < segments; i++)
+            float traversableRatio = GetTraversableRatio();
+            int traversableSegments = (int)(segments * traversableRatio);
+
+            // Draw traversable track
+            for (int i = 0; i < traversableSegments; i++)
             {
                 float t1 = i / (float)segments;
                 float t2 = (i + 1) / (float)segments;
@@ -130,6 +141,18 @@ namespace SplineMiner
                 DrawLine(spriteBatch, point1, point2, Color.Black, 2);
             }
 
+            // Draw shadow track with transparency
+            for (int i = traversableSegments; i < segments; i++)
+            {
+                float t1 = i / (float)segments;
+                float t2 = (i + 1) / (float)segments;
+
+                Vector2 point1 = GetPoint(t1 * (ControlPoints.Count - 1));
+                Vector2 point2 = GetPoint(t2 * (ControlPoints.Count - 1));
+
+                DrawLine(spriteBatch, point1, point2, Color.Gray * 0.5f, 2);
+            }
+
             // Draw debug points if enabled
             if (_enableDebugVisualization)
             {
@@ -138,17 +161,28 @@ namespace SplineMiner
                     DrawCircle(spriteBatch, point, 3, Color.Yellow);
                 }
 
-                // Limit the number of debug points to avoid performance issues
                 if (_debugPoints.Count > 200)
                 {
                     _debugPoints.RemoveRange(0, 100);
                 }
             }
 
-            // Draw the control points
+            // Draw the control points with different colors for regular and shadow nodes
             for (int i = 0; i < ControlPoints.Count; i++)
             {
-                Color pointColor = i == _selectedPointIndex ? Color.Red : Color.Blue;
+                Color pointColor;
+                if (i == _selectedPointIndex)
+                {
+                    pointColor = Color.Red;
+                }
+                else if (i >= ControlPoints.Count - SHADOW_NODES)
+                {
+                    pointColor = Color.Gray * 0.5f; // Shadow nodes are semi-transparent
+                }
+                else
+                {
+                    pointColor = Color.Blue;
+                }
                 DrawCircle(spriteBatch, ControlPoints[i], CONTROL_POINT_RADIUS, pointColor);
             }
 
@@ -283,23 +317,16 @@ namespace SplineMiner
                 RecalculateArcLength();
             }
 
-            // Wrap the distance to ensure it loops around the track
-            distance = distance % _totalArcLength;
-            if (distance < 0) distance += _totalArcLength;
+            // Clamp the distance to prevent going into shadow node territory
+            float maxDistance = TraversableLength;
+            distance = Math.Min(distance, maxDistance);
+            if (distance < 0) distance += maxDistance;
 
             // Map the distance to a `t` value
             float t = MapDistanceToT(distance, _totalArcLength);
 
             // Get the point corresponding to the `t` value
-            Vector2 point = GetPoint(t);
-            
-            // Debug every so often
-            // if (Math.Floor(distance) % 50 == 0)
-            // {
-            //     Debug.WriteLine($"Distance: {distance}, t: {t}, point: {point}");
-            // }
-
-            return point;
+            return GetPoint(t);
         }
 
         // Add this new method to calculate the total arc length once
@@ -347,5 +374,16 @@ namespace SplineMiner
         }
 
         public bool IsHoveringEndpoint => _preview?.IsHoveringEndpoint ?? false;
+
+        private float GetTraversableRatio()
+        {
+            if (ControlPoints.Count <= 4) // Minimum points needed for a valid track
+                return 0f;
+
+            // Calculate ratio excluding shadow nodes
+            float traversableSegments = ControlPoints.Count - (SHADOW_NODES + 1);
+            float totalSegments = ControlPoints.Count - 1;
+            return traversableSegments / totalSegments;
+        }
     }
 }
