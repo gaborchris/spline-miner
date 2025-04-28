@@ -2,6 +2,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System;
 
 namespace SplineMiner
 {
@@ -12,12 +14,12 @@ namespace SplineMiner
         private UITool _currentTool;
         private Rectangle _uiPanel;
         private float _scrollOffset;
-        private const float SCROLL_SPEED = 10f;
+        private const float SCROLL_SPEED = 1f;
         private const int BUTTON_HEIGHT = 40;
         private const int BUTTON_SPACING = 10;
         private const int PANEL_WIDTH = 150;
         private const int PANEL_PADDING = 10;
-
+        private const int TOTAL_BUTTONS = 8;
         public UITool CurrentTool => _currentTool;
 
         public UIManager(SpriteFont font)
@@ -36,7 +38,7 @@ namespace SplineMiner
             int buttonY = PANEL_PADDING;
             int buttonWidth = PANEL_WIDTH - (2 * PANEL_PADDING);
 
-            // Create buttons for each tool
+            // Create 10 buttons (3 real tools + 7 placeholders)
             AddButton(new Rectangle(PANEL_PADDING, buttonY, buttonWidth, BUTTON_HEIGHT), 
                      "Place Track", UITool.PlaceTrack);
             buttonY += BUTTON_HEIGHT + BUTTON_SPACING;
@@ -47,9 +49,19 @@ namespace SplineMiner
 
             AddButton(new Rectangle(PANEL_PADDING, buttonY, buttonWidth, BUTTON_HEIGHT), 
                      "Delete Track", UITool.DeleteTrack);
+            buttonY += BUTTON_HEIGHT + BUTTON_SPACING;
 
-            // Update panel height based on buttons
-            _uiPanel.Height = buttonY + BUTTON_HEIGHT + PANEL_PADDING;
+            // Add 7 placeholder buttons
+            for (int i = 0; i < TOTAL_BUTTONS - 3; i++)
+            {
+                AddButton(new Rectangle(PANEL_PADDING, buttonY, buttonWidth, BUTTON_HEIGHT), 
+                         $"Tool {i + 4}", UITool.None);
+                buttonY += BUTTON_HEIGHT + BUTTON_SPACING;
+            }
+
+            // Update panel height based on visible buttons
+            _uiPanel.Height = (BUTTON_HEIGHT + BUTTON_SPACING) * TOTAL_BUTTONS + PANEL_PADDING;
+            SetToolIndex(0);
         }
 
         private void AddButton(Rectangle bounds, string text, UITool tool)
@@ -57,13 +69,39 @@ namespace SplineMiner
             _buttons.Add(new UIButton(bounds, text, tool, _font));
         }
 
+        private void SetToolIndex(int index) {
+            _scrollOffset = index;
+            _buttons[index].Select();
+            _currentTool = _buttons[index].Tool;
+        }
+
         public void Update(InputManager inputManager)
         {
-            // Handle mouse wheel scrolling
+            // Handle mouse wheel scrolling with precise increments
             if (inputManager.IsMouseWheelScrolled())
             {
-                _scrollOffset += inputManager.GetMouseWheelDelta() * SCROLL_SPEED;
-                _scrollOffset = MathHelper.Clamp(_scrollOffset, 0, _uiPanel.Height - _uiPanel.Y);
+                float delta = inputManager.GetMouseWheelDelta();
+                float newOffset = Math.Clamp(_scrollOffset + delta, 0, TOTAL_BUTTONS);
+                Debug.WriteLine($"Scroll delta: {delta}");
+                Debug.WriteLine($"Scroll offset: {_scrollOffset}");
+                
+                // Only update if the offset actually changed
+                if (newOffset != _scrollOffset)
+                {
+                    _scrollOffset = newOffset;
+                    // Deselect all buttons
+                    foreach (var button in _buttons)
+                    {
+                        button.Deselect();
+                    }
+                    // Select the button at the current offset
+                    int selectedIndex = (int)_scrollOffset;
+                    if (selectedIndex < _buttons.Count)
+                    {
+                        _buttons[selectedIndex].Select();
+                        _currentTool = _buttons[selectedIndex].Tool;
+                    }
+                }
             }
 
             // Update buttons
@@ -95,9 +133,9 @@ namespace SplineMiner
             pixel.SetData(new[] { Color.White });
             spriteBatch.Draw(pixel, _uiPanel, Color.Black * 0.5f);
 
-            // Draw buttons
-            foreach (var button in _buttons)
+            for (int i = 0; i < _buttons.Count; i++)
             {
+                var button = _buttons[i];
                 button.Draw(spriteBatch);
             }
         }
