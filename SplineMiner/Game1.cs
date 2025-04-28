@@ -29,11 +29,13 @@ namespace SplineMiner
 
         protected override void Initialize()
         {
-
-
             // Initialize the player at the start of the track
             _inputManager = new InputManager();
             _player = new CartController(_inputManager);
+
+            // Initialize camera
+            CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
+            CameraManager.Instance.SetTarget(_player);
 
             base.Initialize();
         }
@@ -101,6 +103,9 @@ namespace SplineMiner
             
             // Update UI
             _uiManager.Update(_inputManager);
+            
+            // Update camera
+            CameraManager.Instance.Update(gameTime);
             
             // Handle mouse interaction with control points based on current tool
             HandleMouseInteraction();
@@ -173,7 +178,7 @@ namespace SplineMiner
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _spriteBatch.Begin();
+            _spriteBatch.Begin(transformMatrix: CameraManager.Instance.Transform);
 
             // Draw the track
             _track.Draw(_spriteBatch);
@@ -181,7 +186,9 @@ namespace SplineMiner
             // Draw the player
             _player.Draw(_spriteBatch);
 
-            // Draw UI
+            // Draw UI (UI should not be affected by camera)
+            _spriteBatch.End();
+            _spriteBatch.Begin();
             _uiManager.Draw(_spriteBatch);
 
             // Draw debug info

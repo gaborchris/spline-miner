@@ -25,6 +25,7 @@ A fun and interactive game designed to help players build intuition around splin
   - [ ] Camera follows player on track
   - [ ] Camera follows player when dismounted
   - [ ] World spans a large area and camera can be moved around
+  - [ ] Player rotates on the track, but camera stays axis locked with world
 - [ ] **Collision**:
   - [ ] Interaction with the floor
 - [ ] **Destructible Blocks**:
