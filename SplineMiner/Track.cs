@@ -107,7 +107,16 @@ namespace SplineMiner
 
         public void AddPoint(Vector2 position)
         {
-            _placedNodes.Add(new PlacedTrackNode(position));
+            // Check if we're clicking on a shadow node
+            int hoveredIndex = GetHoveredPointIndex(position);
+            if (hoveredIndex != _placedNodes.Count)
+            {
+                return;
+            }
+            // Convert shadow node to placed node
+            Vector2 shadowNodePos = _shadowNodes[0].Position;
+            _placedNodes.Add(new PlacedTrackNode(shadowNodePos));
+
             UpdateShadowNodes();
             RecalculateArcLength();
         }
@@ -260,7 +269,7 @@ namespace SplineMiner
 
             float normalizedTarget = distance / totalLength;
             normalizedTarget = Math.Clamp(normalizedTarget, 0f, 1f);
-            
+
             float tMin = 0f;
             float tMax = _placedNodes.Count - 1;
             float tMid = 0f;
@@ -288,7 +297,7 @@ namespace SplineMiner
                 {
                     tMax = tMid;
                 }
-                
+
                 lastArcLength = arcLength;
             }
 
@@ -299,7 +308,7 @@ namespace SplineMiner
         {
             _debugPoints.Clear();
             float stepSize = _totalArcLength / count;
-            
+
             for (int i = 0; i < count; i++)
             {
                 float distance = i * stepSize;
