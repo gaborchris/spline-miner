@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace SplineMiner
 {
@@ -39,40 +40,39 @@ namespace SplineMiner
 
         public static void DrawSplineCurve(SpriteBatch spriteBatch, Texture2D texture, Vector2[] points, int segments, Color color, int thickness)
         {
+            if (points == null) throw new ArgumentNullException(nameof(points));
             if (points.Length < 4) return;
+            if (segments < 1) throw new ArgumentException("Segments must be greater than 0", nameof(segments));
 
-            for (int i = 0; i < segments; i++)
+            // Calculate how many curve segments we can draw
+            int numCurveSegments = points.Length - 3;
+
+            // For each curve segment
+            for (int curveSegment = 0; curveSegment < numCurveSegments; curveSegment++)
             {
-                float t1 = i / (float)segments;
-                float t2 = (i + 1) / (float)segments;
+                // Draw the subdivided segments for this curve segment
+                for (int i = 0; i < segments; i++)
+                {
+                    float t1 = i / (float)segments;
+                    float t2 = (i + 1) / (float)segments;
 
-                Vector2 point1 = CatmullRomPoint(points, t1);
-                Vector2 point2 = CatmullRomPoint(points, t2);
+                    Vector2 point1 = SplineUtils.CatmullRom(
+                        points[curveSegment],
+                        points[curveSegment + 1],
+                        points[curveSegment + 2],
+                        points[curveSegment + 3],
+                        t1);
 
-                DrawLine(spriteBatch, texture, point1, point2, color, thickness);
+                    Vector2 point2 = SplineUtils.CatmullRom(
+                        points[curveSegment],
+                        points[curveSegment + 1],
+                        points[curveSegment + 2],
+                        points[curveSegment + 3],
+                        t2);
+
+                    DrawLine(spriteBatch, texture, point1, point2, color, thickness);
+                }
             }
-        }
-
-        private static Vector2 CatmullRomPoint(Vector2[] points, float t)
-        {
-            int numPoints = points.Length;
-            if (numPoints < 4) return Vector2.Zero;
-
-            float t2 = t * t;
-            float t3 = t2 * t;
-
-            // Scale t to the number of segments
-            float scaledT = t * (numPoints - 3);
-            int segment = (int)System.Math.Floor(scaledT);
-            float localT = scaledT - segment;
-
-            // Get the points for interpolation
-            int p0 = System.Math.Clamp(segment, 0, numPoints - 4);
-            int p1 = p0 + 1;
-            int p2 = p0 + 2;
-            int p3 = p0 + 3;
-
-            return SplineUtils.CatmullRom(points[p0], points[p1], points[p2], points[p3], localT);
         }
     }
 } 
