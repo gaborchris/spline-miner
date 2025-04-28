@@ -24,14 +24,20 @@ namespace SplineMiner
         private bool _showDebugInfo = true;
         
         // Wheel positions
-        private const float WHEEL_DISTANCE = 40f; // Increased from 20f to 40f for more stability
+        private const float WHEEL_DISTANCE = 30f;
         private Vector2 _frontWheelPosition;
         private Vector2 _backWheelPosition;
+        
+        // Position tracking
+        private Vector2 _targetPosition;
+        private Vector2 _previousPosition;
+        private const float POSITION_INTERPOLATION_FACTOR = 0.5f;
+        private const float MIN_MOVEMENT_THRESHOLD = 0.1f; // Minimum distance to move
         
         // Debug info
         private float _lastRotation;
         private float _rotationChange;
-        private const float MAX_ROTATION_CHANGE = MathHelper.Pi / 4; // Maximum allowed rotation change per frame
+        private const float MAX_ROTATION_CHANGE = MathHelper.Pi / 6;
         
         // For movement smoothness testing
         private bool _isTestingMovement = false;
@@ -55,7 +61,7 @@ namespace SplineMiner
             Debug.WriteLine("Starting cart movement test for 5 seconds");
         }
 
-        private void UpdateMovementTest(GameTime gameTime)
+        private void UpdateMovementTest(GameTime gameTime, Track track)
         {
             if (!_isTestingMovement) return;
             
@@ -66,6 +72,12 @@ namespace SplineMiner
             
             // Force movement at constant speed for testing
             _t += _speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            
+            // Update cart position and wheel positions
+            _targetPosition = track.GetPointByDistance(_t);
+            WorldPosition2D = _targetPosition; // Directly set position during test
+            UpdateWheelPositions(track);
+            UpdateRotation();
             
             // End test after duration
             if (_testTimer >= TEST_DURATION)
@@ -145,13 +157,13 @@ namespace SplineMiner
             // Handle test movement if we're testing
             if (_isTestingMovement)
             {
-                UpdateMovementTest(gameTime);
-                WorldPosition2D = track.GetPointByDistance(_t);
-                UpdateWheelPositions(track);
-                UpdateRotation();
+                UpdateMovementTest(gameTime, track);
                 track.UpdateCurrentPosition(_t);
                 return;
             }
+
+            // Store previous position for interpolation
+            _previousPosition = WorldPosition2D;
 
             // Normal movement control
             if (_inputManager.Forward())
@@ -167,12 +179,27 @@ namespace SplineMiner
                 _t -= _speed * deltaTime;
             }
             
-            // Get new position
-            WorldPosition2D = track.GetPointByDistance(_t);
-            
-            // Update wheel positions and rotation
+            // Get target position and update wheel positions
+            _targetPosition = track.GetPointByDistance(_t);
             UpdateWheelPositions(track);
             UpdateRotation();
+            
+            // Calculate movement vector
+            Vector2 movement = _targetPosition - _previousPosition;
+            float movementLength = movement.Length();
+            
+            // Only update position if movement is significant
+            if (movementLength > MIN_MOVEMENT_THRESHOLD)
+            {
+                // Normalize movement and apply interpolation
+                movement.Normalize();
+                WorldPosition2D = _previousPosition + movement * (movementLength * POSITION_INTERPOLATION_FACTOR);
+            }
+            else
+            {
+                // If movement is too small, stay at previous position
+                WorldPosition2D = _previousPosition;
+            }
             
             track.UpdateCurrentPosition(_t);
             
@@ -217,14 +244,18 @@ namespace SplineMiner
             // Calculate rotation change
             _rotationChange = MathHelper.WrapAngle(targetRotation - _lastRotation);
             
-            // Clamp rotation change to prevent sudden jumps
-            if (Math.Abs(_rotationChange) > MAX_ROTATION_CHANGE)
+            // Only update rotation if change is significant
+            if (Math.Abs(_rotationChange) > 0.01f)
             {
-                targetRotation = _lastRotation + Math.Sign(_rotationChange) * MAX_ROTATION_CHANGE;
+                // Clamp rotation change to prevent sudden jumps
+                if (Math.Abs(_rotationChange) > MAX_ROTATION_CHANGE)
+                {
+                    targetRotation = _lastRotation + Math.Sign(_rotationChange) * MAX_ROTATION_CHANGE;
+                }
+                
+                _rotation = targetRotation;
+                _lastRotation = _rotation;
             }
-            
-            _rotation = targetRotation;
-            _lastRotation = _rotation;
         }
 
         public void LoadDebugTexture(GraphicsDevice graphicsDevice)
@@ -262,6 +293,12 @@ namespace SplineMiner
                 
                 // Draw cart's position point
                 DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, WorldPosition2D, 3, Color.White);
+                
+                // Draw target position
+                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _targetPosition, 3, Color.Purple);
+                
+                // Draw line from current to target position
+                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, WorldPosition2D, _targetPosition, Color.Purple, 1);
                 
                 // Draw rotation change indicator
                 const float INDICATOR_LENGTH = 20f;

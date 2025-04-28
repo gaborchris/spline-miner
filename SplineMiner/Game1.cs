@@ -25,7 +25,7 @@ namespace SplineMiner
         private float _fps;
         private float _frameCounter;
         private float _timeSinceLastUpdate;
-        private const float UPDATE_INTERVAL = 1.0f; // Update FPS display every second
+        private const float UPDATE_INTERVAL = 0.25f; // Update FPS display every quarter second
 
         public Game1()
         {
@@ -225,7 +225,7 @@ namespace SplineMiner
                     "F1: Toggle debug info",
                     "Left/Right: Move cart",
                     $"Current Tool: {_uiManager.CurrentTool}",
-                    $"FPS: {_fps:F1}"
+                    $"FPS: {_fps:F5}"
                 };
 
                 // Calculate starting Y position at bottom of screen
