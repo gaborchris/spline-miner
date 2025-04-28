@@ -21,14 +21,18 @@ namespace SplineMiner
         private float _t = 0f;
         private float _speed = 300; // Pixels per second
         private float _rotation = 0f;
-        private float _rotationSmoothness = 0.1f; // Adjust this to control rotation smoothness
         private bool _showDebugInfo = true;
+        
+        // Wheel positions
+        private const float WHEEL_DISTANCE = 20f; // Distance between front and back wheels
+        private Vector2 _frontWheelPosition;
+        private Vector2 _backWheelPosition;
         
         // For movement smoothness testing
         private bool _isTestingMovement = false;
         private List<Vector2> _positionHistory = new List<Vector2>();
         private float _testTimer = 0f;
-        private const float TEST_DURATION = 5.0f; // 5 seconds of test
+        private const float TEST_DURATION = 5.0f;
 
         // CartController is only meant to exist on a track
         // There should be an entirely separate controler for when a player hops out the cart
@@ -43,7 +47,6 @@ namespace SplineMiner
             _isTestingMovement = true;
             _positionHistory.Clear();
             _testTimer = 0f;
-            // _t = 0f; // Start from beginning of track
             Debug.WriteLine("Starting cart movement test for 5 seconds");
         }
 
@@ -139,21 +142,16 @@ namespace SplineMiner
             {
                 UpdateMovementTest(gameTime);
                 WorldPosition2D = track.GetPointByDistance(_t);
-                // Update rotation during test
-                float testRotation = track.GetRotationAtDistance(_t);
-                _rotation = MathHelper.Lerp(_rotation, testRotation, _rotationSmoothness);
+                UpdateWheelPositions(track);
+                UpdateRotation();
                 track.UpdateCurrentPosition(_t);
                 return;
             }
-
-            // Store previous position for interpolation
-            Vector2 previousPosition = WorldPosition2D;
 
             // Normal movement control
             if (_inputManager.Forward())
             {
                 float newT = _t + _speed * deltaTime;
-                // Only move forward if we haven't reached the traversable limit
                 if (newT <= track.TotalArcLength)
                 {
                     _t = newT;
@@ -165,15 +163,11 @@ namespace SplineMiner
             }
             
             // Get new position
-            Vector2 newPosition = track.GetPointByDistance(_t);
+            WorldPosition2D = track.GetPointByDistance(_t);
             
-            // Smooth position transition
-            float smoothFactor = Math.Min(1.0f, deltaTime * 10.0f);
-            WorldPosition2D = Vector2.Lerp(previousPosition, newPosition, smoothFactor);
-            
-            // Update rotation
-            float currentRotation = track.GetRotationAtDistance(_t);
-            _rotation = MathHelper.Lerp(_rotation, currentRotation, _rotationSmoothness);
+            // Update wheel positions and rotation
+            UpdateWheelPositions(track);
+            UpdateRotation();
             
             track.UpdateCurrentPosition(_t);
             
@@ -188,6 +182,36 @@ namespace SplineMiner
             {
                 track.VisualizeEquallySpacedPoints(20);
             }
+        }
+
+        private void UpdateWheelPositions(Track track)
+        {
+            // Calculate front and back wheel positions based on current position
+            float frontDistance = _t + WHEEL_DISTANCE;
+            float backDistance = _t - WHEEL_DISTANCE;
+            
+            // Handle wrapping around the track
+            if (frontDistance > track.TotalArcLength)
+                frontDistance -= track.TotalArcLength;
+            if (backDistance < 0)
+                backDistance += track.TotalArcLength;
+            
+            _frontWheelPosition = track.GetPointByDistance(frontDistance);
+            _backWheelPosition = track.GetPointByDistance(backDistance);
+        }
+
+        private void UpdateRotation()
+        {
+            // Calculate direction vector from back to front wheel
+            Vector2 direction = _frontWheelPosition - _backWheelPosition;
+            direction.Normalize();
+            
+            // Calculate rotation angle
+            float targetRotation = (float)Math.Atan2(direction.Y, direction.X);
+            
+            // Smoothly interpolate to target rotation
+            // _rotation = MathHelper.Lerp(_rotation, targetRotation, _rotationSmoothness);
+            _rotation = targetRotation;
         }
 
         public void LoadDebugTexture(GraphicsDevice graphicsDevice)
@@ -216,13 +240,12 @@ namespace SplineMiner
             
             if (_showDebugInfo && DebugTexture != null)
             {
-                // Draw cart's forward direction
-                const float DIRECTION_LENGTH = 30f;
-                Vector2 directionEnd = WorldPosition2D + new Vector2(
-                    (float)Math.Cos(_rotation) * DIRECTION_LENGTH,
-                    (float)Math.Sin(_rotation) * DIRECTION_LENGTH
-                );
-                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, WorldPosition2D, directionEnd, Color.Blue, 2);
+                // Draw wheel positions
+                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _frontWheelPosition, 3, Color.Green);
+                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _backWheelPosition, 3, Color.Blue);
+                
+                // Draw line between wheels
+                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, _frontWheelPosition, _backWheelPosition, Color.Yellow, 1);
                 
                 // Draw cart's position point
                 DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, WorldPosition2D, 3, Color.White);

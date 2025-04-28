@@ -400,8 +400,7 @@ namespace SplineMiner
             Vector2 direction = nextPoint - currentPoint;
             
             // Calculate the angle in radians
-            // Add π/2 to align the bottom edge with the track
-            float angle = (float)Math.Atan2(direction.Y, direction.X) + MathHelper.PiOver2;
+            float angle = (float)Math.Atan2(direction.Y, direction.X);
             
             return angle;
         }
@@ -421,13 +420,14 @@ namespace SplineMiner
         {
             // Get current point and rotation
             Vector2 currentPoint = GetPointByDistance(distance);
-            float rotation = GetRotationAtDistance(distance);
+            float forwardAngle = GetRotationAtDistance(distance);
+            float normalAngle = forwardAngle + MathHelper.PiOver2; // Normal is 90 degrees from forward
             
-            // Draw tangent line
+            // Draw tangent line (forward direction)
             const float TANGENT_LENGTH = 50f;
             Vector2 tangentEnd = currentPoint + new Vector2(
-                (float)Math.Cos(rotation - MathHelper.PiOver2) * TANGENT_LENGTH,
-                (float)Math.Sin(rotation - MathHelper.PiOver2) * TANGENT_LENGTH
+                (float)Math.Cos(forwardAngle) * TANGENT_LENGTH,
+                (float)Math.Sin(forwardAngle) * TANGENT_LENGTH
             );
             
             // Draw tangent line
@@ -435,8 +435,8 @@ namespace SplineMiner
             
             // Draw normal line (perpendicular to tangent)
             Vector2 normalEnd = currentPoint + new Vector2(
-                (float)Math.Cos(rotation) * TANGENT_LENGTH,
-                (float)Math.Sin(rotation) * TANGENT_LENGTH
+                (float)Math.Cos(normalAngle) * TANGENT_LENGTH,
+                (float)Math.Sin(normalAngle) * TANGENT_LENGTH
             );
             
             // Draw normal line
