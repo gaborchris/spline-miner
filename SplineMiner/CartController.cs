@@ -24,9 +24,14 @@ namespace SplineMiner
         private bool _showDebugInfo = true;
         
         // Wheel positions
-        private const float WHEEL_DISTANCE = 20f; // Distance between front and back wheels
+        private const float WHEEL_DISTANCE = 40f; // Increased from 20f to 40f for more stability
         private Vector2 _frontWheelPosition;
         private Vector2 _backWheelPosition;
+        
+        // Debug info
+        private float _lastRotation;
+        private float _rotationChange;
+        private const float MAX_ROTATION_CHANGE = MathHelper.Pi / 4; // Maximum allowed rotation change per frame
         
         // For movement smoothness testing
         private bool _isTestingMovement = false;
@@ -206,12 +211,20 @@ namespace SplineMiner
             Vector2 direction = _frontWheelPosition - _backWheelPosition;
             direction.Normalize();
             
-            // Calculate rotation angle
+            // Calculate target rotation
             float targetRotation = (float)Math.Atan2(direction.Y, direction.X);
             
-            // Smoothly interpolate to target rotation
-            // _rotation = MathHelper.Lerp(_rotation, targetRotation, _rotationSmoothness);
+            // Calculate rotation change
+            _rotationChange = MathHelper.WrapAngle(targetRotation - _lastRotation);
+            
+            // Clamp rotation change to prevent sudden jumps
+            if (Math.Abs(_rotationChange) > MAX_ROTATION_CHANGE)
+            {
+                targetRotation = _lastRotation + Math.Sign(_rotationChange) * MAX_ROTATION_CHANGE;
+            }
+            
             _rotation = targetRotation;
+            _lastRotation = _rotation;
         }
 
         public void LoadDebugTexture(GraphicsDevice graphicsDevice)
@@ -249,6 +262,14 @@ namespace SplineMiner
                 
                 // Draw cart's position point
                 DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, WorldPosition2D, 3, Color.White);
+                
+                // Draw rotation change indicator
+                const float INDICATOR_LENGTH = 20f;
+                Vector2 indicatorEnd = WorldPosition2D + new Vector2(
+                    (float)Math.Cos(_rotation + _rotationChange) * INDICATOR_LENGTH,
+                    (float)Math.Sin(_rotation + _rotationChange) * INDICATOR_LENGTH
+                );
+                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, WorldPosition2D, indicatorEnd, Color.Purple, 2);
             }
             
             // Draw path history during testing
