@@ -147,7 +147,7 @@ namespace SplineMiner
                     {
                         if (!_track.IsHoveringEndpoint)
                         {
-                            _track.AddPoint(mousePosition);
+                            _track.PlaceNode(mousePosition);
                         }
                     }
                     break;
