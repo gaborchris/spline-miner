@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
+using SplineMiner.Core;
 
 namespace SplineMiner
 {
@@ -40,6 +41,8 @@ namespace SplineMiner
         void DrawDebugInfo(SpriteBatch spriteBatch, Texture2D debugTexture);
         void StartMovementTest();
         void AnalyzeMovementSmoothness();
+        void Update(GameTime gameTime);
+        bool IsTestingMovement { get; }
     }
 
     // Movement controller implementation
@@ -148,6 +151,8 @@ namespace SplineMiner
         private float _testTimer = 0f;
         private const float TEST_DURATION = 5.0f;
 
+        public bool IsTestingMovement => _isTestingMovement;
+
         public CartDebugVisualizer(IMovementController movementController, IWheelSystem wheelSystem)
         {
             _movementController = movementController;
@@ -173,19 +178,66 @@ namespace SplineMiner
                 (float)Math.Sin(_movementController.Rotation) * INDICATOR_LENGTH
             );
             DrawingHelpers.DrawLine(spriteBatch, debugTexture, _movementController.Position, indicatorEnd, Color.Purple, 2);
+
+            // Draw normal and tangent vectors
+            const float VECTOR_LENGTH = 30f;
+            float normalAngle = _movementController.Rotation + MathHelper.PiOver2;
+            float tangentAngle = _movementController.Rotation;
+
+            // Draw normal vector (perpendicular to track)
+            Vector2 normalEnd = _movementController.Position + new Vector2(
+                (float)Math.Cos(normalAngle) * VECTOR_LENGTH,
+                (float)Math.Sin(normalAngle) * VECTOR_LENGTH
+            );
+            DrawingHelpers.DrawLine(spriteBatch, debugTexture, _movementController.Position, normalEnd, Color.Red, 2);
+
+            // Draw tangent vector (along track)
+            Vector2 tangentEnd = _movementController.Position + new Vector2(
+                (float)Math.Cos(tangentAngle) * VECTOR_LENGTH,
+                (float)Math.Sin(tangentAngle) * VECTOR_LENGTH
+            );
+            DrawingHelpers.DrawLine(spriteBatch, debugTexture, _movementController.Position, tangentEnd, Color.Green, 2);
+
+            // Draw position history if testing
+            if (_isTestingMovement)
+            {
+                for (int i = 1; i < _positionHistory.Count; i++)
+                {
+                    DrawingHelpers.DrawLine(spriteBatch, debugTexture, _positionHistory[i - 1], _positionHistory[i], Color.Orange, 1);
+                }
+            }
         }
 
         public void StartMovementTest()
         {
+            Debug.WriteLine("[CartDebugVisualizer] Starting movement test");
             _isTestingMovement = true;
             _positionHistory.Clear();
             _testTimer = 0f;
         }
 
+        public void Update(GameTime gameTime)
+        {
+            if (_isTestingMovement)
+            {
+                _positionHistory.Add(_movementController.Position);
+                _testTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (_testTimer >= TEST_DURATION)
+                {
+                    AnalyzeMovementSmoothness();
+                    _isTestingMovement = false;
+                }
+            }
+        }
+
         public void AnalyzeMovementSmoothness()
         {
             if (_positionHistory.Count < 3)
+            {
+                Debug.WriteLine("[CartDebugVisualizer] Not enough positions for analysis");
                 return;
+            }
 
             // Calculate velocity and acceleration magnitudes
             List<float> velocities = new();
@@ -207,7 +259,7 @@ namespace SplineMiner
             float avgAcceleration = accelerations.Count > 0 ? accelerations.Sum() / accelerations.Count : 0;
             float maxAcceleration = accelerations.Count > 0 ? accelerations.Max() : 0;
             
-            Debug.WriteLine($"Movement analysis complete:");
+            Debug.WriteLine($"[CartDebugVisualizer] Movement analysis complete:");
             Debug.WriteLine($"- Average velocity: {avgVelocity:F2} pixels per frame");
             Debug.WriteLine($"- Average acceleration: {avgAcceleration:F2}");
             Debug.WriteLine($"- Maximum acceleration: {maxAcceleration:F2}");
@@ -225,6 +277,8 @@ namespace SplineMiner
         private Texture2D _debugTexture;
         private bool _showDebugInfo = true;
         private float _t = 0f;
+        private bool _isTestRunning = false;
+        private const float TEST_SPEED = 200f; // Speed in pixels per second
 
         public Texture2D Texture { get; set; }
         public Texture2D DebugTexture => _debugTexture;
@@ -243,13 +297,20 @@ namespace SplineMiner
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (_inputManager.Forward())
-            {
-                _t += _movementController.Speed * deltaTime;
+            if (_debugVisualizer.IsTestingMovement) {
+                _t += TEST_SPEED * deltaTime;
             }
-            else if (_inputManager.Backward())
+            else
             {
-                _t -= _movementController.Speed * deltaTime;
+                // Normal user-controlled movement
+                if (_inputManager.Forward())
+                {
+                    _t += _movementController.Speed * deltaTime;
+                }
+                else if (_inputManager.Backward())
+                {
+                    _t -= _movementController.Speed * deltaTime;
+                }
             }
 
             _movementController.CurrentDistance = _t;
@@ -259,8 +320,10 @@ namespace SplineMiner
 
             if (_inputManager.IsKeyPressed(Keys.T))
             {
+                Debug.WriteLine("[CartController] T key pressed, starting movement test");
                 _debugVisualizer.StartMovementTest();
             }
+            _debugVisualizer.Update(gameTime);
         }
 
         public void Draw(SpriteBatch spriteBatch)
