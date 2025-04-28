@@ -64,6 +64,23 @@ namespace SplineMiner
             return _currentMouseState.LeftButton == ButtonState.Pressed;
         }
 
+        public bool IsRightMousePressed()
+        {
+            return _currentMouseState.RightButton == ButtonState.Pressed && 
+                   _previousMouseState.RightButton == ButtonState.Released;
+        }
+        
+        public bool IsRightMouseReleased()
+        {
+            return _currentMouseState.RightButton == ButtonState.Released && 
+                   _previousMouseState.RightButton == ButtonState.Pressed;
+        }
+        
+        public bool IsRightMouseHeld()
+        {
+            return _currentMouseState.RightButton == ButtonState.Pressed;
+        }
+
         public bool IsMouseWheelScrolled()
         {
             return _currentMouseState.ScrollWheelValue != _previousMouseState.ScrollWheelValue;

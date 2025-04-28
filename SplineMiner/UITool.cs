@@ -3,8 +3,7 @@ namespace SplineMiner
     public enum UITool
     {
         None,
-        PlaceTrack,
-        EditTrack,
+        Track,    // Combined place/edit functionality
         DeleteTrack
     }
 } 

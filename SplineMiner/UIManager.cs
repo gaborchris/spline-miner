@@ -86,20 +86,15 @@ namespace SplineMiner
                 string text = $"Tool {i + 1}";
                 UITool tool = UITool.None;
 
-                // Assign textures and tools to first three buttons
+                // Assign textures and tools to first two buttons
                 switch (i)
                 {
                     case 0:
                         texture = _greenCircle;
-                        text = "Place";
-                        tool = UITool.PlaceTrack;
+                        text = "Track";
+                        tool = UITool.Track;
                         break;
                     case 1:
-                        texture = _blueCircle;
-                        text = "Edit";
-                        tool = UITool.EditTrack;
-                        break;
-                    case 2:
                         texture = _redCircle;
                         text = "Delete";
                         tool = UITool.DeleteTrack;
