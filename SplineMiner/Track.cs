@@ -122,12 +122,14 @@ namespace SplineMiner
             }
         }
 
-        public void MoveSelectedPoint(Vector2 position)
+        public void MoveSelectedPoint(Vector2 screenPosition)
         {
             if (_selectedNodeIndex >= _placedNodes.Count && _selectedNodeIndex < _placedNodes.Count + _shadowNodes.Count)
             {
                 int shadowIndex = _selectedNodeIndex - _placedNodes.Count;
-                _shadowNodes[shadowIndex].Position = position;
+                // Convert screen position to world position
+                Vector2 worldPosition = CameraManager.Instance.ScreenToWorld(screenPosition);
+                _shadowNodes[shadowIndex].Position = worldPosition;
                 RecalculateArcLength();
             }
         }
