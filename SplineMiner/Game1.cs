@@ -122,34 +122,33 @@ namespace SplineMiner
             
             switch (_uiManager.CurrentTool)
             {
-                case UITool.PlaceTrack:
+                case UITool.Track:
                     _track.UpdatePreview(mousePosition);
-                    if (_inputManager.IsLeftMousePressed())
+                    
+                    // Handle right-click drag for editing existing points
+                    if (_inputManager.IsRightMousePressed())
                     {
-                        if (_track.ControlPoints.Count == 0 || !_track.IsHoveringEndpoint)
-                        {
-                            _track.AddPoint(mousePosition);
-                        }
-                    }
-                    break;
-
-                case UITool.EditTrack:
-                    if (_inputManager.IsLeftMousePressed())
-                    {
-                        // Check if we're clicking on a control point
                         int pointIndex = _track.GetHoveredPointIndex(mousePosition);
                         if (pointIndex != -1)
                         {
                             _track.SelectPoint(pointIndex);
                         }
                     }
-                    else if (_inputManager.IsLeftMouseHeld())
+                    else if (_inputManager.IsRightMouseHeld())
                     {
                         _track.MoveSelectedPoint(mousePosition);
                     }
-                    else if (_inputManager.IsLeftMouseReleased())
+                    else if (_inputManager.IsRightMouseReleased())
                     {
                         _track.ReleaseSelectedPoint();
+                    }
+                    // Handle left-click for placing new points
+                    else if (_inputManager.IsLeftMousePressed())
+                    {
+                        if (_track.ControlPoints.Count == 0 || !_track.IsHoveringEndpoint)
+                        {
+                            _track.AddPoint(mousePosition);
+                        }
                     }
                     break;
 
