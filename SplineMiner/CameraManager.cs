@@ -29,6 +29,7 @@ namespace SplineMiner
         public Matrix Transform => _transform;
         public Vector2 Position => _position;
         public float Zoom => _zoom;
+        public Viewport Viewport => _viewport;
 
         private CameraManager()
         {
