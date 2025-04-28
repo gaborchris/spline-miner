@@ -3,40 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SplineMiner.Core;
 
 namespace SplineMiner
 {
-    // Core interfaces
-    public interface ISplineCalculator
-    {
-        Vector2 GetPoint(float t);
-        float GetParameterForDistance(float distance, float totalLength);
-        float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40);
-    }
-
-    public interface ICache<TKey, TValue>
-    {
-        bool TryGetValue(TKey key, out TValue value);
-        void SetValue(TKey key, TValue value);
-        void Clear();
-    }
-
-    public interface ITrackRenderer
-    {
-        void Draw(SpriteBatch spriteBatch, ITrack track);
-        void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture);
-    }
-
-    // Core track interface
-    public interface ITrack
-    {
-        Vector2 GetPointByDistance(float distance);
-        float GetRotationAtDistance(float distance);
-        float TotalArcLength { get; }
-        void Draw(SpriteBatch spriteBatch);
-        void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture);
-    }
-
     // Spline calculation component
     public class SplineCalculator : ISplineCalculator
     {
