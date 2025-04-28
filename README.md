@@ -1,6 +1,8 @@
 # Spline Miner
 A fun and interactive game designed to help players build intuition around splines while enjoying an engaging experience!
 
+![Spline Miner Concept Art](https://github.com/gaborchris/spline-miner/blob/main/spline-miner.png)
+
 ---
 
 ## MVP Features
