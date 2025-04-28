@@ -86,7 +86,7 @@ namespace SplineMiner
             }
 
             // Initialize UI manager
-            _uiManager = new UIManager(_uiFont);
+            _uiManager = new UIManager(_uiFont, GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)

@@ -4,22 +4,17 @@ using Microsoft.Xna.Framework.Input;
 
 namespace SplineMiner
 {
-    public class UIButton(Rectangle bounds, string text, UITool tool, SpriteFont font)
+    public class UIButton(Rectangle bounds, string text, UITool tool, SpriteFont font, Texture2D? texture = null)
     {
         private bool _isHovered;
         private bool _isSelected;
-        private Color _normalColor = Color.Gray;
-        private Color _hoverColor = Color.LightGray;
-        private Color _selectedColor = Color.White;
+        private Color _normalColor = Color.Gray * 0.7f;
+        private Color _hoverColor = Color.LightGray * 0.7f;
+        private Color _selectedColor = Color.White * 0.7f;
         private Color _textColor = Color.Black;
 
         public UITool Tool => tool;
         public bool IsSelected => _isSelected;
-
-        public void Select()
-        {
-            _isSelected = true;
-        }
 
         public void Update(Vector2 mousePosition, bool isMouseClicked)
         {
@@ -35,6 +30,11 @@ namespace SplineMiner
             _isSelected = false;
         }
 
+        public void Select()
+        {
+            _isSelected = true;
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             Color buttonColor = _isSelected ? _selectedColor : (_isHovered ? _hoverColor : _normalColor);
@@ -44,13 +44,27 @@ namespace SplineMiner
             pixel.SetData(new[] { Color.White });
             spriteBatch.Draw(pixel, bounds, buttonColor);
 
-            // Draw button text
-            Vector2 textSize = font.MeasureString(text);
-            Vector2 textPosition = new Vector2(
-                bounds.X + (bounds.Width - textSize.X) / 2,
-                bounds.Y + (bounds.Height - textSize.Y) / 2
-            );
-            spriteBatch.DrawString(font, text, textPosition, _textColor);
+            // Draw texture if available
+            if (texture != null)
+            {
+                Rectangle textureBounds = new Rectangle(
+                    bounds.X + bounds.Width / 4,
+                    bounds.Y + bounds.Height / 4,
+                    bounds.Width / 2,
+                    bounds.Height / 2
+                );
+                spriteBatch.Draw(texture, textureBounds, Color.White);
+            }
+            else
+            {
+                // Draw button text if no texture
+                Vector2 textSize = font.MeasureString(text);
+                Vector2 textPosition = new Vector2(
+                    bounds.X + (bounds.Width - textSize.X) / 2,
+                    bounds.Y + (bounds.Height - textSize.Y) / 2
+                );
+                spriteBatch.DrawString(font, text, textPosition, _textColor);
+            }
         }
     }
 } 
