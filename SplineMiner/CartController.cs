@@ -14,16 +14,25 @@ namespace SplineMiner
         // 
         private Vector2 WorldPosition2D;
         public Texture2D Texture { get; set; }
+        public Texture2D DebugTexture { get; private set; }
+        public float CurrentDistance => _t;
         private int _currentTrackIndex = 0;
         InputManager _inputManager;
         private float _t = 0f;
         private float _speed = 300; // Pixels per second
+        private float _rotation = 0f;
+        private bool _showDebugInfo = true;
+        
+        // Wheel positions
+        private const float WHEEL_DISTANCE = 20f; // Distance between front and back wheels
+        private Vector2 _frontWheelPosition;
+        private Vector2 _backWheelPosition;
         
         // For movement smoothness testing
         private bool _isTestingMovement = false;
         private List<Vector2> _positionHistory = new List<Vector2>();
         private float _testTimer = 0f;
-        private const float TEST_DURATION = 5.0f; // 5 seconds of test
+        private const float TEST_DURATION = 5.0f;
 
         // CartController is only meant to exist on a track
         // There should be an entirely separate controler for when a player hops out the cart
@@ -38,7 +47,6 @@ namespace SplineMiner
             _isTestingMovement = true;
             _positionHistory.Clear();
             _testTimer = 0f;
-            // _t = 0f; // Start from beginning of track
             Debug.WriteLine("Starting cart movement test for 5 seconds");
         }
 
@@ -134,18 +142,16 @@ namespace SplineMiner
             {
                 UpdateMovementTest(gameTime);
                 WorldPosition2D = track.GetPointByDistance(_t);
+                UpdateWheelPositions(track);
+                UpdateRotation();
                 track.UpdateCurrentPosition(_t);
                 return;
             }
-
-            // Store previous position for interpolation
-            Vector2 previousPosition = WorldPosition2D;
 
             // Normal movement control
             if (_inputManager.Forward())
             {
                 float newT = _t + _speed * deltaTime;
-                // Only move forward if we haven't reached the traversable limit
                 if (newT <= track.TotalArcLength)
                 {
                     _t = newT;
@@ -157,11 +163,11 @@ namespace SplineMiner
             }
             
             // Get new position
-            Vector2 newPosition = track.GetPointByDistance(_t);
+            WorldPosition2D = track.GetPointByDistance(_t);
             
-            // Smooth position transition
-            float smoothFactor = Math.Min(1.0f, deltaTime * 10.0f); // Adjust this value to control smoothness
-            WorldPosition2D = Vector2.Lerp(previousPosition, newPosition, smoothFactor);
+            // Update wheel positions and rotation
+            UpdateWheelPositions(track);
+            UpdateRotation();
             
             track.UpdateCurrentPosition(_t);
             
@@ -178,18 +184,89 @@ namespace SplineMiner
             }
         }
 
+        private void UpdateWheelPositions(Track track)
+        {
+            // Calculate front and back wheel positions based on current position
+            float frontDistance = _t + WHEEL_DISTANCE;
+            float backDistance = _t - WHEEL_DISTANCE;
+            
+            // Handle wrapping around the track
+            if (frontDistance > track.TotalArcLength)
+                frontDistance -= track.TotalArcLength;
+            if (backDistance < 0)
+                backDistance += track.TotalArcLength;
+            
+            _frontWheelPosition = track.GetPointByDistance(frontDistance);
+            _backWheelPosition = track.GetPointByDistance(backDistance);
+        }
+
+        private void UpdateRotation()
+        {
+            // Calculate direction vector from back to front wheel
+            Vector2 direction = _frontWheelPosition - _backWheelPosition;
+            direction.Normalize();
+            
+            // Calculate rotation angle
+            float targetRotation = (float)Math.Atan2(direction.Y, direction.X);
+            
+            // Smoothly interpolate to target rotation
+            // _rotation = MathHelper.Lerp(_rotation, targetRotation, _rotationSmoothness);
+            _rotation = targetRotation;
+        }
+
+        public void LoadDebugTexture(GraphicsDevice graphicsDevice)
+        {
+            DebugTexture = new Texture2D(graphicsDevice, 1, 1);
+            DebugTexture.SetData(new[] { Color.White });
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
-            // Draw cart
-            spriteBatch.Draw(Texture, WorldPosition2D, null, Color.Red, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
+            // Calculate the origin at the bottom center of the texture
+            Vector2 origin = new Vector2(Texture.Width / 2f, Texture.Height);
+            
+            // Draw cart with rotation
+            spriteBatch.Draw(
+                Texture,
+                WorldPosition2D,
+                null,
+                Color.Red,
+                _rotation,
+                origin,
+                1.0f,
+                SpriteEffects.None,
+                0f
+            );
+            
+            if (_showDebugInfo && DebugTexture != null)
+            {
+                // Draw wheel positions
+                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _frontWheelPosition, 3, Color.Green);
+                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _backWheelPosition, 3, Color.Blue);
+                
+                // Draw line between wheels
+                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, _frontWheelPosition, _backWheelPosition, Color.Yellow, 1);
+                
+                // Draw cart's position point
+                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, WorldPosition2D, 3, Color.White);
+            }
             
             // Draw path history during testing
             if (_isTestingMovement)
             {
                 foreach (Vector2 pos in _positionHistory)
                 {
-                    spriteBatch.Draw(Texture, pos, null, Color.Yellow * 0.3f, 0f, 
-                        Vector2.Zero, 0.5f, SpriteEffects.None, 0f);
+                    spriteBatch.Draw(
+                        Texture,
+                        pos,
+                        null,
+                        Color.Yellow * 0.3f,
+                        _rotation,
+                        origin,
+                        0.5f,
+                        SpriteEffects.None,
+                        0f
+                    );
                 }
             }
         }

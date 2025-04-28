@@ -58,6 +58,7 @@ namespace SplineMiner
 
             // Use this texture for your player or minecart
             _player.Texture = minecartTexture;
+            _player.LoadDebugTexture(GraphicsDevice);
 
             // Create a simple debug font - since we don't have a real font loaded
             try 
@@ -172,6 +173,12 @@ namespace SplineMiner
 
             // Draw the track
             _track.Draw(_spriteBatch);
+
+            // Draw debug info for the track
+            if (_showDebugInfo)
+            {
+                _track.DrawDebugInfo(_spriteBatch, _player.CurrentDistance, _player.DebugTexture);
+            }
 
             // Draw the player
             _player.Draw(_spriteBatch);

@@ -390,5 +390,61 @@ namespace SplineMiner
             _t = distance;
         }
 
+        public float GetRotationAtDistance(float distance)
+        {
+            // Get the current point and a point slightly ahead
+            Vector2 currentPoint = GetPointByDistance(distance);
+            Vector2 nextPoint = GetPointByDistance(distance + 1.0f);
+            
+            // Calculate the direction vector
+            Vector2 direction = nextPoint - currentPoint;
+            
+            // Calculate the angle in radians
+            float angle = (float)Math.Atan2(direction.Y, direction.X);
+            
+            return angle;
+        }
+
+        // Helper method to get a point slightly ahead for better rotation calculation
+        private Vector2 GetPointAhead(float distance, float lookAhead = 1.0f)
+        {
+            float nextDistance = distance + lookAhead;
+            if (nextDistance > _totalArcLength)
+            {
+                nextDistance -= _totalArcLength;
+            }
+            return GetPointByDistance(nextDistance);
+        }
+
+        public void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture)
+        {
+            // Get current point and rotation
+            Vector2 currentPoint = GetPointByDistance(distance);
+            float forwardAngle = GetRotationAtDistance(distance);
+            float normalAngle = forwardAngle + MathHelper.PiOver2; // Normal is 90 degrees from forward
+            
+            // Draw tangent line (forward direction)
+            const float TANGENT_LENGTH = 50f;
+            Vector2 tangentEnd = currentPoint + new Vector2(
+                (float)Math.Cos(forwardAngle) * TANGENT_LENGTH,
+                (float)Math.Sin(forwardAngle) * TANGENT_LENGTH
+            );
+            
+            // Draw tangent line
+            DrawingHelpers.DrawLine(spriteBatch, debugTexture, currentPoint, tangentEnd, Color.Green, 2);
+            
+            // Draw normal line (perpendicular to tangent)
+            Vector2 normalEnd = currentPoint + new Vector2(
+                (float)Math.Cos(normalAngle) * TANGENT_LENGTH,
+                (float)Math.Sin(normalAngle) * TANGENT_LENGTH
+            );
+            
+            // Draw normal line
+            DrawingHelpers.DrawLine(spriteBatch, debugTexture, currentPoint, normalEnd, Color.Red, 2);
+            
+            // Draw current point
+            DrawingHelpers.DrawCircle(spriteBatch, debugTexture, currentPoint, 5, Color.Yellow);
+        }
+
     }
 }
