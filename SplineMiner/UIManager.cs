@@ -90,17 +90,17 @@ namespace SplineMiner
                 switch (i)
                 {
                     case 0:
-                        texture = _redCircle;
+                        texture = _greenCircle;
                         text = "Place";
                         tool = UITool.PlaceTrack;
                         break;
                     case 1:
-                        texture = _greenCircle;
+                        texture = _blueCircle;
                         text = "Edit";
                         tool = UITool.EditTrack;
                         break;
                     case 2:
-                        texture = _blueCircle;
+                        texture = _redCircle;
                         text = "Delete";
                         tool = UITool.DeleteTrack;
                         break;
@@ -136,7 +136,6 @@ namespace SplineMiner
             {
                 float delta = inputManager.GetMouseWheelDelta();
                 float newOffset = Math.Clamp(_scrollOffset + delta, 0, TOTAL_BUTTONS - 1);
-                
                 if (newOffset != _scrollOffset)
                 {
                     SetToolIndex((int)newOffset);
@@ -144,14 +143,13 @@ namespace SplineMiner
             }
 
             // Update buttons
-            if (inputManager.IsLeftMousePressed()) {
-                Vector2 mousePosition = inputManager.MousePosition;
-                for (int i = 0; i < _buttons.Count; i++) {
-                    _buttons[i].Update(mousePosition, true);
-                    if (_buttons[i].IsSelected)
-                    {
-                        SetToolIndex(i);
-                    }
+            bool isMouseClicked = inputManager.IsLeftMousePressed();
+            Vector2 mousePosition = inputManager.MousePosition;
+            for (int i = 0; i < _buttons.Count; i++) {
+                _buttons[i].Update(mousePosition, isMouseClicked);
+                if (_buttons[i].IsSelected)
+                {
+                    SetToolIndex(i);
                 }
             }
         }
