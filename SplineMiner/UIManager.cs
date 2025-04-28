@@ -156,12 +156,6 @@ namespace SplineMiner
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            // Draw UI panel background
-            Texture2D pixel = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
-            pixel.SetData(new[] { Color.White });
-            spriteBatch.Draw(pixel, _uiPanel, Color.Black * 0.5f);
-
-            // Draw all buttons
             foreach (var button in _buttons)
             {
                 button.Draw(spriteBatch);

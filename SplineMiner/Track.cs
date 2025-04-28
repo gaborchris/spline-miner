@@ -15,6 +15,7 @@ namespace SplineMiner
         private List<Vector2> _debugPoints = new List<Vector2>();
         private bool _enableDebugVisualization = true;
         private float _totalArcLength = 0f;
+        private TrackPreview _preview;
 
         /*
         A track is a multidimensional line f(t) = (x(t), y(t))
@@ -44,6 +45,7 @@ namespace SplineMiner
         {
             _pointTexture = new Texture2D(graphicsDevice, 1, 1);
             _pointTexture.SetData(new[] { Color.White });
+            _preview = new TrackPreview(this, graphicsDevice);
         }
 
         public int GetHoveredPointIndex(Vector2 mousePosition)
@@ -149,6 +151,9 @@ namespace SplineMiner
                 Color pointColor = i == _selectedPointIndex ? Color.Red : Color.Blue;
                 DrawCircle(spriteBatch, ControlPoints[i], CONTROL_POINT_RADIUS, pointColor);
             }
+
+            // Draw preview if available
+            _preview?.Draw(spriteBatch);
         }
 
         private void DrawCircle(SpriteBatch spriteBatch, Vector2 center, float radius, Color color)
@@ -335,5 +340,12 @@ namespace SplineMiner
             ControlPoints.Add(position);
             RecalculateArcLength();
         }
+
+        public void UpdatePreview(Vector2 mousePosition)
+        {
+            _preview.Update(mousePosition);
+        }
+
+        public bool IsHoveringEndpoint => _preview?.IsHoveringEndpoint ?? false;
     }
 }
