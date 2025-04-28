@@ -72,25 +72,15 @@ namespace SplineMiner
 
             // Initialize UI manager
             _uiManager = new UIManager(_uiFont, GraphicsDevice);
-            // Initialize the track with predefined points
-            _track = new Track(new List<Vector2>
-                       {
-                          // Simple stretched out semi-sinusoidal pattern
-                          new(100, 300), // Start point
-                          new(200, 250), // First peak
-                          new(300, 350), // First trough
-                          new(400, 250), // Second peak
-                          new(500, 350), // Second trough
-                          new(600, 250), // Third peak
-                          new(700, 300), // End point
-                       }, _uiManager);
+            
+            // Initialize the track with test data
+            _track = new Track(TestData.TestTrack.GetTestTrackNodes(), _uiManager);
+            
             // Load track textures
             _track.LoadContent(GraphicsDevice);
 
             // Precalculate arc length for the track
             _track.RecalculateArcLength();
-
-
         }
 
         protected override void Update(GameTime gameTime)

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System;
 
 namespace SplineMiner
 {
@@ -37,7 +38,7 @@ namespace SplineMiner
             _isTestingMovement = true;
             _positionHistory.Clear();
             _testTimer = 0f;
-            _t = 0f; // Start from beginning of track
+            // _t = 0f; // Start from beginning of track
             Debug.WriteLine("Starting cart movement test for 5 seconds");
         }
 
@@ -133,8 +134,12 @@ namespace SplineMiner
             {
                 UpdateMovementTest(gameTime);
                 WorldPosition2D = track.GetPointByDistance(_t);
+                track.UpdateCurrentPosition(_t);
                 return;
             }
+
+            // Store previous position for interpolation
+            Vector2 previousPosition = WorldPosition2D;
 
             // Normal movement control
             if (_inputManager.Forward())
@@ -151,8 +156,14 @@ namespace SplineMiner
                 _t -= _speed * deltaTime;
             }
             
-            // Use the improved GetPointByDistance method
-            WorldPosition2D = track.GetPointByDistance(_t);
+            // Get new position
+            Vector2 newPosition = track.GetPointByDistance(_t);
+            
+            // Smooth position transition
+            float smoothFactor = Math.Min(1.0f, deltaTime * 10.0f); // Adjust this value to control smoothness
+            WorldPosition2D = Vector2.Lerp(previousPosition, newPosition, smoothFactor);
+            
+            track.UpdateCurrentPosition(_t);
             
             // Toggle movement test with T key
             if (_inputManager.IsKeyPressed(Keys.T))

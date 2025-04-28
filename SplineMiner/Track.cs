@@ -13,11 +13,12 @@ namespace SplineMiner
         private int _selectedNodeIndex = -1;
         private Texture2D _pointTexture;
         private readonly List<Vector2> _debugPoints = [];
-        private readonly bool _enableDebugVisualization = false;
+        private readonly bool _enableDebugVisualization = true;
         private float _totalArcLength = 0f;
         private TrackPreview _preview;
         private const int MIN_SHADOW_NODES = 3; // Minimum needed for Catmull-Rom
         private readonly UIManager _uiManager;
+        private float _t = 0f;
 
         public IReadOnlyList<PlacedTrackNode> PlacedNodes => _placedNodes.AsReadOnly();
         public IReadOnlyList<ShadowTrackNode> ShadowNodes => _shadowNodes.AsReadOnly();
@@ -157,10 +158,12 @@ namespace SplineMiner
                 {
                     _placedNodes.Add(new PlacedTrackNode(_shadowNodes[i].Position));
                 }
+                
+                // Only update shadow nodes and recalculate if we actually placed nodes
+                UpdateShadowNodes();
+                RecalculateArcLength();
             }
-
-            UpdateShadowNodes();
-            RecalculateArcLength();
+            // If we didn't click on a shadow node, do nothing
         }
 
         public void DeletePoint(int index)
@@ -284,9 +287,11 @@ namespace SplineMiner
             _totalArcLength = ComputeArcLength(0f, _placedNodes.Count - 1, 100);
         }
 
-        private float ComputeArcLength(float tStart, float tEnd, int steps = 40)
+        private float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40)
         {
             float arcLength = 0f;
+            // Increase steps based on track length
+            int steps = baseSteps * (int)Math.Ceiling((tEnd - tStart) / 2.0f);
             float dt = (tEnd - tStart) / steps;
 
             Vector2 previousPoint = GetPlacedTrackPoint(tStart);
@@ -294,16 +299,23 @@ namespace SplineMiner
             {
                 float t = tStart + i * dt;
                 Vector2 currentPoint = GetPlacedTrackPoint(t);
-                arcLength += Vector2.Distance(previousPoint, currentPoint);
-
-                if (_enableDebugVisualization && i % 5 == 0)
+                float segmentLength = Vector2.Distance(previousPoint, currentPoint);
+                
+                // If segment is too long, subdivide it
+                if (segmentLength > 10.0f)
                 {
-                    _debugPoints.Add(currentPoint);
+                    float midT = tStart + (i - 0.5f) * dt;
+                    Vector2 midPoint = GetPlacedTrackPoint(midT);
+                    arcLength += Vector2.Distance(previousPoint, midPoint);
+                    arcLength += Vector2.Distance(midPoint, currentPoint);
                 }
-
+                else
+                {
+                    arcLength += segmentLength;
+                }
+                
                 previousPoint = currentPoint;
             }
-
             return arcLength;
         }
 
@@ -319,7 +331,10 @@ namespace SplineMiner
             float tMid = 0f;
             float lastArcLength = 0f;
 
-            for (int i = 0; i < 30; i++)
+            // Increase precision for longer tracks
+            int maxIterations = 30 + (int)(_placedNodes.Count * 0.5f);
+
+            for (int i = 0; i < maxIterations; i++)
             {
                 tMid = (tMin + tMax) / 2f;
                 float arcLength = ComputeArcLength(0f, tMid);
@@ -351,14 +366,28 @@ namespace SplineMiner
         public void VisualizeEquallySpacedPoints(int count)
         {
             _debugPoints.Clear();
+            
+            // Get the current position's distance along the track
+            float currentDistance = _t;
             float stepSize = _totalArcLength / count;
-
+            
+            // Start from current position and go forward
             for (int i = 0; i < count; i++)
             {
-                float distance = i * stepSize;
+                float distance = currentDistance + (i * stepSize);
+                // Wrap around if we exceed the total length
+                if (distance > _totalArcLength)
+                {
+                    distance -= _totalArcLength;
+                }
                 Vector2 point = GetPointByDistance(distance);
                 _debugPoints.Add(point);
             }
+        }
+
+        public void UpdateCurrentPosition(float distance)
+        {
+            _t = distance;
         }
 
     }
