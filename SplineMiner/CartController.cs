@@ -14,10 +14,15 @@ namespace SplineMiner
         // 
         private Vector2 WorldPosition2D;
         public Texture2D Texture { get; set; }
+        public Texture2D DebugTexture { get; private set; }
+        public float CurrentDistance => _t;
         private int _currentTrackIndex = 0;
         InputManager _inputManager;
         private float _t = 0f;
         private float _speed = 300; // Pixels per second
+        private float _rotation = 0f;
+        private float _rotationSmoothness = 0.1f; // Adjust this to control rotation smoothness
+        private bool _showDebugInfo = true;
         
         // For movement smoothness testing
         private bool _isTestingMovement = false;
@@ -134,6 +139,9 @@ namespace SplineMiner
             {
                 UpdateMovementTest(gameTime);
                 WorldPosition2D = track.GetPointByDistance(_t);
+                // Update rotation during test
+                float testRotation = track.GetRotationAtDistance(_t);
+                _rotation = MathHelper.Lerp(_rotation, testRotation, _rotationSmoothness);
                 track.UpdateCurrentPosition(_t);
                 return;
             }
@@ -160,8 +168,12 @@ namespace SplineMiner
             Vector2 newPosition = track.GetPointByDistance(_t);
             
             // Smooth position transition
-            float smoothFactor = Math.Min(1.0f, deltaTime * 10.0f); // Adjust this value to control smoothness
+            float smoothFactor = Math.Min(1.0f, deltaTime * 10.0f);
             WorldPosition2D = Vector2.Lerp(previousPosition, newPosition, smoothFactor);
+            
+            // Update rotation
+            float currentRotation = track.GetRotationAtDistance(_t);
+            _rotation = MathHelper.Lerp(_rotation, currentRotation, _rotationSmoothness);
             
             track.UpdateCurrentPosition(_t);
             
@@ -178,18 +190,60 @@ namespace SplineMiner
             }
         }
 
+        public void LoadDebugTexture(GraphicsDevice graphicsDevice)
+        {
+            DebugTexture = new Texture2D(graphicsDevice, 1, 1);
+            DebugTexture.SetData(new[] { Color.White });
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
-            // Draw cart
-            spriteBatch.Draw(Texture, WorldPosition2D, null, Color.Red, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
+            // Calculate the origin at the bottom center of the texture
+            Vector2 origin = new Vector2(Texture.Width / 2f, Texture.Height);
+            
+            // Draw cart with rotation
+            spriteBatch.Draw(
+                Texture,
+                WorldPosition2D,
+                null,
+                Color.Red,
+                _rotation,
+                origin,
+                1.0f,
+                SpriteEffects.None,
+                0f
+            );
+            
+            if (_showDebugInfo && DebugTexture != null)
+            {
+                // Draw cart's forward direction
+                const float DIRECTION_LENGTH = 30f;
+                Vector2 directionEnd = WorldPosition2D + new Vector2(
+                    (float)Math.Cos(_rotation) * DIRECTION_LENGTH,
+                    (float)Math.Sin(_rotation) * DIRECTION_LENGTH
+                );
+                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, WorldPosition2D, directionEnd, Color.Blue, 2);
+                
+                // Draw cart's position point
+                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, WorldPosition2D, 3, Color.White);
+            }
             
             // Draw path history during testing
             if (_isTestingMovement)
             {
                 foreach (Vector2 pos in _positionHistory)
                 {
-                    spriteBatch.Draw(Texture, pos, null, Color.Yellow * 0.3f, 0f, 
-                        Vector2.Zero, 0.5f, SpriteEffects.None, 0f);
+                    spriteBatch.Draw(
+                        Texture,
+                        pos,
+                        null,
+                        Color.Yellow * 0.3f,
+                        _rotation,
+                        origin,
+                        0.5f,
+                        SpriteEffects.None,
+                        0f
+                    );
                 }
             }
         }
