@@ -16,6 +16,11 @@ namespace SplineMiner
         public UITool Tool => tool;
         public bool IsSelected => _isSelected;
 
+        public void Select()
+        {
+            _isSelected = true;
+        }
+
         public void Update(Vector2 mousePosition, bool isMouseClicked)
         {
             _isHovered = bounds.Contains(mousePosition);

@@ -238,10 +238,12 @@ namespace SplineMiner
                 float normalizedArcLength = arcLength / totalLength;
 
                 // Debug every few steps
+                /*
                 if (i % 10 == 0)
                 {
                     Debug.WriteLine($"Binary search step {i}: t={tMid}, arcLength={arcLength}, target={distance}");
                 }
+                */
 
                 // Check if we're close enough
                 if (Math.Abs(normalizedArcLength - normalizedTarget) < 0.001f)
@@ -287,10 +289,10 @@ namespace SplineMiner
             Vector2 point = GetPoint(t);
             
             // Debug every so often
-            if (Math.Floor(distance) % 50 == 0)
-            {
-                Debug.WriteLine($"Distance: {distance}, t: {t}, point: {point}");
-            }
+            // if (Math.Floor(distance) % 50 == 0)
+            // {
+            //     Debug.WriteLine($"Distance: {distance}, t: {t}, point: {point}");
+            // }
 
             return point;
         }
