@@ -10,6 +10,7 @@ A fun and interactive game designed to help players build intuition around splin
 - [ ] **Player Control**:
   - [x] Movement on track
   - [ ] Movement when dismounted from the track system
+  - [ ] Automovement
 - [x] **Basic Spline System**:
   - [x] Basic spline system for track placement
   - [x] Ability to manipulate and drag splines
@@ -25,11 +26,16 @@ A fun and interactive game designed to help players build intuition around splin
   - [x] Camera follows player on track
   - [ ] Camera follows player when dismounted
   - [x] World spans a large area and camera can be moved around
-  - [ ] Player rotates on the track, but camera stays axis locked with world
+  - [x] Player rotates on the track, but camera stays axis locked with world
 - [ ] **Collision**:
   - [ ] Interaction with the floor
 - [ ] **Destructible Blocks**:
   - [ ] Breakable world tiles for dynamic gameplay
+- [ ] **Code Quality**:
+  - [ ] Clean, understandable interaces
+  - [ ] Modules separated into separate packages and namespaces
+  - [ ] Changes to a file cause isolated behavior change
+  - [ ] Testable physics components
 
 ---
 
@@ -51,8 +57,8 @@ The following features are not included in the current scope:
 - [ ] **Player Controls**:
   - [x] Keyboard-based control while on the track
   - [ ] Dismounting from the track system
-- [ ] **Camera System**:
-  - [ ] Smooth and intuitive camera behavior
+- [x] **Camera System**:
+  - [x] Smooth and intuitive camera behavior
 - [ ] **Physics**:
   - [ ] Collision physics with the floor
   - [ ] Destructible world tiles for interactive environments
