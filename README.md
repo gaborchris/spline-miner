@@ -9,13 +9,14 @@ A fun and interactive game designed to help players build intuition around splin
   - [x] Movement on track
   - [ ] Movement when dismounted from the track system
 - [ ] **Spline System**:
-  - [ ] Basic spline system for track placement
-  - [ ] Ability to manipulate and drag splines
+  - [x] Basic spline system for track placement
+  - [x] Ability to manipulate and drag splines
   - [ ] Splines should only be moveable in pending placement state
   - [ ] Once placed, splines should be fixed in position to prevent odd calculations.
+  - [ ] Destructible track should create two splines on either side of the break point
 - [ ] **Camera**:
   - [ ] Camera follows player on track
-  - [ ] Camera follows player when dismounted]
+  - [ ] Camera follows player when dismounted
   - [ ] World spans a large area and camera can be moved around
 - [ ] **Collision**:
   - [ ] Interaction with the floor
@@ -26,9 +27,9 @@ A fun and interactive game designed to help players build intuition around splin
 
 ## Out of Scope
 The following features are not included in the current scope:
-- [x] Enemies
-- [x] Items or inventory system
-- [x] Advanced lighting effects
+- [] Enemies
+- [] Items or inventory system
+- [] Advanced lighting effects
 
 ---
 
@@ -37,10 +38,10 @@ The following features are not included in the current scope:
 - [x] **Spline Interaction**:
   - [x] Drag and manipulate curves (does not need to be a mathematically correct spline)
   - [x] Simple 3-point drag system
-- [ ] **Track Placement**:
-  - [ ] Ability to place tracks dynamically
+- [x] **Track Placement**:
+  - [x] Ability to place tracks dynamically
 - [ ] **Player Controls**:
-  - [ ] Keyboard-based control while on the track
+  - [x] Keyboard-based control while on the track
   - [ ] Dismounting from the track system
 - [ ] **Camera System**:
   - [ ] Smooth and intuitive camera behavior
