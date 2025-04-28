@@ -29,18 +29,7 @@ namespace SplineMiner
 
         protected override void Initialize()
         {
-            // Initialize the track with predefined points
-            _track = new Track(new List<Vector2>
-                       {
-                          // Simple stretched out semi-sinusoidal pattern
-                          new(100, 300), // Start point
-                          new(200, 250), // First peak
-                          new(300, 350), // First trough
-                          new(400, 250), // Second peak
-                          new(500, 350), // Second trough
-                          new(600, 250), // Third peak
-                          new(700, 300), // End point
-                       });
+
 
             // Initialize the player at the start of the track
             _inputManager = new InputManager();
@@ -53,12 +42,6 @@ namespace SplineMiner
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             
-            // Load track textures
-            _track.LoadContent(GraphicsDevice);
-
-            // Precalculate arc length for the track
-            _track.RecalculateArcLength();
-
             // Load player texture (placeholder: a white rectangle)
             var w = 64;
             var h = (int)(w * 0.67);
@@ -87,6 +70,25 @@ namespace SplineMiner
 
             // Initialize UI manager
             _uiManager = new UIManager(_uiFont, GraphicsDevice);
+            // Initialize the track with predefined points
+            _track = new Track(new List<Vector2>
+                       {
+                          // Simple stretched out semi-sinusoidal pattern
+                          new(100, 300), // Start point
+                          new(200, 250), // First peak
+                          new(300, 350), // First trough
+                          new(400, 250), // Second peak
+                          new(500, 350), // Second trough
+                          new(600, 250), // Third peak
+                          new(700, 300), // End point
+                       }, _uiManager);
+            // Load track textures
+            _track.LoadContent(GraphicsDevice);
+
+            // Precalculate arc length for the track
+            _track.RecalculateArcLength();
+
+
         }
 
         protected override void Update(GameTime gameTime)
@@ -123,32 +125,22 @@ namespace SplineMiner
             switch (_uiManager.CurrentTool)
             {
                 case UITool.Track:
-                    _track.UpdatePreview(mousePosition);
-                    
-                    // Handle right-click drag for editing existing points
-                    if (_inputManager.IsRightMousePressed())
+                    if (_inputManager.IsLeftMousePressed())
                     {
+                        // Check if we're clicking on a control point
                         int pointIndex = _track.GetHoveredPointIndex(mousePosition);
                         if (pointIndex != -1)
                         {
                             _track.SelectPoint(pointIndex);
                         }
                     }
-                    else if (_inputManager.IsRightMouseHeld())
+                    else if (_inputManager.IsLeftMouseHeld())
                     {
                         _track.MoveSelectedPoint(mousePosition);
                     }
-                    else if (_inputManager.IsRightMouseReleased())
+                    else if (_inputManager.IsLeftMouseReleased())
                     {
                         _track.ReleaseSelectedPoint();
-                    }
-                    // Handle left-click for placing new points
-                    else if (_inputManager.IsLeftMousePressed())
-                    {
-                        if (!_track.IsHoveringEndpoint)
-                        {
-                            _track.AddPoint(mousePosition);
-                        }
                     }
                     break;
 
@@ -162,6 +154,7 @@ namespace SplineMiner
                         }
                     }
                     break;
+
             }
             
             // Update hovered point for visual feedback

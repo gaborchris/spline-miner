@@ -44,31 +44,23 @@ namespace SplineMiner
             if (points.Length < 4) return;
             if (segments < 1) throw new ArgumentException("Segments must be greater than 0", nameof(segments));
 
-            // Calculate how many curve segments we can draw
-            int numCurveSegments = points.Length - 3;
-
-            // For each curve segment
-            for (int curveSegment = 0; curveSegment < numCurveSegments; curveSegment++)
+            // For each curve segment between the points
+            for (int i = 0; i < points.Length - 1; i++)
             {
-                // Draw the subdivided segments for this curve segment
-                for (int i = 0; i < segments; i++)
+                // Get 4 points needed for the Catmull-Rom spline
+                Vector2 p0 = points[Math.Max(i - 1, 0)];
+                Vector2 p1 = points[i];
+                Vector2 p2 = points[i + 1];
+                Vector2 p3 = points[Math.Min(i + 2, points.Length - 1)];
+
+                // Draw the subdivided segments
+                for (int j = 0; j < segments; j++)
                 {
-                    float t1 = i / (float)segments;
-                    float t2 = (i + 1) / (float)segments;
+                    float t1 = j / (float)segments;
+                    float t2 = (j + 1) / (float)segments;
 
-                    Vector2 point1 = SplineUtils.CatmullRom(
-                        points[curveSegment],
-                        points[curveSegment + 1],
-                        points[curveSegment + 2],
-                        points[curveSegment + 3],
-                        t1);
-
-                    Vector2 point2 = SplineUtils.CatmullRom(
-                        points[curveSegment],
-                        points[curveSegment + 1],
-                        points[curveSegment + 2],
-                        points[curveSegment + 3],
-                        t2);
+                    Vector2 point1 = SplineUtils.CatmullRom(p0, p1, p2, p3, t1);
+                    Vector2 point2 = SplineUtils.CatmullRom(p0, p1, p2, p3, t2);
 
                     DrawLine(spriteBatch, texture, point1, point2, color, thickness);
                 }
