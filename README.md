@@ -10,12 +10,17 @@ A fun and interactive game designed to help players build intuition around splin
 - [ ] **Player Control**:
   - [x] Movement on track
   - [ ] Movement when dismounted from the track system
-- [ ] **Spline System**:
+- [x] **Basic Spline System**:
   - [x] Basic spline system for track placement
   - [x] Ability to manipulate and drag splines
-  - [ ] Splines should only be moveable in pending placement state
-  - [ ] Once placed, splines should be fixed in position to prevent odd calculations.
+  - [x] Splines should only be moveable in pending placement state
+  - [x] Once placed, splines should be fixed in position to prevent odd calculations.
+- [ ] **More Advanced Spline Features**
   - [ ] Destructible track should create two splines on either side of the break point
+  - [ ] track splitter to change which track the player connects to
+  - [ ] track has multiple sides 
+  - [ ] track can form loops 
+  - [ ] one track can connect to another track
 - [ ] **Camera**:
   - [ ] Camera follows player on track
   - [ ] Camera follows player when dismounted
