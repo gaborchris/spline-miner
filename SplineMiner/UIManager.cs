@@ -8,10 +8,9 @@ namespace SplineMiner
 {
     public class UIManager
     {
-        private List<UIButton> _buttons;
-        private SpriteFont _font;
+        private readonly List<UIButton> _buttons;
+        private readonly SpriteFont _font;
         private UITool _currentTool;
-        private Rectangle _uiPanel;
         private float _scrollOffset;
         private const int BUTTON_SIZE = 50;
         private const int BUTTON_SPACING = 10;
@@ -19,17 +18,12 @@ namespace SplineMiner
         private const int TOTAL_BUTTONS = 8;
         private Texture2D _redCircle;
         private Texture2D _greenCircle;
-        private Texture2D _blueCircle;
-
         public UITool CurrentTool => _currentTool;
 
         public UIManager(SpriteFont font, GraphicsDevice graphicsDevice)
         {
             _font = font;
-            _buttons = new List<UIButton>();
-            _uiPanel = new Rectangle(PANEL_PADDING, PANEL_PADDING, 
-                                   TOTAL_BUTTONS * (BUTTON_SIZE + BUTTON_SPACING) + PANEL_PADDING,
-                                   BUTTON_SIZE + (2 * PANEL_PADDING));
+            _buttons = [];
             _currentTool = UITool.None;
             _scrollOffset = 0;
 
@@ -43,13 +37,12 @@ namespace SplineMiner
             int size = BUTTON_SIZE / 2;
             _redCircle = CreateCircleTexture(graphicsDevice, size, Color.Red);
             _greenCircle = CreateCircleTexture(graphicsDevice, size, Color.Green);
-            _blueCircle = CreateCircleTexture(graphicsDevice, size, Color.Blue);
         }
 
-        private Texture2D CreateCircleTexture(GraphicsDevice graphicsDevice, int radius, Color color)
+        private static Texture2D CreateCircleTexture(GraphicsDevice graphicsDevice, int radius, Color color)
         {
             int diameter = radius * 2;
-            Texture2D texture = new Texture2D(graphicsDevice, diameter, diameter);
+            Texture2D texture = new(graphicsDevice, diameter, diameter);
             Color[] data = new Color[diameter * diameter];
 
             for (int y = 0; y < diameter; y++)
@@ -57,7 +50,7 @@ namespace SplineMiner
                 for (int x = 0; x < diameter; x++)
                 {
                     int index = y * diameter + x;
-                    Vector2 pos = new Vector2(x - radius, y - radius);
+                    Vector2 pos = new(x - radius, y - radius);
                     if (pos.Length() <= radius)
                     {
                         data[index] = color;
@@ -81,7 +74,7 @@ namespace SplineMiner
             // Create buttons in a single row
             for (int i = 0; i < TOTAL_BUTTONS; i++)
             {
-                Rectangle bounds = new Rectangle(buttonX, buttonY, BUTTON_SIZE, BUTTON_SIZE);
+                Rectangle bounds = new(buttonX, buttonY, BUTTON_SIZE, BUTTON_SIZE);
                 Texture2D? texture = null;
                 string text = $"Tool {i + 1}";
                 UITool tool = UITool.None;

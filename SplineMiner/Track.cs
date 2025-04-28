@@ -8,26 +8,24 @@ namespace SplineMiner
 {
     public class Track
     {
-        private List<PlacedTrackNode> _placedNodes;
-        private List<ShadowTrackNode> _shadowNodes;
+        private readonly List<PlacedTrackNode> _placedNodes;
+        private readonly List<ShadowTrackNode> _shadowNodes;
         private int _selectedNodeIndex = -1;
         private Texture2D _pointTexture;
-        private List<Vector2> _debugPoints = new List<Vector2>();
-        private bool _enableDebugVisualization = true;
+        private readonly List<Vector2> _debugPoints = [];
+        private readonly bool _enableDebugVisualization = false;
         private float _totalArcLength = 0f;
         private TrackPreview _preview;
         private const int MIN_SHADOW_NODES = 3; // Minimum needed for Catmull-Rom
-        private UITool _currentTool = UITool.Track;
 
         public IReadOnlyList<PlacedTrackNode> PlacedNodes => _placedNodes.AsReadOnly();
         public IReadOnlyList<ShadowTrackNode> ShadowNodes => _shadowNodes.AsReadOnly();
-        public bool HasShadowNodes => _shadowNodes.Count >= MIN_SHADOW_NODES;
         public float TotalArcLength => _totalArcLength;
 
         public Track(List<Vector2> initialPoints)
         {
             _placedNodes = initialPoints.Select(p => new PlacedTrackNode(p)).ToList();
-            _shadowNodes = new List<ShadowTrackNode>();
+            _shadowNodes = [];
             UpdateShadowNodes();
         }
 
@@ -155,28 +153,6 @@ namespace SplineMiner
             Vector2[] placedPoints = _placedNodes.Select(n => n.Position).ToArray();
             DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, placedPoints, segments, Color.Black, 2);
 
-            // Draw shadow track and nodes only when track tool is selected
-            if (_currentTool == UITool.Track && _shadowNodes.Count >= MIN_SHADOW_NODES)
-            {
-                // Create combined array for shadow curve
-                var combinedPoints = new List<Vector2>();
-                // Add last few placed nodes for proper curve connection
-                combinedPoints.AddRange(_placedNodes.Skip(Math.Max(0, _placedNodes.Count - 3))
-                                                  .Select(n => n.Position));
-                combinedPoints.AddRange(_shadowNodes.Select(n => n.Position));
-
-                if (combinedPoints.Count >= 4)
-                {
-                    DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, combinedPoints.ToArray(), segments, Color.Gray * 0.5f, 2);
-                }
-
-                // Draw shadow nodes
-                foreach (var (node, index) in _shadowNodes.Select((n, i) => (n, i)))
-                {
-                    node.Draw(spriteBatch, _pointTexture, index + _placedNodes.Count == _selectedNodeIndex);
-                }
-            }
-
             // Draw debug points
             if (_enableDebugVisualization)
             {
@@ -196,9 +172,6 @@ namespace SplineMiner
             {
                 node.Draw(spriteBatch, _pointTexture, false);
             }
-
-            // Draw preview if available
-            _preview?.Draw(spriteBatch);
         }
 
         public void UpdatePreview(Vector2 mousePosition)
@@ -304,9 +277,5 @@ namespace SplineMiner
             }
         }
 
-        public void SetCurrentTool(UITool tool)
-        {
-            _currentTool = tool;
-        }
     }
 }
