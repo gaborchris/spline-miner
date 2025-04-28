@@ -9,180 +9,75 @@ using System;
 
 namespace SplineMiner
 {
-    public class CartController : ICameraObserver
+    // Core interfaces
+    public interface ICart
     {
-        // 
-        private Vector2 WorldPosition2D;
-        public Texture2D Texture { get; set; }
-        public Texture2D DebugTexture { get; private set; }
-        public float CurrentDistance => _t;
-        private int _currentTrackIndex = 0;
-        InputManager _inputManager;
-        private float _t = 0f;
-        private float _speed = 300; // Pixels per second
-        private float _rotation = 0f;
-        private bool _showDebugInfo = true;
-        
-        // Wheel positions
-        private const float WHEEL_DISTANCE = 30f;
-        private Vector2 _frontWheelPosition;
-        private Vector2 _backWheelPosition;
-        
-        // Position tracking
-        private Vector2 _targetPosition;
-        private Vector2 _previousPosition;
+        void Update(GameTime gameTime, ITrack track);
+        void Draw(SpriteBatch spriteBatch);
+        Vector2 Position { get; }
+        float CurrentDistance { get; }
+    }
+
+    public interface IMovementController
+    {
+        void UpdatePosition(GameTime gameTime, ITrack track);
+        void UpdateRotation(ITrack track);
+        Vector2 Position { get; }
+        float Rotation { get; }
+        float Speed { get; set; }
+        float CurrentDistance { get; set; }
+    }
+
+    public interface IWheelSystem
+    {
+        void UpdateWheelPositions(ITrack track, float currentDistance);
+        Vector2 FrontWheelPosition { get; }
+        Vector2 BackWheelPosition { get; }
+    }
+
+    public interface IDebugVisualizer
+    {
+        void DrawDebugInfo(SpriteBatch spriteBatch, Texture2D debugTexture);
+        void StartMovementTest();
+        void AnalyzeMovementSmoothness();
+    }
+
+    // Movement controller implementation
+    public class CartMovementController : IMovementController
+    {
+        private const float MIN_MOVEMENT_THRESHOLD = 0.1f;
         private const float POSITION_INTERPOLATION_FACTOR = 0.5f;
-        private const float MIN_MOVEMENT_THRESHOLD = 0.1f; // Minimum distance to move
-        
-        // Debug info
+        private const float MAX_ROTATION_CHANGE = MathHelper.Pi / 6;
+
+        private Vector2 _position;
+        private Vector2 _previousPosition;
+        private Vector2 _targetPosition;
+        private float _rotation;
         private float _lastRotation;
         private float _rotationChange;
-        private const float MAX_ROTATION_CHANGE = MathHelper.Pi / 6;
-        
-        // For movement smoothness testing
-        private bool _isTestingMovement = false;
-        private List<Vector2> _positionHistory = new List<Vector2>();
-        private float _testTimer = 0f;
-        private const float TEST_DURATION = 5.0f;
+        private float _t = 0f;
+        private float _speed = 300;
 
-        // CartController is only meant to exist on a track
-        // There should be an entirely separate controler for when a player hops out the cart
-        public CartController(InputManager inputManger)
+        public Vector2 Position => _position;
+        public float Rotation => _rotation;
+        public float Speed
         {
-            _inputManager = inputManger;
-            WorldPosition2D = new Vector2(0, 0); 
+            get => _speed;
+            set => _speed = value;
+        }
+        public float CurrentDistance
+        {
+            get => _t;
+            set => _t = value;
         }
 
-        public void StartMovementTest()
+        public void UpdatePosition(GameTime gameTime, ITrack track)
         {
-            _isTestingMovement = true;
-            _positionHistory.Clear();
-            _testTimer = 0f;
-            Debug.WriteLine("Starting cart movement test for 5 seconds");
-        }
-
-        private void UpdateMovementTest(GameTime gameTime, Track track)
-        {
-            if (!_isTestingMovement) return;
-            
-            _testTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            
-            // Store position every frame during test
-            _positionHistory.Add(WorldPosition2D);
-            
-            // Force movement at constant speed for testing
-            _t += _speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            
-            // Update cart position and wheel positions
-            _targetPosition = track.GetPointByDistance(_t);
-            WorldPosition2D = _targetPosition; // Directly set position during test
-            UpdateWheelPositions(track);
-            UpdateRotation();
-            
-            // End test after duration
-            if (_testTimer >= TEST_DURATION)
-            {
-                _isTestingMovement = false;
-                AnalyzeMovementSmoothnessTest();
-            }
-        }
-
-        private void AnalyzeMovementSmoothnessTest()
-        {
-            if (_positionHistory.Count < 3)
-            {
-                Debug.WriteLine("Not enough position data for analysis");
-                return;
-            }
-
-            // Calculate velocity and acceleration magnitudes
-            List<float> velocities = new List<float>();
-            List<float> accelerations = new List<float>();
-            
-            // First calculate velocities between consecutive positions
-            for (int i = 1; i < _positionHistory.Count; i++)
-            {
-                Vector2 p1 = _positionHistory[i - 1];
-                Vector2 p2 = _positionHistory[i];
-                float velocity = Vector2.Distance(p1, p2);
-                velocities.Add(velocity);
-            }
-            
-            // Then calculate accelerations (changes in velocity)
-            for (int i = 1; i < velocities.Count; i++)
-            {
-                float v1 = velocities[i - 1];
-                float v2 = velocities[i];
-                float acceleration = System.Math.Abs(v2 - v1);
-                accelerations.Add(acceleration);
-            }
-            
-            // Calculate statistics
-            float avgVelocity = velocities.Count > 0 ? velocities.Sum() / velocities.Count : 0;
-            float avgAcceleration = accelerations.Count > 0 ? accelerations.Sum() / accelerations.Count : 0;
-            float maxAcceleration = accelerations.Count > 0 ? accelerations.Max() : 0;
-            
-            // Find abrupt changes in acceleration (jerk)
-            int jumpCount = 0;
-            float jerkThreshold = avgAcceleration * 5.0f; // 5x average is suspicious
-            for (int i = 0; i < accelerations.Count; i++)
-            {
-                if (accelerations[i] > jerkThreshold)
-                {
-                    jumpCount++;
-                    Debug.WriteLine($"Potential jump detected at position {i+2} with acceleration {accelerations[i]}");
-                }
-            }
-            
-            Debug.WriteLine($"Movement analysis complete:");
-            Debug.WriteLine($"- Average velocity: {avgVelocity:F2} pixels per frame");
-            Debug.WriteLine($"- Average acceleration: {avgAcceleration:F2}");
-            Debug.WriteLine($"- Maximum acceleration: {maxAcceleration:F2}");
-            Debug.WriteLine($"- Number of potential jumps: {jumpCount}");
-            
-            if (jumpCount > 0)
-            {
-                Debug.WriteLine("WARNING: Movement is not smooth. Check the spline interpolation and arc length calculations.");
-            }
-            else
-            {
-                Debug.WriteLine("Movement appears to be smooth.");
-            }
-        }
-
-        public void Update(GameTime gameTime, Track track)
-        {
+            _previousPosition = _position;
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            // Handle test movement if we're testing
-            if (_isTestingMovement)
-            {
-                UpdateMovementTest(gameTime, track);
-                track.UpdateCurrentPosition(_t);
-                return;
-            }
-
-            // Store previous position for interpolation
-            _previousPosition = WorldPosition2D;
-
-            // Normal movement control
-            if (_inputManager.Forward())
-            {
-                float newT = _t + _speed * deltaTime;
-                if (newT <= track.TotalArcLength)
-                {
-                    _t = newT;
-                }
-            }
-            else if (_inputManager.Backward())
-            {
-                _t -= _speed * deltaTime;
-            }
-            
-            // Get target position and update wheel positions
+            // Update target position
             _targetPosition = track.GetPointByDistance(_t);
-            UpdateWheelPositions(track);
-            UpdateRotation();
             
             // Calculate movement vector
             Vector2 movement = _targetPosition - _previousPosition;
@@ -191,63 +86,22 @@ namespace SplineMiner
             // Only update position if movement is significant
             if (movementLength > MIN_MOVEMENT_THRESHOLD)
             {
-                // Normalize movement and apply interpolation
                 movement.Normalize();
-                WorldPosition2D = _previousPosition + movement * (movementLength * POSITION_INTERPOLATION_FACTOR);
+                _position = _previousPosition + movement * (movementLength * POSITION_INTERPOLATION_FACTOR);
             }
             else
             {
-                // If movement is too small, stay at previous position
-                WorldPosition2D = _previousPosition;
-            }
-            
-            track.UpdateCurrentPosition(_t);
-            
-            // Toggle movement test with T key
-            if (_inputManager.IsKeyPressed(Keys.T))
-            {
-                StartMovementTest();
-            }
-            
-            // Visualize equally spaced points with V key
-            if (_inputManager.IsKeyPressed(Keys.V))
-            {
-                track.VisualizeEquallySpacedPoints(20);
+                _position = _previousPosition;
             }
         }
 
-        private void UpdateWheelPositions(Track track)
+        public void UpdateRotation(ITrack track)
         {
-            // Calculate front and back wheel positions based on current position
-            float frontDistance = _t + WHEEL_DISTANCE;
-            float backDistance = _t - WHEEL_DISTANCE;
-            
-            // Handle wrapping around the track
-            if (frontDistance > track.TotalArcLength)
-                frontDistance -= track.TotalArcLength;
-            if (backDistance < 0)
-                backDistance += track.TotalArcLength;
-            
-            _frontWheelPosition = track.GetPointByDistance(frontDistance);
-            _backWheelPosition = track.GetPointByDistance(backDistance);
-        }
-
-        private void UpdateRotation()
-        {
-            // Calculate direction vector from back to front wheel
-            Vector2 direction = _frontWheelPosition - _backWheelPosition;
-            direction.Normalize();
-            
-            // Calculate target rotation
-            float targetRotation = (float)Math.Atan2(direction.Y, direction.X);
-            
-            // Calculate rotation change
+            float targetRotation = track.GetRotationAtDistance(_t);
             _rotationChange = MathHelper.WrapAngle(targetRotation - _lastRotation);
             
-            // Only update rotation if change is significant
             if (Math.Abs(_rotationChange) > 0.01f)
             {
-                // Clamp rotation change to prevent sudden jumps
                 if (Math.Abs(_rotationChange) > MAX_ROTATION_CHANGE)
                 {
                     targetRotation = _lastRotation + Math.Sign(_rotationChange) * MAX_ROTATION_CHANGE;
@@ -257,78 +111,184 @@ namespace SplineMiner
                 _lastRotation = _rotation;
             }
         }
+    }
 
-        public void LoadDebugTexture(GraphicsDevice graphicsDevice)
+    // Wheel system implementation
+    public class CartWheelSystem : IWheelSystem
+    {
+        private const float WHEEL_DISTANCE = 30f;
+        private Vector2 _frontWheelPosition;
+        private Vector2 _backWheelPosition;
+
+        public Vector2 FrontWheelPosition => _frontWheelPosition;
+        public Vector2 BackWheelPosition => _backWheelPosition;
+
+        public void UpdateWheelPositions(ITrack track, float currentDistance)
         {
-            DebugTexture = new Texture2D(graphicsDevice, 1, 1);
-            DebugTexture.SetData(new[] { Color.White });
+            float frontDistance = currentDistance + WHEEL_DISTANCE;
+            float backDistance = currentDistance - WHEEL_DISTANCE;
+            
+            if (frontDistance > track.TotalArcLength)
+                frontDistance -= track.TotalArcLength;
+            if (backDistance < 0)
+                backDistance += track.TotalArcLength;
+            
+            _frontWheelPosition = track.GetPointByDistance(frontDistance);
+            _backWheelPosition = track.GetPointByDistance(backDistance);
+        }
+    }
+
+    // Debug visualizer implementation
+    public class CartDebugVisualizer : IDebugVisualizer
+    {
+        private readonly IMovementController _movementController;
+        private readonly IWheelSystem _wheelSystem;
+        private readonly List<Vector2> _positionHistory = new();
+        private bool _isTestingMovement = false;
+        private float _testTimer = 0f;
+        private const float TEST_DURATION = 5.0f;
+
+        public CartDebugVisualizer(IMovementController movementController, IWheelSystem wheelSystem)
+        {
+            _movementController = movementController;
+            _wheelSystem = wheelSystem;
+        }
+
+        public void DrawDebugInfo(SpriteBatch spriteBatch, Texture2D debugTexture)
+        {
+            // Draw wheel positions
+            DrawingHelpers.DrawCircle(spriteBatch, debugTexture, _wheelSystem.FrontWheelPosition, 3, Color.Green);
+            DrawingHelpers.DrawCircle(spriteBatch, debugTexture, _wheelSystem.BackWheelPosition, 3, Color.Blue);
+            
+            // Draw line between wheels
+            DrawingHelpers.DrawLine(spriteBatch, debugTexture, _wheelSystem.FrontWheelPosition, _wheelSystem.BackWheelPosition, Color.Yellow, 1);
+            
+            // Draw cart's position point
+            DrawingHelpers.DrawCircle(spriteBatch, debugTexture, _movementController.Position, 3, Color.White);
+            
+            // Draw rotation change indicator
+            const float INDICATOR_LENGTH = 20f;
+            Vector2 indicatorEnd = _movementController.Position + new Vector2(
+                (float)Math.Cos(_movementController.Rotation) * INDICATOR_LENGTH,
+                (float)Math.Sin(_movementController.Rotation) * INDICATOR_LENGTH
+            );
+            DrawingHelpers.DrawLine(spriteBatch, debugTexture, _movementController.Position, indicatorEnd, Color.Purple, 2);
+        }
+
+        public void StartMovementTest()
+        {
+            _isTestingMovement = true;
+            _positionHistory.Clear();
+            _testTimer = 0f;
+        }
+
+        public void AnalyzeMovementSmoothness()
+        {
+            if (_positionHistory.Count < 3)
+                return;
+
+            // Calculate velocity and acceleration magnitudes
+            List<float> velocities = new();
+            List<float> accelerations = new();
+            
+            for (int i = 1; i < _positionHistory.Count; i++)
+            {
+                float velocity = Vector2.Distance(_positionHistory[i - 1], _positionHistory[i]);
+                velocities.Add(velocity);
+            }
+            
+            for (int i = 1; i < velocities.Count; i++)
+            {
+                float acceleration = Math.Abs(velocities[i] - velocities[i - 1]);
+                accelerations.Add(acceleration);
+            }
+            
+            float avgVelocity = velocities.Count > 0 ? velocities.Sum() / velocities.Count : 0;
+            float avgAcceleration = accelerations.Count > 0 ? accelerations.Sum() / accelerations.Count : 0;
+            float maxAcceleration = accelerations.Count > 0 ? accelerations.Max() : 0;
+            
+            Debug.WriteLine($"Movement analysis complete:");
+            Debug.WriteLine($"- Average velocity: {avgVelocity:F2} pixels per frame");
+            Debug.WriteLine($"- Average acceleration: {avgAcceleration:F2}");
+            Debug.WriteLine($"- Maximum acceleration: {maxAcceleration:F2}");
+        }
+    }
+
+    // Main CartController class
+    public class CartController : ICart, ICameraObserver
+    {
+        private readonly IMovementController _movementController;
+        private readonly IWheelSystem _wheelSystem;
+        private readonly IDebugVisualizer _debugVisualizer;
+        private readonly InputManager _inputManager;
+        private Texture2D _texture;
+        private Texture2D _debugTexture;
+        private bool _showDebugInfo = true;
+        private float _t = 0f;
+
+        public Texture2D Texture { get; set; }
+        public Texture2D DebugTexture => _debugTexture;
+        public float CurrentDistance => _t;
+        public Vector2 Position => _movementController.Position;
+
+        public CartController(InputManager inputManager)
+        {
+            _inputManager = inputManager;
+            _movementController = new CartMovementController();
+            _wheelSystem = new CartWheelSystem();
+            _debugVisualizer = new CartDebugVisualizer(_movementController, _wheelSystem);
+        }
+
+        public void Update(GameTime gameTime, ITrack track)
+        {
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_inputManager.Forward())
+            {
+                _t += _movementController.Speed * deltaTime;
+            }
+            else if (_inputManager.Backward())
+            {
+                _t -= _movementController.Speed * deltaTime;
+            }
+
+            _movementController.CurrentDistance = _t;
+            _movementController.UpdatePosition(gameTime, track);
+            _wheelSystem.UpdateWheelPositions(track, _t);
+            _movementController.UpdateRotation(track);
+
+            if (_inputManager.IsKeyPressed(Keys.T))
+            {
+                _debugVisualizer.StartMovementTest();
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            // Calculate the origin at the bottom center of the texture
             Vector2 origin = new Vector2(Texture.Width / 2f, Texture.Height);
             
-            // Draw cart with rotation
             spriteBatch.Draw(
                 Texture,
-                WorldPosition2D,
+                Position,
                 null,
                 Color.Red,
-                _rotation,
+                _movementController.Rotation,
                 origin,
                 1.0f,
                 SpriteEffects.None,
                 0f
             );
             
-            if (_showDebugInfo && DebugTexture != null)
+            if (_showDebugInfo)
             {
-                // Draw wheel positions
-                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _frontWheelPosition, 3, Color.Green);
-                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _backWheelPosition, 3, Color.Blue);
-                
-                // Draw line between wheels
-                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, _frontWheelPosition, _backWheelPosition, Color.Yellow, 1);
-                
-                // Draw cart's position point
-                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, WorldPosition2D, 3, Color.White);
-                
-                // Draw target position
-                DrawingHelpers.DrawCircle(spriteBatch, DebugTexture, _targetPosition, 3, Color.Purple);
-                
-                // Draw line from current to target position
-                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, WorldPosition2D, _targetPosition, Color.Purple, 1);
-                
-                // Draw rotation change indicator
-                const float INDICATOR_LENGTH = 20f;
-                Vector2 indicatorEnd = WorldPosition2D + new Vector2(
-                    (float)Math.Cos(_rotation + _rotationChange) * INDICATOR_LENGTH,
-                    (float)Math.Sin(_rotation + _rotationChange) * INDICATOR_LENGTH
-                );
-                DrawingHelpers.DrawLine(spriteBatch, DebugTexture, WorldPosition2D, indicatorEnd, Color.Purple, 2);
-            }
-            
-            // Draw path history during testing
-            if (_isTestingMovement)
-            {
-                foreach (Vector2 pos in _positionHistory)
-                {
-                    spriteBatch.Draw(
-                        Texture,
-                        pos,
-                        null,
-                        Color.Yellow * 0.3f,
-                        _rotation,
-                        origin,
-                        0.5f,
-                        SpriteEffects.None,
-                        0f
-                    );
-                }
+                _debugVisualizer.DrawDebugInfo(spriteBatch, DebugTexture);
             }
         }
 
-        public Vector2 Position => WorldPosition2D;
+        public void LoadDebugTexture(GraphicsDevice graphicsDevice)
+        {
+            _debugTexture = new Texture2D(graphicsDevice, 1, 1);
+            _debugTexture.SetData(new[] { Color.White });
+        }
     }
 }

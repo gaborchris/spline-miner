@@ -6,7 +6,192 @@ using System.Linq;
 
 namespace SplineMiner
 {
-    public class Track
+    // Core interfaces
+    public interface ISplineCalculator
+    {
+        Vector2 GetPoint(float t);
+        float GetParameterForDistance(float distance, float totalLength);
+        float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40);
+    }
+
+    public interface ICache<TKey, TValue>
+    {
+        bool TryGetValue(TKey key, out TValue value);
+        void SetValue(TKey key, TValue value);
+        void Clear();
+    }
+
+    public interface ITrackRenderer
+    {
+        void Draw(SpriteBatch spriteBatch, ITrack track);
+        void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture);
+    }
+
+    // Core track interface
+    public interface ITrack
+    {
+        Vector2 GetPointByDistance(float distance);
+        float GetRotationAtDistance(float distance);
+        float TotalArcLength { get; }
+        void Draw(SpriteBatch spriteBatch);
+        void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture);
+    }
+
+    // Spline calculation component
+    public class SplineCalculator : ISplineCalculator
+    {
+        private readonly List<PlacedTrackNode> _placedNodes;
+        private const int MIN_NODES = 4;
+
+        public SplineCalculator(List<PlacedTrackNode> placedNodes)
+        {
+            _placedNodes = placedNodes;
+        }
+
+        public Vector2 GetPoint(float t)
+        {
+            if (_placedNodes.Count < MIN_NODES)
+                throw new InvalidOperationException("At least 4 control points are required for Catmull-Rom splines.");
+
+            int segment = (int)Math.Floor(t);
+            float localT = t - segment;
+
+            int p0 = Math.Clamp(segment - 1, 0, _placedNodes.Count - 1);
+            int p1 = Math.Clamp(segment, 0, _placedNodes.Count - 1);
+            int p2 = Math.Clamp(segment + 1, 0, _placedNodes.Count - 1);
+            int p3 = Math.Clamp(segment + 2, 0, _placedNodes.Count - 1);
+
+            return SplineUtils.CatmullRom(
+                _placedNodes[p0].Position,
+                _placedNodes[p1].Position,
+                _placedNodes[p2].Position,
+                _placedNodes[p3].Position,
+                localT
+            );
+        }
+
+        public float GetParameterForDistance(float distance, float totalLength)
+        {
+            if (totalLength <= 0) return 0f;
+
+            float normalizedTarget = distance / totalLength;
+            normalizedTarget = Math.Clamp(normalizedTarget, 0f, 1f);
+
+            float tMin = 0f;
+            float tMax = _placedNodes.Count - 1;
+            float tMid = 0f;
+            float lastArcLength = 0f;
+
+            int maxIterations = 30 + (int)(_placedNodes.Count * 0.5f);
+
+            for (int i = 0; i < maxIterations; i++)
+            {
+                tMid = (tMin + tMax) / 2f;
+                float arcLength = ComputeArcLength(0f, tMid);
+                float normalizedArcLength = arcLength / totalLength;
+
+                if (Math.Abs(normalizedArcLength - normalizedTarget) < 0.0001f)
+                    break;
+                else if (Math.Abs(lastArcLength - arcLength) < 0.00001f && i > 5)
+                    break;
+                else if (normalizedArcLength < normalizedTarget)
+                    tMin = tMid;
+                else
+                    tMax = tMid;
+
+                lastArcLength = arcLength;
+            }
+
+            return tMid;
+        }
+
+        public float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40)
+        {
+            float arcLength = 0f;
+            int steps = baseSteps * (int)Math.Ceiling((tEnd - tStart) / 2.0f);
+            float dt = (tEnd - tStart) / steps;
+
+            Vector2 previousPoint = GetPoint(tStart);
+            for (int i = 1; i <= steps; i++)
+            {
+                float t = tStart + i * dt;
+                Vector2 currentPoint = GetPoint(t);
+                float segmentLength = Vector2.Distance(previousPoint, currentPoint);
+                
+                if (segmentLength > 10.0f)
+                {
+                    float midT = tStart + (i - 0.5f) * dt;
+                    Vector2 midPoint = GetPoint(midT);
+                    arcLength += Vector2.Distance(previousPoint, midPoint);
+                    arcLength += Vector2.Distance(midPoint, currentPoint);
+                }
+                else
+                {
+                    arcLength += segmentLength;
+                }
+                
+                previousPoint = currentPoint;
+            }
+            return arcLength;
+        }
+    }
+
+    // Caching component
+    public class TrackCache : ICache<int, Vector2>, ICache<int, float>
+    {
+        private const int CACHE_SIZE = 1000;
+        private readonly Dictionary<int, Vector2> _positionCache = new();
+        private readonly Dictionary<int, float> _parameterCache = new();
+
+        public bool TryGetValue(int key, out Vector2 value) => _positionCache.TryGetValue(key, out value);
+        public bool TryGetValue(int key, out float value) => _parameterCache.TryGetValue(key, out value);
+
+        public void SetValue(int key, Vector2 value)
+        {
+            if (_positionCache.Count >= CACHE_SIZE)
+                _positionCache.Clear();
+            _positionCache[key] = value;
+        }
+
+        public void SetValue(int key, float value)
+        {
+            if (_parameterCache.Count >= CACHE_SIZE)
+                _parameterCache.Clear();
+            _parameterCache[key] = value;
+        }
+
+        public void Clear()
+        {
+            _positionCache.Clear();
+            _parameterCache.Clear();
+        }
+    }
+
+    // Track visualization component
+    public class TrackRenderer : ITrackRenderer
+    {
+        private readonly Texture2D _pointTexture;
+        private readonly List<Vector2> _debugPoints = [];
+        private readonly bool _enableDebugVisualization = true;
+
+        public TrackRenderer(Texture2D pointTexture)
+        {
+            _pointTexture = pointTexture;
+        }
+
+        public void Draw(SpriteBatch spriteBatch, ITrack track)
+        {
+            // Implementation of track drawing
+        }
+
+        public void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture)
+        {
+            // Implementation of debug visualization
+        }
+    }
+
+    // Main Track class
+    public class Track : ITrack
     {
         private readonly List<PlacedTrackNode> _placedNodes;
         private readonly List<ShadowTrackNode> _shadowNodes;
@@ -20,11 +205,9 @@ namespace SplineMiner
         private readonly UIManager _uiManager;
         private float _t = 0f;
         
-        // Caching for stable calculations
-        private const int CACHE_SIZE = 1000;
-        private readonly Dictionary<int, Vector2> _positionCache = new();
-        private readonly Dictionary<int, float> _parameterCache = new();
-        private int _lastCacheKey = -1;
+        private readonly SplineCalculator _splineCalculator;
+        private readonly TrackCache _cache;
+        private readonly TrackRenderer _renderer;
 
         public IReadOnlyList<PlacedTrackNode> PlacedNodes => _placedNodes.AsReadOnly();
         public IReadOnlyList<ShadowTrackNode> ShadowNodes => _shadowNodes.AsReadOnly();
@@ -35,7 +218,11 @@ namespace SplineMiner
             _placedNodes = initialPoints.Select(p => new PlacedTrackNode(p)).ToList();
             _shadowNodes = [];
             _uiManager = uiManager;
+            _splineCalculator = new SplineCalculator(_placedNodes);
+            _cache = new TrackCache();
+            _renderer = new TrackRenderer(_pointTexture);
             UpdateShadowNodes();
+            RecalculateArcLength();
         }
 
         private void UpdateShadowNodes()
@@ -192,62 +379,13 @@ namespace SplineMiner
             distance = Math.Min(distance, _totalArcLength);
             if (distance < 0) distance += _totalArcLength;
 
-            // Use cached parameter if available
-            int cacheKey = (int)(distance * 10); // Scale to get more precise cache keys
-            if (_parameterCache.TryGetValue(cacheKey, out float cachedT))
-            {
-                return GetPlacedTrackPoint(cachedT);
-            }
+            int cacheKey = (int)(distance * 10);
+            if (_cache.TryGetValue(cacheKey, out float cachedT))
+                return _splineCalculator.GetPoint(cachedT);
 
-            float t = MapDistanceToT(distance, _totalArcLength);
-            
-            // Cache the parameter for future use
-            if (_parameterCache.Count >= CACHE_SIZE)
-            {
-                _parameterCache.Clear();
-            }
-            _parameterCache[cacheKey] = t;
-            
-            return GetPlacedTrackPoint(t);
-        }
-
-        private Vector2 GetPlacedTrackPoint(float t)
-        {
-            if (_placedNodes.Count < 4)
-                throw new InvalidOperationException("At least 4 control points are required for Catmull-Rom splines.");
-
-            // Use cached point if available
-            int cacheKey = (int)(t * 1000); // Scale to get more precise cache keys
-            if (_positionCache.TryGetValue(cacheKey, out Vector2 cachedPoint))
-            {
-                return cachedPoint;
-            }
-
-            int segment = (int)Math.Floor(t);
-            float localT = t - segment;
-
-            // Get points for Catmull-Rom calculation
-            int p0 = Math.Clamp(segment - 1, 0, _placedNodes.Count - 1);
-            int p1 = Math.Clamp(segment, 0, _placedNodes.Count - 1);
-            int p2 = Math.Clamp(segment + 1, 0, _placedNodes.Count - 1);
-            int p3 = Math.Clamp(segment + 2, 0, _placedNodes.Count - 1);
-
-            Vector2 point = SplineUtils.CatmullRom(
-                _placedNodes[p0].Position,
-                _placedNodes[p1].Position,
-                _placedNodes[p2].Position,
-                _placedNodes[p3].Position,
-                localT
-            );
-
-            // Cache the point for future use
-            if (_positionCache.Count >= CACHE_SIZE)
-            {
-                _positionCache.Clear();
-            }
-            _positionCache[cacheKey] = point;
-
-            return point;
+            float t = _splineCalculator.GetParameterForDistance(distance, _totalArcLength);
+            _cache.SetValue(cacheKey, t);
+            return _splineCalculator.GetPoint(t);
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -321,101 +459,24 @@ namespace SplineMiner
 
         public float GetRotationAtDistance(float distance)
         {
-            // Get three points to calculate a more stable tangent
             Vector2 currentPoint = GetPointByDistance(distance);
-            Vector2 nextPoint = GetPointByDistance(distance + 10.0f); // Increased look-ahead
-            Vector2 prevPoint = GetPointByDistance(distance - 10.0f); // Increased look-back
+            Vector2 nextPoint = GetPointByDistance(distance + 10.0f);
+            Vector2 prevPoint = GetPointByDistance(distance - 10.0f);
             
-            // Calculate direction using central difference for more stability
             Vector2 direction = (nextPoint - prevPoint);
             direction.Normalize();
             
-            // Calculate the angle in radians
-            float angle = (float)Math.Atan2(direction.Y, direction.X);
-            
-            return angle;
+            return (float)Math.Atan2(direction.Y, direction.X);
         }
 
-        private float MapDistanceToT(float distance, float totalLength)
+        public void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture)
         {
-            if (totalLength <= 0) return 0f;
-
-            float normalizedTarget = distance / totalLength;
-            normalizedTarget = Math.Clamp(normalizedTarget, 0f, 1f);
-
-            float tMin = 0f;
-            float tMax = _placedNodes.Count - 1;
-            float tMid = 0f;
-            float lastArcLength = 0f;
-
-            // Increase precision for longer tracks
-            int maxIterations = 30 + (int)(_placedNodes.Count * 0.5f);
-
-            for (int i = 0; i < maxIterations; i++)
-            {
-                tMid = (tMin + tMax) / 2f;
-                float arcLength = ComputeArcLength(0f, tMid);
-                float normalizedArcLength = arcLength / totalLength;
-
-                // Increased tolerance for more stable results
-                if (Math.Abs(normalizedArcLength - normalizedTarget) < 0.0001f)
-                {
-                    break;
-                }
-                else if (Math.Abs(lastArcLength - arcLength) < 0.00001f && i > 5)
-                {
-                    break;
-                }
-                else if (normalizedArcLength < normalizedTarget)
-                {
-                    tMin = tMid;
-                }
-                else
-                {
-                    tMax = tMid;
-                }
-
-                lastArcLength = arcLength;
-            }
-
-            return tMid;
+            _renderer.DrawDebugInfo(spriteBatch, distance, debugTexture);
         }
 
         public void RecalculateArcLength()
         {
-            _totalArcLength = ComputeArcLength(0f, _placedNodes.Count - 1, 100);
-        }
-
-        private float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40)
-        {
-            float arcLength = 0f;
-            // Increase steps based on track length and curvature
-            int steps = baseSteps * (int)Math.Ceiling((tEnd - tStart) / 2.0f);
-            float dt = (tEnd - tStart) / steps;
-
-            Vector2 previousPoint = GetPlacedTrackPoint(tStart);
-            for (int i = 1; i <= steps; i++)
-            {
-                float t = tStart + i * dt;
-                Vector2 currentPoint = GetPlacedTrackPoint(t);
-                float segmentLength = Vector2.Distance(previousPoint, currentPoint);
-                
-                // If segment is too long or curvature is high, subdivide it
-                if (segmentLength > 10.0f)
-                {
-                    float midT = tStart + (i - 0.5f) * dt;
-                    Vector2 midPoint = GetPlacedTrackPoint(midT);
-                    arcLength += Vector2.Distance(previousPoint, midPoint);
-                    arcLength += Vector2.Distance(midPoint, currentPoint);
-                }
-                else
-                {
-                    arcLength += segmentLength;
-                }
-                
-                previousPoint = currentPoint;
-            }
-            return arcLength;
+            _totalArcLength = _splineCalculator.ComputeArcLength(0f, _placedNodes.Count - 1, 100);
         }
 
         public void VisualizeEquallySpacedPoints(int count)
@@ -455,36 +516,5 @@ namespace SplineMiner
             }
             return GetPointByDistance(nextDistance);
         }
-
-        public void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture)
-        {
-            // Get current point and rotation
-            Vector2 currentPoint = GetPointByDistance(distance);
-            float forwardAngle = GetRotationAtDistance(distance);
-            float normalAngle = forwardAngle + MathHelper.PiOver2; // Normal is 90 degrees from forward
-            
-            // Draw tangent line (forward direction)
-            const float TANGENT_LENGTH = 50f;
-            Vector2 tangentEnd = currentPoint + new Vector2(
-                (float)Math.Cos(forwardAngle) * TANGENT_LENGTH,
-                (float)Math.Sin(forwardAngle) * TANGENT_LENGTH
-            );
-            
-            // Draw tangent line
-            DrawingHelpers.DrawLine(spriteBatch, debugTexture, currentPoint, tangentEnd, Color.Green, 2);
-            
-            // Draw normal line (perpendicular to tangent)
-            Vector2 normalEnd = currentPoint + new Vector2(
-                (float)Math.Cos(normalAngle) * TANGENT_LENGTH,
-                (float)Math.Sin(normalAngle) * TANGENT_LENGTH
-            );
-            
-            // Draw normal line
-            DrawingHelpers.DrawLine(spriteBatch, debugTexture, currentPoint, normalEnd, Color.Red, 2);
-            
-            // Draw current point
-            DrawingHelpers.DrawCircle(spriteBatch, debugTexture, currentPoint, 5, Color.Yellow);
-        }
-
     }
 }
