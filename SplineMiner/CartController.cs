@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace SplineMiner
 {
-    public class CartController
+    public class CartController : ICameraObserver
     {
         // 
         private Vector2 WorldPosition2D;
@@ -182,5 +182,7 @@ namespace SplineMiner
                 }
             }
         }
+
+        public Vector2 Position => WorldPosition2D;
     }
 }

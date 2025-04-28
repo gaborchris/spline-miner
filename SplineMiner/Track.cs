@@ -57,14 +57,35 @@ namespace SplineMiner
             _preview = new TrackPreview(this, graphicsDevice);
         }
 
-        public int GetHoveredPointIndex(Vector2 mousePosition)
+        public int GetHoveredPointIndex(Vector2 screenPosition)
         {
             const float HOVER_RADIUS = 10f;
+            
+            // Convert screen position to world position using camera transform
+            Vector2 worldPosition = CameraManager.Instance.ScreenToWorld(screenPosition);
+            
+            // Get viewport bounds in world space for culling
+            Vector2 viewportTopLeft = CameraManager.Instance.ScreenToWorld(Vector2.Zero);
+            Vector2 viewportBottomRight = CameraManager.Instance.ScreenToWorld(new Vector2(
+                CameraManager.Instance.Viewport.Width,
+                CameraManager.Instance.Viewport.Height
+            ));
             
             // Check placed nodes first
             for (int i = 0; i < _placedNodes.Count; i++)
             {
-                if (Vector2.Distance(_placedNodes[i].Position, mousePosition) <= HOVER_RADIUS)
+                Vector2 nodePosition = _placedNodes[i].Position;
+                
+                // Cull nodes outside viewport for better performance
+                if (nodePosition.X < viewportTopLeft.X - HOVER_RADIUS ||
+                    nodePosition.X > viewportBottomRight.X + HOVER_RADIUS ||
+                    nodePosition.Y < viewportTopLeft.Y - HOVER_RADIUS ||
+                    nodePosition.Y > viewportBottomRight.Y + HOVER_RADIUS)
+                {
+                    continue;
+                }
+                
+                if (Vector2.Distance(nodePosition, worldPosition) <= HOVER_RADIUS)
                 {
                     return i;
                 }
@@ -73,7 +94,18 @@ namespace SplineMiner
             // Then check shadow nodes
             for (int i = 0; i < _shadowNodes.Count; i++)
             {
-                if (Vector2.Distance(_shadowNodes[i].Position, mousePosition) <= HOVER_RADIUS)
+                Vector2 nodePosition = _shadowNodes[i].Position;
+                
+                // Cull nodes outside viewport for better performance
+                if (nodePosition.X < viewportTopLeft.X - HOVER_RADIUS ||
+                    nodePosition.X > viewportBottomRight.X + HOVER_RADIUS ||
+                    nodePosition.Y < viewportTopLeft.Y - HOVER_RADIUS ||
+                    nodePosition.Y > viewportBottomRight.Y + HOVER_RADIUS)
+                {
+                    continue;
+                }
+                
+                if (Vector2.Distance(nodePosition, worldPosition) <= HOVER_RADIUS)
                 {
                     return i + _placedNodes.Count; // Offset by placed nodes count
                 }
@@ -90,12 +122,14 @@ namespace SplineMiner
             }
         }
 
-        public void MoveSelectedPoint(Vector2 position)
+        public void MoveSelectedPoint(Vector2 screenPosition)
         {
             if (_selectedNodeIndex >= _placedNodes.Count && _selectedNodeIndex < _placedNodes.Count + _shadowNodes.Count)
             {
                 int shadowIndex = _selectedNodeIndex - _placedNodes.Count;
-                _shadowNodes[shadowIndex].Position = position;
+                // Convert screen position to world position
+                Vector2 worldPosition = CameraManager.Instance.ScreenToWorld(screenPosition);
+                _shadowNodes[shadowIndex].Position = worldPosition;
                 RecalculateArcLength();
             }
         }
