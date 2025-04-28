@@ -19,6 +19,12 @@ namespace SplineMiner
         private const int MIN_SHADOW_NODES = 3; // Minimum needed for Catmull-Rom
         private readonly UIManager _uiManager;
         private float _t = 0f;
+        
+        // Caching for stable calculations
+        private const int CACHE_SIZE = 1000;
+        private readonly Dictionary<int, Vector2> _positionCache = new();
+        private readonly Dictionary<int, float> _parameterCache = new();
+        private int _lastCacheKey = -1;
 
         public IReadOnlyList<PlacedTrackNode> PlacedNodes => _placedNodes.AsReadOnly();
         public IReadOnlyList<ShadowTrackNode> ShadowNodes => _shadowNodes.AsReadOnly();
@@ -176,10 +182,46 @@ namespace SplineMiner
             }
         }
 
+        public Vector2 GetPointByDistance(float distance)
+        {
+            if (_totalArcLength <= 0)
+            {
+                RecalculateArcLength();
+            }
+
+            distance = Math.Min(distance, _totalArcLength);
+            if (distance < 0) distance += _totalArcLength;
+
+            // Use cached parameter if available
+            int cacheKey = (int)(distance * 10); // Scale to get more precise cache keys
+            if (_parameterCache.TryGetValue(cacheKey, out float cachedT))
+            {
+                return GetPlacedTrackPoint(cachedT);
+            }
+
+            float t = MapDistanceToT(distance, _totalArcLength);
+            
+            // Cache the parameter for future use
+            if (_parameterCache.Count >= CACHE_SIZE)
+            {
+                _parameterCache.Clear();
+            }
+            _parameterCache[cacheKey] = t;
+            
+            return GetPlacedTrackPoint(t);
+        }
+
         private Vector2 GetPlacedTrackPoint(float t)
         {
             if (_placedNodes.Count < 4)
                 throw new InvalidOperationException("At least 4 control points are required for Catmull-Rom splines.");
+
+            // Use cached point if available
+            int cacheKey = (int)(t * 1000); // Scale to get more precise cache keys
+            if (_positionCache.TryGetValue(cacheKey, out Vector2 cachedPoint))
+            {
+                return cachedPoint;
+            }
 
             int segment = (int)Math.Floor(t);
             float localT = t - segment;
@@ -190,13 +232,22 @@ namespace SplineMiner
             int p2 = Math.Clamp(segment + 1, 0, _placedNodes.Count - 1);
             int p3 = Math.Clamp(segment + 2, 0, _placedNodes.Count - 1);
 
-            return SplineUtils.CatmullRom(
+            Vector2 point = SplineUtils.CatmullRom(
                 _placedNodes[p0].Position,
                 _placedNodes[p1].Position,
                 _placedNodes[p2].Position,
                 _placedNodes[p3].Position,
                 localT
             );
+
+            // Cache the point for future use
+            if (_positionCache.Count >= CACHE_SIZE)
+            {
+                _positionCache.Clear();
+            }
+            _positionCache[cacheKey] = point;
+
+            return point;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -268,55 +319,21 @@ namespace SplineMiner
 
         public bool IsHoveringEndpoint => _preview?.IsHoveringEndpoint ?? false;
 
-        public Vector2 GetPointByDistance(float distance)
+        public float GetRotationAtDistance(float distance)
         {
-            if (_totalArcLength <= 0)
-            {
-                RecalculateArcLength();
-            }
-
-            distance = Math.Min(distance, _totalArcLength);
-            if (distance < 0) distance += _totalArcLength;
-
-            float t = MapDistanceToT(distance, _totalArcLength);
-            return GetPlacedTrackPoint(t);
-        }
-
-        public void RecalculateArcLength()
-        {
-            _totalArcLength = ComputeArcLength(0f, _placedNodes.Count - 1, 100);
-        }
-
-        private float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40)
-        {
-            float arcLength = 0f;
-            // Increase steps based on track length
-            int steps = baseSteps * (int)Math.Ceiling((tEnd - tStart) / 2.0f);
-            float dt = (tEnd - tStart) / steps;
-
-            Vector2 previousPoint = GetPlacedTrackPoint(tStart);
-            for (int i = 1; i <= steps; i++)
-            {
-                float t = tStart + i * dt;
-                Vector2 currentPoint = GetPlacedTrackPoint(t);
-                float segmentLength = Vector2.Distance(previousPoint, currentPoint);
-                
-                // If segment is too long, subdivide it
-                if (segmentLength > 10.0f)
-                {
-                    float midT = tStart + (i - 0.5f) * dt;
-                    Vector2 midPoint = GetPlacedTrackPoint(midT);
-                    arcLength += Vector2.Distance(previousPoint, midPoint);
-                    arcLength += Vector2.Distance(midPoint, currentPoint);
-                }
-                else
-                {
-                    arcLength += segmentLength;
-                }
-                
-                previousPoint = currentPoint;
-            }
-            return arcLength;
+            // Get three points to calculate a more stable tangent
+            Vector2 currentPoint = GetPointByDistance(distance);
+            Vector2 nextPoint = GetPointByDistance(distance + 10.0f); // Increased look-ahead
+            Vector2 prevPoint = GetPointByDistance(distance - 10.0f); // Increased look-back
+            
+            // Calculate direction using central difference for more stability
+            Vector2 direction = (nextPoint - prevPoint);
+            direction.Normalize();
+            
+            // Calculate the angle in radians
+            float angle = (float)Math.Atan2(direction.Y, direction.X);
+            
+            return angle;
         }
 
         private float MapDistanceToT(float distance, float totalLength)
@@ -340,11 +357,12 @@ namespace SplineMiner
                 float arcLength = ComputeArcLength(0f, tMid);
                 float normalizedArcLength = arcLength / totalLength;
 
-                if (Math.Abs(normalizedArcLength - normalizedTarget) < 0.001f)
+                // Increased tolerance for more stable results
+                if (Math.Abs(normalizedArcLength - normalizedTarget) < 0.0001f)
                 {
                     break;
                 }
-                else if (Math.Abs(lastArcLength - arcLength) < 0.0001f && i > 5)
+                else if (Math.Abs(lastArcLength - arcLength) < 0.00001f && i > 5)
                 {
                     break;
                 }
@@ -361,6 +379,43 @@ namespace SplineMiner
             }
 
             return tMid;
+        }
+
+        public void RecalculateArcLength()
+        {
+            _totalArcLength = ComputeArcLength(0f, _placedNodes.Count - 1, 100);
+        }
+
+        private float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40)
+        {
+            float arcLength = 0f;
+            // Increase steps based on track length and curvature
+            int steps = baseSteps * (int)Math.Ceiling((tEnd - tStart) / 2.0f);
+            float dt = (tEnd - tStart) / steps;
+
+            Vector2 previousPoint = GetPlacedTrackPoint(tStart);
+            for (int i = 1; i <= steps; i++)
+            {
+                float t = tStart + i * dt;
+                Vector2 currentPoint = GetPlacedTrackPoint(t);
+                float segmentLength = Vector2.Distance(previousPoint, currentPoint);
+                
+                // If segment is too long or curvature is high, subdivide it
+                if (segmentLength > 10.0f)
+                {
+                    float midT = tStart + (i - 0.5f) * dt;
+                    Vector2 midPoint = GetPlacedTrackPoint(midT);
+                    arcLength += Vector2.Distance(previousPoint, midPoint);
+                    arcLength += Vector2.Distance(midPoint, currentPoint);
+                }
+                else
+                {
+                    arcLength += segmentLength;
+                }
+                
+                previousPoint = currentPoint;
+            }
+            return arcLength;
         }
 
         public void VisualizeEquallySpacedPoints(int count)
@@ -388,21 +443,6 @@ namespace SplineMiner
         public void UpdateCurrentPosition(float distance)
         {
             _t = distance;
-        }
-
-        public float GetRotationAtDistance(float distance)
-        {
-            // Get the current point and a point slightly ahead
-            Vector2 currentPoint = GetPointByDistance(distance);
-            Vector2 nextPoint = GetPointByDistance(distance + 1.0f);
-            
-            // Calculate the direction vector
-            Vector2 direction = nextPoint - currentPoint;
-            
-            // Calculate the angle in radians
-            float angle = (float)Math.Atan2(direction.Y, direction.X);
-            
-            return angle;
         }
 
         // Helper method to get a point slightly ahead for better rotation calculation

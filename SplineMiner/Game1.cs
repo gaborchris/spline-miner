@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -19,12 +20,23 @@ namespace SplineMiner
         private bool _showDebugInfo = true;
         private UIManager _uiManager;
         private SpriteFont _uiFont;
+        
+        // FPS tracking
+        private float _fps;
+        private float _frameCounter;
+        private float _timeSinceLastUpdate;
+        private const float UPDATE_INTERVAL = 0.25f; // Update FPS display every quarter second
 
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            
+            // Enable fixed time step for more consistent updates
+            IsFixedTimeStep = true;
+            _graphics.SynchronizeWithVerticalRetrace = true;
+            TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 60.0f); // Target 60 FPS
         }
 
         protected override void Initialize()
@@ -88,6 +100,17 @@ namespace SplineMiner
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            // Update FPS counter
+            _timeSinceLastUpdate += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _frameCounter++;
+            
+            if (_timeSinceLastUpdate >= UPDATE_INTERVAL)
+            {
+                _fps = _frameCounter / _timeSinceLastUpdate;
+                _frameCounter = 0;
+                _timeSinceLastUpdate = 0;
+            }
 
             // Update input
             _inputManager.Update();
@@ -201,10 +224,13 @@ namespace SplineMiner
                     "V: Visualize equally spaced points",
                     "F1: Toggle debug info",
                     "Left/Right: Move cart",
-                    $"Current Tool: {_uiManager.CurrentTool}"
+                    $"Current Tool: {_uiManager.CurrentTool}",
+                    $"FPS: {_fps:F5}"
                 };
 
-                float yPos = 10;
+                // Calculate starting Y position at bottom of screen
+                float yPos = GraphicsDevice.Viewport.Height - (debugInfo.Length * 25) - 10;
+                
                 foreach (string line in debugInfo)
                 {
                     // Simple text background since we don't have a font
