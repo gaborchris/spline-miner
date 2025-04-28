@@ -32,20 +32,20 @@ namespace SplineMiner
             _previewPoint = mousePosition;
             
             // Check if hovering over endpoint
-            if (_parentTrack.ControlPoints.Count > 0)
+            if (_parentTrack.PlacedNodes.Count > 0)
             {
-                Vector2 lastPoint = _parentTrack.ControlPoints[^1];
+                Vector2 lastPoint = _parentTrack.PlacedNodes[^1].Position;
                 _isHoveringEndpoint = Vector2.Distance(mousePosition, lastPoint) <= ENDPOINT_RADIUS;
             }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (_parentTrack.ControlPoints.Count == 0 || !_previewPoint.HasValue)
+            if (_parentTrack.PlacedNodes.Count == 0 || !_previewPoint.HasValue)
                 return;
 
             // Get the last point of the existing track
-            Vector2 lastPoint = _parentTrack.ControlPoints[^1];
+            Vector2 lastPoint = _parentTrack.PlacedNodes[^1].Position;
 
             // Draw preview line segments
             Vector2 start = lastPoint;
