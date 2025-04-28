@@ -145,7 +145,7 @@ namespace SplineMiner
                     // Handle left-click for placing new points
                     else if (_inputManager.IsLeftMousePressed())
                     {
-                        if (_track.ControlPoints.Count == 0 || !_track.IsHoveringEndpoint)
+                        if (_track.AllNodes.Count == 0 || !_track.IsHoveringEndpoint)
                         {
                             _track.AddPoint(mousePosition);
                         }

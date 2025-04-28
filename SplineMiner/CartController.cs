@@ -141,7 +141,7 @@ namespace SplineMiner
             {
                 float newT = _t + _speed * deltaTime;
                 // Only move forward if we haven't reached the traversable limit
-                if (newT <= track.TraversableLength)
+                if (newT <= track.TotalArcLength)
                 {
                     _t = newT;
                 }
