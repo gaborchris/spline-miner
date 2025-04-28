@@ -16,6 +16,10 @@ namespace SplineMiner
         public UITool Tool => tool;
         public bool IsSelected => _isSelected;
 
+        
+        // Note: this does not unselect other buttons
+        // This means than other logic can check for tool selection without
+        // this button overriding the selection
         public void Update(Vector2 mousePosition, bool isMouseClicked)
         {
             _isHovered = bounds.Contains(mousePosition);
