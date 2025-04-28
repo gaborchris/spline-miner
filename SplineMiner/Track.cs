@@ -167,40 +167,49 @@ namespace SplineMiner
             if (_placedNodes.Count < 4)
                 return;
 
-            // Draw placed track
+            // Always draw the main track spline
             const int segments = 100;
             Vector2[] placedPoints = _placedNodes.Select(n => n.Position).ToArray();
             DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, placedPoints, segments, Color.Black, 2);
 
-            // Draw shadow track and nodes only when track tool is selected
-            if (_uiManager.CurrentTool == UITool.Track)
+            switch (_uiManager.CurrentTool)
             {
-                // Draw preview if available
-                _preview?.Draw(spriteBatch);
-
-                // Draw shadow nodes and their connecting curve only if we have enough nodes
-                if (_shadowNodes.Count >= MIN_SHADOW_NODES)
-                {
-                    // Create combined array for shadow curve
-                    var combinedPoints = new List<Vector2>();
-                    // Add only the last placed node for curve connection
-                    combinedPoints.Add(_placedNodes[^1].Position);
-                    combinedPoints.AddRange(_shadowNodes.Select(n => n.Position));
-
-                    if (combinedPoints.Count >= 4)
+                case UITool.Track:
+                    // Draw shadow nodes and their connecting curve
+                    if (_shadowNodes.Count >= MIN_SHADOW_NODES)
                     {
-                        DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, combinedPoints.ToArray(), segments, Color.Gray * 0.5f, 2);
-                    }
+                        // Create combined array for shadow curve
+                        var combinedPoints = new List<Vector2>();
+                        combinedPoints.Add(_placedNodes[^1].Position);
+                        combinedPoints.AddRange(_shadowNodes.Select(n => n.Position));
 
-                    // Draw shadow nodes
-                    foreach (var (node, index) in _shadowNodes.Select((n, i) => (n, i)))
-                    {
-                        node.Draw(spriteBatch, _pointTexture, index + _placedNodes.Count == _selectedNodeIndex);
+                        if (combinedPoints.Count >= 4)
+                        {
+                            DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, combinedPoints.ToArray(), segments, Color.Gray * 0.5f, 2);
+                        }
+
+                        // Draw shadow nodes as circles
+                        foreach (var (node, index) in _shadowNodes.Select((n, i) => (n, i)))
+                        {
+                            node.Draw(spriteBatch, _pointTexture, index + _placedNodes.Count == _selectedNodeIndex);
+                        }
                     }
-                }
+                    break;
+
+                case UITool.DeleteTrack:
+                    // Draw placed nodes as circles when delete tool is selected
+                    foreach (var node in _placedNodes)
+                    {
+                        node.Draw(spriteBatch, _pointTexture, false);
+                    }
+                    break;
+
+                default:
+                    // Draw nothing extra for other tools
+                    break;
             }
 
-            // Draw debug points
+            // Draw debug points if enabled
             if (_enableDebugVisualization)
             {
                 foreach (var point in _debugPoints)
@@ -212,12 +221,6 @@ namespace SplineMiner
                 {
                     _debugPoints.RemoveRange(0, 100);
                 }
-            }
-
-            // Draw placed nodes
-            foreach (var node in _placedNodes)
-            {
-                node.Draw(spriteBatch, _pointTexture, false);
             }
         }
 

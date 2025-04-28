@@ -125,6 +125,7 @@ namespace SplineMiner
             switch (_uiManager.CurrentTool)
             {
                 case UITool.Track:
+                    
                     // Handle right-click drag for editing shadow nodes
                     if (_inputManager.IsRightMousePressed())
                     {
