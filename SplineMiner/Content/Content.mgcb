@@ -20,3 +20,6 @@
 /processorParam:TextureFormat=Compressed
 /build:debug_font.spritefont
 
+#begin SdfCompute.fx
+/copy:SdfCompute.fx
+
