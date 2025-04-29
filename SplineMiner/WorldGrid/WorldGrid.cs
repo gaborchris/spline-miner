@@ -18,9 +18,16 @@ namespace SplineMiner.WorldGrid
         private int _totalCells = 0;
         private int _visibleCells = 0;
         
-        public int Width { get; }
-        public int Height { get; }
-        public float CellSize { get; }
+        // Grid parameters
+        private int _width;
+        private int _height;
+        private float _cellSize;
+        private float _caveProbability = 0.45f;
+        
+        public int Width => _width;
+        public int Height => _height;
+        public float CellSize => _cellSize;
+        public float CaveProbability => _caveProbability;
         
         // Statistics properties for debugging
         public int TotalCells => _totalCells;
@@ -28,10 +35,21 @@ namespace SplineMiner.WorldGrid
 
         public WorldGrid(int width, int height, float cellSize, int seed = 0)
         {
-            Width = width;
-            Height = height;
-            CellSize = cellSize;
+            _width = width;
+            _height = height;
+            _cellSize = cellSize;
             _random = seed == 0 ? new Random() : new Random(seed);
+        }
+        
+        /// <summary>
+        /// Updates the grid parameters without regenerating the grid
+        /// </summary>
+        public void UpdateParameters(int width, int height, float cellSize, float caveProbability)
+        {
+            _width = width;
+            _height = height;
+            _cellSize = cellSize;
+            _caveProbability = caveProbability;
         }
 
         public void Initialize(GraphicsDevice graphicsDevice)
@@ -49,21 +67,18 @@ namespace SplineMiner.WorldGrid
             _cells.Clear();
             
             // Calculate world bounds
-            float worldWidth = Width * CellSize;
-            float worldHeight = Height * CellSize;
+            float worldWidth = _width * _cellSize;
+            float worldHeight = _height * _cellSize;
             float startX = -worldWidth / 2;
             float startY = -worldHeight / 2;
             
-            // Parameters for cave generation
-            float caveProbability = 0.45f; // Probability of a cell being a cave (empty)
-            
             // Generate cells
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y < _height; y++)
             {
-                for (int x = 0; x < Width; x++)
+                for (int x = 0; x < _width; x++)
                 {
-                    float posX = startX + x * CellSize + CellSize / 2;
-                    float posY = startY + y * CellSize + CellSize / 2;
+                    float posX = startX + x * _cellSize + _cellSize / 2;
+                    float posY = startY + y * _cellSize + _cellSize / 2;
                     
                     // Simple procedural generation - more caves toward the center
                     float distanceToCenter = Vector2.Distance(
@@ -75,9 +90,9 @@ namespace SplineMiner.WorldGrid
                     
                     // Invert so center has more caves
                     float caveFactor = 1.0f - normalizedDistance;
-                    bool isActive = _random.NextDouble() > (caveProbability + caveFactor * 0.3f);
+                    bool isActive = _random.NextDouble() > (_caveProbability + caveFactor * 0.3f);
                     
-                    _cells.Add(new GridCell(new Vector2(posX, posY), CellSize, isActive));
+                    _cells.Add(new GridCell(new Vector2(posX, posY), _cellSize, isActive));
                 }
             }
             
@@ -95,7 +110,7 @@ namespace SplineMiner.WorldGrid
             ), inverseView);
             
             // Add padding to ensure we draw cells just off-screen
-            float padding = CellSize * 2;
+            float padding = _cellSize * 2;
             Rectangle viewBounds = new Rectangle(
                 (int)(topLeft.X - padding),
                 (int)(topLeft.Y - padding),
@@ -128,22 +143,22 @@ namespace SplineMiner.WorldGrid
         public GridCell GetCellAtPosition(Vector2 worldPosition)
         {
             // Calculate grid coordinates from world position
-            float worldWidth = Width * CellSize;
-            float worldHeight = Height * CellSize;
+            float worldWidth = _width * _cellSize;
+            float worldHeight = _height * _cellSize;
             float startX = -worldWidth / 2;
             float startY = -worldHeight / 2;
             
-            int gridX = (int)((worldPosition.X - startX) / CellSize);
-            int gridY = (int)((worldPosition.Y - startY) / CellSize);
+            int gridX = (int)((worldPosition.X - startX) / _cellSize);
+            int gridY = (int)((worldPosition.Y - startY) / _cellSize);
             
             // Check if within grid bounds
-            if (gridX < 0 || gridX >= Width || gridY < 0 || gridY >= Height)
+            if (gridX < 0 || gridX >= _width || gridY < 0 || gridY >= _height)
             {
                 return null;
             }
             
             // Find the cell at the calculated index
-            int index = gridY * Width + gridX;
+            int index = gridY * _width + gridX;
             if (index >= 0 && index < _cells.Count)
             {
                 var cell = _cells[index];

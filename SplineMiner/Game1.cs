@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SplineMiner.WorldGrid;
+using SplineMiner.UI;
 
 namespace SplineMiner
 {
@@ -89,9 +90,6 @@ namespace SplineMiner
             _uiManager = new UIManager(debugFont, GraphicsDevice);
             _debugManager = new DebugManager(debugFont);
             
-            // Give the debug manager access to the world grid for statistics
-            _debugManager.SetWorldGrid(_worldGrid);
-            
             // Initialize the track with test data
             InitializeTrack();
             
@@ -104,6 +102,32 @@ namespace SplineMiner
             // Initialize world grid
             _worldGrid.Initialize(GraphicsDevice);
             _gridInteractionManager = new GridInteractionManager(_inputManager, _worldGrid);
+            
+            // Initialize debug panels with grid reference
+            _debugManager.Initialize(GraphicsDevice, _worldGrid, _inputManager);
+            
+            // Set up world parameter panel event handlers
+            SetupWorldParameterEvents();
+        }
+        
+        private void SetupWorldParameterEvents()
+        {
+            // Get reference to the world parameter panel from debug manager
+            var parameterPanel = _debugManager.GetWorldParameterPanel();
+            if (parameterPanel != null)
+            {
+                // Set initial track size
+                parameterPanel.UseLargeTrack = _useLargeTrack;
+                
+                // Subscribe to track size toggle event
+                parameterPanel.OnTrackSizeToggle += (useLargeTrack) =>
+                {
+                    _useLargeTrack = useLargeTrack;
+                    InitializeTrack();
+                    _track.LoadContent(GraphicsDevice);
+                    _track.RecalculateArcLength();
+                };
+            }
         }
 
         private void InitializeTrack()
@@ -146,21 +170,6 @@ namespace SplineMiner
             if (_inputManager.IsKeyPressed(Keys.F1))
             {
                 _debugManager.ShowDebugInfo = !_debugManager.ShowDebugInfo;
-            }
-
-            // Toggle between large and small track with F2
-            if (_inputManager.IsKeyPressed(Keys.F2))
-            {
-                _useLargeTrack = !_useLargeTrack;
-                InitializeTrack();
-                _track.LoadContent(GraphicsDevice);
-                _track.RecalculateArcLength();
-            }
-            
-            // Regenerate world grid with F3
-            if (_inputManager.IsKeyPressed(Keys.F3))
-            {
-                _worldGrid.GenerateGrid();
             }
 
             base.Update(gameTime);

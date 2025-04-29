@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Diagnostics;
+using Microsoft.Xna.Framework.Input;
+using SplineMiner.UI;
 using SplineMiner.WorldGrid;
 using System;
 using System.Collections.Generic;
@@ -11,109 +12,97 @@ namespace SplineMiner
     {
         private readonly SpriteFont _debugFont;
         private bool _showDebugInfo = true;
-        private float _fps;
-        private float _frameCounter;
-        private float _timeSinceLastUpdate;
-        private const float UPDATE_INTERVAL = 0.25f;
         
-        private readonly Stopwatch _frameTimer = new Stopwatch();
-        private float _actualFps;
-        private float _frameTimeMs;
+        // UI panels
+        private StatsPanel _statsPanel;
+        private WorldParameterPanel _worldParameterPanel;
         
-        // Reference to the world grid for statistics
-        private WorldGrid.WorldGrid _worldGrid;
-
         public bool ShowDebugInfo
         {
             get => _showDebugInfo;
-            set => _showDebugInfo = value;
+            set
+            {
+                _showDebugInfo = value;
+                if (_statsPanel != null) _statsPanel.IsVisible = value;
+                if (_worldParameterPanel != null) _worldParameterPanel.IsVisible = value;
+            }
+        }
+        
+        /// <summary>
+        /// Gets the WorldParameterPanel for external configuration
+        /// </summary>
+        public WorldParameterPanel GetWorldParameterPanel()
+        {
+            return _worldParameterPanel;
         }
 
         public DebugManager(SpriteFont debugFont)
         {
             _debugFont = debugFont;
-            _frameTimer.Start();
         }
         
-        public void SetWorldGrid(WorldGrid.WorldGrid worldGrid)
+        public void Initialize(GraphicsDevice graphicsDevice, WorldGrid.WorldGrid worldGrid, InputManager inputManager)
         {
-            _worldGrid = worldGrid;
+            // Initialize panels
+            _statsPanel = new StatsPanel(_debugFont, graphicsDevice);
+            _worldParameterPanel = new WorldParameterPanel(worldGrid, inputManager, _debugFont, graphicsDevice);
+            
+            // Set references
+            _statsPanel.SetWorldGrid(worldGrid);
+            
+            // Set initial visibility
+            _statsPanel.IsVisible = _showDebugInfo;
+            _worldParameterPanel.IsVisible = _showDebugInfo;
         }
 
         public void Update(GameTime gameTime)
         {
-            _timeSinceLastUpdate += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _frameCounter++;
+            if (!_showDebugInfo) return;
             
-            if (_timeSinceLastUpdate >= UPDATE_INTERVAL)
+            // Update panels
+            _statsPanel?.Update(gameTime);
+            _worldParameterPanel?.Update();
+            
+            // Toggle between panels with F4
+            if (Keyboard.GetState().IsKeyDown(Keys.F4))
             {
-                _fps = _frameCounter / _timeSinceLastUpdate;
-                _frameCounter = 0;
-                _timeSinceLastUpdate = 0;
-                
-                // Calculate actual FPS based on frame time
-                _actualFps = 1000.0f / _frameTimeMs;
+                TogglePanels();
             }
-            
-            // Calculate frame time
-            _frameTimeMs = (float)_frameTimer.Elapsed.TotalMilliseconds;
-            _frameTimer.Restart();
+        }
+        
+        private void TogglePanels()
+        {
+            // If both are visible, hide world parameter panel
+            if (_statsPanel.IsVisible && _worldParameterPanel.IsVisible)
+            {
+                _worldParameterPanel.IsVisible = false;
+            }
+            // If only stats panel is visible, hide stats and show parameters
+            else if (_statsPanel.IsVisible)
+            {
+                _statsPanel.IsVisible = false;
+                _worldParameterPanel.IsVisible = true;
+            }
+            // If only parameters panel is visible, show both
+            else if (_worldParameterPanel.IsVisible)
+            {
+                _statsPanel.IsVisible = true;
+            }
+            // If both are hidden, show stats panel
+            else
+            {
+                _statsPanel.IsVisible = true;
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, UITool currentTool)
         {
             if (!_showDebugInfo) return;
-
-            // Create a simple debug background
-            Texture2D debugBg = new Texture2D(graphicsDevice, 1, 1);
-            debugBg.SetData(new[] { Color.Black * 0.7f });
             
-            // Basic debug info
-            var debugLines = new List<string>
-            {
-                "Controls:",
-                "T: Test cart movement",
-                "V: Visualize equally spaced points",
-                "F1: Toggle debug info",
-                "F3: Regenerate grid",
-                "Left/Right: Move cart",
-                $"Current Tool: {currentTool}",
-                $"Game FPS: {_fps:F1}",
-                $"Actual FPS: {_actualFps:F1}",
-                $"Frame Time: {_frameTimeMs:F1} ms"
-            };
+            // Draw panels
+            _statsPanel?.Draw(spriteBatch);
+            _worldParameterPanel?.Draw(spriteBatch);
             
-            // Add grid stats if available
-            if (_worldGrid != null)
-            {
-                debugLines.Add($"Grid Size: {_worldGrid.Width}x{_worldGrid.Height}");
-                debugLines.Add($"Total Cells: {_worldGrid.TotalCells}");
-                debugLines.Add($"Visible Cells: {_worldGrid.VisibleCells}");
-                
-                float visiblePercentage = _worldGrid.TotalCells > 0 
-                    ? (100.0f * _worldGrid.VisibleCells / _worldGrid.TotalCells) 
-                    : 0;
-                debugLines.Add($"Visible: {visiblePercentage:F1}%");
-            }
-
-            // Calculate starting Y position at bottom of screen
-            float yPos = graphicsDevice.Viewport.Height - (debugLines.Count * 25) - 10;
-            
-            foreach (string line in debugLines)
-            {
-                // Calculate width based on text length
-                float width = _debugFont?.MeasureString(line).X ?? 250;
-                width = Math.Max(width + 10, 250); // Minimum width of 250
-                
-                spriteBatch.Draw(debugBg, new Rectangle(10, (int)yPos, (int)width, 20), Color.White);
-                
-                if (_debugFont != null)
-                {
-                    spriteBatch.DrawString(_debugFont, line, new Vector2(15, yPos), Color.White);
-                }
-                
-                yPos += 25;
-            }
         }
     }
 } 
