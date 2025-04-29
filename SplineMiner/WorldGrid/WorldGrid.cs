@@ -14,9 +14,17 @@ namespace SplineMiner.WorldGrid
         private readonly Random _random;
         private Texture2D _cellTexture;
         
+        // Performance tracking
+        private int _totalCells = 0;
+        private int _visibleCells = 0;
+        
         public int Width { get; }
         public int Height { get; }
         public float CellSize { get; }
+        
+        // Statistics properties for debugging
+        public int TotalCells => _totalCells;
+        public int VisibleCells => _visibleCells;
 
         public WorldGrid(int width, int height, float cellSize, int seed = 0)
         {
@@ -72,26 +80,77 @@ namespace SplineMiner.WorldGrid
                     _cells.Add(new GridCell(new Vector2(posX, posY), CellSize, isActive));
                 }
             }
+            
+            _totalCells = _cells.Count;
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            // Get the visible area in world space
+            Matrix inverseView = Matrix.Invert(CameraManager.Instance.Transform);
+            Vector2 topLeft = Vector2.Transform(Vector2.Zero, inverseView);
+            Vector2 bottomRight = Vector2.Transform(new Vector2(
+                CameraManager.Instance.Viewport.Width,
+                CameraManager.Instance.Viewport.Height
+            ), inverseView);
+            
+            // Add padding to ensure we draw cells just off-screen
+            float padding = CellSize * 2;
+            Rectangle viewBounds = new Rectangle(
+                (int)(topLeft.X - padding),
+                (int)(topLeft.Y - padding),
+                (int)(bottomRight.X - topLeft.X + padding * 2),
+                (int)(bottomRight.Y - topLeft.Y + padding * 2)
+            );
+            
+            // Reset visible cell counter
+            _visibleCells = 0;
+            
+            // Only render cells that are within the view
             foreach (var cell in _cells)
             {
                 if (cell.IsActive)
                 {
                     var bounds = cell.GetBounds();
-                    spriteBatch.Draw(
-                        _cellTexture,
-                        bounds,
-                        cell.Color);
+                    if (viewBounds.Intersects(bounds))
+                    {
+                        spriteBatch.Draw(
+                            _cellTexture,
+                            bounds,
+                            cell.Color);
+                        
+                        _visibleCells++;
+                    }
                 }
             }
         }
 
         public GridCell GetCellAtPosition(Vector2 worldPosition)
         {
-            return _cells.Find(cell => cell.Contains(worldPosition));
+            // Calculate grid coordinates from world position
+            float worldWidth = Width * CellSize;
+            float worldHeight = Height * CellSize;
+            float startX = -worldWidth / 2;
+            float startY = -worldHeight / 2;
+            
+            int gridX = (int)((worldPosition.X - startX) / CellSize);
+            int gridY = (int)((worldPosition.Y - startY) / CellSize);
+            
+            // Check if within grid bounds
+            if (gridX < 0 || gridX >= Width || gridY < 0 || gridY >= Height)
+            {
+                return null;
+            }
+            
+            // Find the cell at the calculated index
+            int index = gridY * Width + gridX;
+            if (index >= 0 && index < _cells.Count)
+            {
+                var cell = _cells[index];
+                return cell.IsActive ? cell : null;
+            }
+            
+            return null;
         }
 
         public void DestroyCell(Vector2 worldPosition)

@@ -21,7 +21,8 @@ namespace SplineMiner.WorldGrid
             // Only allow interaction with grid when using the appropriate tool
             if (currentTool != UITool.Destroy) return;
 
-            if (_inputManager.IsLeftMousePressed())
+            // Check for both initial click and held-down mouse state
+            if (_inputManager.IsLeftMousePressed() || _inputManager.IsLeftMouseHeld())
             {
                 // Convert screen position to world position
                 Vector2 screenPos = _inputManager.MousePosition;
