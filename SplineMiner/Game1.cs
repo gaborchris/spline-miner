@@ -47,8 +47,9 @@ namespace SplineMiner
             CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
             CameraManager.Instance.SetTarget(_player);
             
-            // Initialize world grid
-            _worldGrid = new WorldGrid.WorldGrid(50, 50, 20);
+            // Initialize world grid with a more reasonable size
+            // (5000x500 was causing performance issues - 500x200 is more manageable)
+            _worldGrid = new WorldGrid.WorldGrid(500, 200, 20);
 
             base.Initialize();
         }
@@ -87,6 +88,9 @@ namespace SplineMiner
             // Initialize managers
             _uiManager = new UIManager(debugFont, GraphicsDevice);
             _debugManager = new DebugManager(debugFont);
+            
+            // Give the debug manager access to the world grid for statistics
+            _debugManager.SetWorldGrid(_worldGrid);
             
             // Initialize the track with test data
             InitializeTrack();
