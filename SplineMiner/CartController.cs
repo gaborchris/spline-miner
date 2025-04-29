@@ -11,41 +11,6 @@ using SplineMiner.Core;
 namespace SplineMiner
 {
     // Core interfaces
-    public interface ICart
-    {
-        void Update(GameTime gameTime, ITrack track);
-        void Draw(SpriteBatch spriteBatch);
-        Vector2 Position { get; }
-        float CurrentDistance { get; }
-    }
-
-    public interface IMovementController
-    {
-        void UpdatePosition(GameTime gameTime, ITrack track);
-        void UpdateRotation(ITrack track);
-        Vector2 Position { get; }
-        float Rotation { get; }
-        float Speed { get; set; }
-        float CurrentDistance { get; set; }
-    }
-
-    public interface IWheelSystem
-    {
-        void UpdateWheelPositions(ITrack track, float currentDistance);
-        Vector2 FrontWheelPosition { get; }
-        Vector2 BackWheelPosition { get; }
-    }
-
-    public interface IDebugVisualizer
-    {
-        void DrawDebugInfo(SpriteBatch spriteBatch, Texture2D debugTexture);
-        void StartMovementTest();
-        void AnalyzeMovementSmoothness();
-        void Update(GameTime gameTime);
-        bool IsTestingMovement { get; }
-    }
-
-    // Movement controller implementation
     public class CartMovementController : IMovementController
     {
         private const float MIN_MOVEMENT_THRESHOLD = 0.1f;
