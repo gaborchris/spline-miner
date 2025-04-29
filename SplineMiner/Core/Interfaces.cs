@@ -125,6 +125,12 @@ namespace SplineMiner.Core
         /// Gets whether a movement test is currently in progress.
         /// </summary>
         bool IsTestingMovement { get; }
+
+        /// <summary> 
+        /// Updates the debug visualizer.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>    
+        void Update(GameTime gameTime);
     }
 
     /// <summary>
