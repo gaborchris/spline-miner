@@ -5,7 +5,7 @@ namespace SplineMiner.TestData
 {
     public static class TestTrack
     {
-        public static List<Vector2> GetTestTrackNodes()
+        public static List<Vector2> GetLargeTrackNodes()
         {
             return new List<Vector2>
             {
@@ -135,6 +135,51 @@ namespace SplineMiner.TestData
                 new(4900, 300),
                 new(4950, 350),
                 new(5000, 400)
+            };
+        }
+
+        public static List<Vector2> GetSmallTrackNodes()
+        {
+            return new List<Vector2>
+            {
+                // Start with a gentle curve
+                new(100, 300),
+                new(150, 280),
+                new(200, 320),
+                new(250, 290),
+                new(300, 310),
+                
+                // First loop
+                new(350, 350),
+                new(400, 400),
+                new(450, 350),
+                new(500, 300),
+                new(550, 350),
+                
+                // Downward slope
+                new(600, 300),
+                new(650, 250),
+                new(700, 200),
+                
+                // Valley section
+                new(750, 250),
+                new(800, 300),
+                new(850, 250),
+                
+                // Upward climb
+                new(900, 300),
+                new(950, 350),
+                new(1000, 400),
+                
+                // Second loop
+                new(1050, 350),
+                new(1100, 300),
+                new(1150, 350),
+                
+                // Final stretch
+                new(1200, 300),
+                new(1250, 250),
+                new(1300, 200)
             };
         }
     }

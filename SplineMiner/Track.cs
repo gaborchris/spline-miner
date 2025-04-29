@@ -323,15 +323,5 @@ namespace SplineMiner
             _t = distance;
         }
 
-        // Helper method to get a point slightly ahead for better rotation calculation
-        private Vector2 GetPointAhead(float distance, float lookAhead = 1.0f)
-        {
-            float nextDistance = distance + lookAhead;
-            if (nextDistance > _totalArcLength)
-            {
-                nextDistance -= _totalArcLength;
-            }
-            return GetPointByDistance(nextDistance);
-        }
     }
 }
