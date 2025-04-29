@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SplineMiner.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;
 
@@ -24,6 +25,19 @@ namespace SplineMiner.WorldGrid
         private float _cellSize;
         private float _caveProbability = 0.45f;
         
+        // Generation strategy
+        private IWorldGenerationStrategy _generationStrategy;
+        private GenerationParameters _generationParameters;
+        
+        // Available generation strategies
+        private static readonly List<IWorldGenerationStrategy> _availableStrategies = new List<IWorldGenerationStrategy>
+        {
+            new CenterCaveStrategy(),
+            new CellularAutomataStrategy(),
+            new DrunkardWalkStrategy(),
+            new MazeGenerationStrategy()
+        };
+        
         public int Width => _width;
         public int Height => _height;
         public float CellSize => _cellSize;
@@ -32,6 +46,10 @@ namespace SplineMiner.WorldGrid
         // Statistics properties for debugging
         public int TotalCells => _totalCells;
         public int VisibleCells => _visibleCells;
+        
+        // Generation strategy properties
+        public IWorldGenerationStrategy GenerationStrategy => _generationStrategy;
+        public IReadOnlyList<IWorldGenerationStrategy> AvailableStrategies => _availableStrategies.AsReadOnly();
 
         public WorldGrid(int width, int height, float cellSize, int seed = 0)
         {
@@ -39,6 +57,12 @@ namespace SplineMiner.WorldGrid
             _height = height;
             _cellSize = cellSize;
             _random = seed == 0 ? new Random() : new Random(seed);
+            
+            // Initialize with default generation parameters
+            _generationParameters = new GenerationParameters(_caveProbability, seed);
+            
+            // Set default generation strategy
+            _generationStrategy = _availableStrategies[0]; // Center cave strategy
         }
         
         /// <summary>
@@ -50,6 +74,28 @@ namespace SplineMiner.WorldGrid
             _height = height;
             _cellSize = cellSize;
             _caveProbability = caveProbability;
+            
+            // Update generation parameters
+            _generationParameters.CaveProbability = caveProbability;
+        }
+        
+        /// <summary>
+        /// Sets the generation strategy to use for world generation
+        /// </summary>
+        public void SetGenerationStrategy(IWorldGenerationStrategy strategy)
+        {
+            _generationStrategy = strategy ?? _availableStrategies[0];
+        }
+        
+        /// <summary>
+        /// Sets the generation strategy by index from the available strategies list
+        /// </summary>
+        public void SetGenerationStrategy(int strategyIndex)
+        {
+            if (strategyIndex >= 0 && strategyIndex < _availableStrategies.Count)
+            {
+                _generationStrategy = _availableStrategies[strategyIndex];
+            }
         }
 
         public void Initialize(GraphicsDevice graphicsDevice)
@@ -72,7 +118,10 @@ namespace SplineMiner.WorldGrid
             float startX = -worldWidth / 2;
             float startY = -worldHeight / 2;
             
-            // Generate cells
+            // Update generation parameters with current settings
+            _generationParameters.CaveProbability = _caveProbability;
+            
+            // Generate cells using the selected strategy
             for (int y = 0; y < _height; y++)
             {
                 for (int x = 0; x < _width; x++)
@@ -80,17 +129,14 @@ namespace SplineMiner.WorldGrid
                     float posX = startX + x * _cellSize + _cellSize / 2;
                     float posY = startY + y * _cellSize + _cellSize / 2;
                     
-                    // Simple procedural generation - more caves toward the center
-                    float distanceToCenter = Vector2.Distance(
-                        new Vector2(posX, posY), 
-                        Vector2.Zero);
-                    
-                    float maxDistance = MathF.Sqrt(worldWidth * worldWidth + worldHeight * worldHeight) / 2;
-                    float normalizedDistance = distanceToCenter / maxDistance;
-                    
-                    // Invert so center has more caves
-                    float caveFactor = 1.0f - normalizedDistance;
-                    bool isActive = _random.NextDouble() > (_caveProbability + caveFactor * 0.3f);
+                    // Use the strategy to determine if cell should be active
+                    bool isActive = _generationStrategy.ShouldBeActive(
+                        x, y, 
+                        posX, posY, 
+                        _width, _height, 
+                        worldWidth, worldHeight, 
+                        _random, 
+                        _generationParameters);
                     
                     _cells.Add(new GridCell(new Vector2(posX, posY), _cellSize, isActive));
                 }

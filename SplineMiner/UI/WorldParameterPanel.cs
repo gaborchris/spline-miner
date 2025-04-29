@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SplineMiner.WorldGrid;
+using SplineMiner.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;
 
@@ -22,6 +23,7 @@ namespace SplineMiner.UI
         private List<Slider> _sliders = new List<Slider>();
         private Button _regenerateButton;
         private Button _trackSizeToggleButton;
+        private Dropdown _strategyDropdown;
         
         // Panel properties
         private Rectangle _panelBounds;
@@ -32,6 +34,7 @@ namespace SplineMiner.UI
         private const int BUTTON_HEIGHT = 30;
         private const int BUTTON_SPACING = 15;
         private const int SECTION_SPACING = 30; // Space between sections
+        private const int DROPDOWN_HEIGHT = 30;
         
         // World parameters with default values
         private float _caveProbability = 0.45f;
@@ -100,6 +103,28 @@ namespace SplineMiner.UI
             Vector2 titleSize = _font.MeasureString(title);
             y += (int)titleSize.Y + 15;
             
+            // Generation Strategy section
+            y = AddSectionHeader("Generation Strategy", y);
+            
+            // Strategy dropdown - get strategy names from world grid
+            List<string> strategyNames = new List<string>();
+            foreach (var strategy in _worldGrid.AvailableStrategies)
+            {
+                strategyNames.Add(strategy.Name);
+            }
+            
+            // Extra space after section header
+            y += 30;
+            
+            // Create strategy dropdown
+            _strategyDropdown = new Dropdown(
+                new Rectangle(_panelBounds.X + PADDING, y, _panelBounds.Width - PADDING * 2, DROPDOWN_HEIGHT),
+                strategyNames,
+                "Generation Strategy",
+                OnStrategySelected
+            );
+            y += DROPDOWN_HEIGHT + BUTTON_SPACING;
+            
             // Grid Parameters section header
             y = AddSectionHeader("Grid Parameters", y);
             
@@ -150,16 +175,24 @@ namespace SplineMiner.UI
             y += BUTTON_HEIGHT + BUTTON_SPACING + SECTION_SPACING;
             
             // Track Controls section
-            y = AddSectionHeader("Track Controls", y);
+            // y = AddSectionHeader("Track Controls", y);
             
             // Extra space after section header
-            y += 20;
+            // y += 20;
             
             // Track size toggle button
             _trackSizeToggleButton = new Button(
                 new Rectangle(_panelBounds.X + PADDING, y, _panelBounds.Width - PADDING * 2, BUTTON_HEIGHT),
                 _useLargeTrack ? "Use Small Track" : "Use Large Track"
             );
+        }
+        
+        private void OnStrategySelected(int index)
+        {
+            if (_worldGrid != null)
+            {
+                _worldGrid.SetGenerationStrategy(index);
+            }
         }
         
         private int AddSectionHeader(string title, int yPosition)
@@ -194,6 +227,9 @@ namespace SplineMiner.UI
             bool isMousePressed = _inputManager.IsLeftMousePressed();
             bool isMouseHeld = _inputManager.IsLeftMouseHeld();
             Vector2 mousePosition = _inputManager.MousePosition;
+            
+            // Update strategy dropdown
+            _strategyDropdown.Update(mousePosition, isMousePressed, isMouseHeld);
             
             foreach (var slider in _sliders)
             {
@@ -240,13 +276,22 @@ namespace SplineMiner.UI
             y += titleSize.Y + 15;
             
             // Draw section headers
-            y = DrawSectionHeader(spriteBatch, "Grid Parameters", y);
+            y = DrawSectionHeader(spriteBatch, "Generation Strategy", y);
+            
+            // Spacing for dropdown
+            float gridParamsY = y + DROPDOWN_HEIGHT + BUTTON_SPACING + SECTION_SPACING;
+            
+            // Draw grid parameters section
+            // gridParamsY = DrawSectionHeader(spriteBatch, "Grid Parameters", gridParamsY);
             
             // Calculate position for next section based on slider count
-            float trackSectionY = y + SLIDER_SPACING * _sliders.Count + BUTTON_HEIGHT + BUTTON_SPACING + SECTION_SPACING;
+            float trackSectionY = gridParamsY +  SLIDER_SPACING * _sliders.Count + BUTTON_HEIGHT + BUTTON_SPACING + SECTION_SPACING;
             
             // Draw Track Controls section
             trackSectionY = DrawSectionHeader(spriteBatch, "Track Controls", trackSectionY);
+            
+            // Draw dropdown button (but not the dropdown list yet)
+            _strategyDropdown.DrawButton(spriteBatch, _pixelTexture, _font);
             
             // Draw all sliders
             foreach (var slider in _sliders)
@@ -257,6 +302,9 @@ namespace SplineMiner.UI
             // Draw buttons
             _regenerateButton.Draw(spriteBatch, _pixelTexture, _font);
             _trackSizeToggleButton.Draw(spriteBatch, _pixelTexture, _font);
+            
+            // Draw dropdown list LAST so it appears on top of everything else
+            _strategyDropdown.DrawDropdownList(spriteBatch, _pixelTexture, _font);
         }
         
         private float DrawSectionHeader(SpriteBatch spriteBatch, string headerText, float yPosition)
@@ -455,6 +503,168 @@ namespace SplineMiner.UI
                         Color.White);
                 }
             }
+        }
+        
+        private class Dropdown
+        {
+            public Rectangle Bounds { get; }
+            public string Label { get; }
+            private readonly List<string> _items;
+            private readonly Action<int> _onItemSelected;
+            
+            private int _selectedIndex = 0;
+            private bool _isOpen = false;
+            private Rectangle _dropdownListBounds;
+            private const int ITEM_HEIGHT = 25;
+            
+            public Dropdown(Rectangle bounds, List<string> items, string label, Action<int> onItemSelected)
+            {
+                Bounds = bounds;
+                _items = items;
+                Label = label;
+                _onItemSelected = onItemSelected;
+                
+                // Calculate dropdown list bounds
+                _dropdownListBounds = new Rectangle(
+                    bounds.X,
+                    bounds.Y + bounds.Height,
+                    bounds.Width,
+                    ITEM_HEIGHT * items.Count
+                );
+            }
+            
+            public void Update(Vector2 mousePosition, bool isMousePressed, bool isMouseHeld)
+            {
+                // Toggle dropdown open/closed when clicked
+                if (isMousePressed && Bounds.Contains(mousePosition))
+                {
+                    _isOpen = !_isOpen;
+                }
+                
+                // Process item selection if dropdown is open
+                if (_isOpen && isMousePressed)
+                {
+                    for (int i = 0; i < _items.Count; i++)
+                    {
+                        Rectangle itemBounds = new Rectangle(
+                            _dropdownListBounds.X,
+                            _dropdownListBounds.Y + i * ITEM_HEIGHT,
+                            _dropdownListBounds.Width,
+                            ITEM_HEIGHT
+                        );
+                        
+                        if (itemBounds.Contains(mousePosition))
+                        {
+                            _selectedIndex = i;
+                            _isOpen = false;
+                            
+                            // Notify of selection change
+                            _onItemSelected?.Invoke(_selectedIndex);
+                            break;
+                        }
+                    }
+                }
+                
+                // Close dropdown if clicked outside
+                if (isMousePressed && _isOpen && !_dropdownListBounds.Contains(mousePosition) && !Bounds.Contains(mousePosition))
+                {
+                    _isOpen = false;
+                }
+            }
+            
+            public void Draw(SpriteBatch spriteBatch, Texture2D pixelTexture, SpriteFont font)
+            {
+                // Draw the button portion only
+                DrawButton(spriteBatch, pixelTexture, font);
+            }
+            
+            public void DrawButton(SpriteBatch spriteBatch, Texture2D pixelTexture, SpriteFont font)
+            {
+                // Draw dropdown button
+                Color bgColor = _isOpen ? Color.Gray : Color.DarkGray;
+                spriteBatch.Draw(pixelTexture, Bounds, bgColor);
+                
+                // Draw button border
+                int borderThickness = 2;
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(Bounds.X, Bounds.Y, Bounds.Width, borderThickness), 
+                    Color.White);
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(Bounds.X, Bounds.Y + Bounds.Height - borderThickness, Bounds.Width, borderThickness), 
+                    Color.White);
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(Bounds.X, Bounds.Y, borderThickness, Bounds.Height), 
+                    Color.White);
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(Bounds.X + Bounds.Width - borderThickness, Bounds.Y, borderThickness, Bounds.Height), 
+                    Color.White);
+                
+                // Draw selected item
+                if (font != null && _selectedIndex >= 0 && _selectedIndex < _items.Count)
+                {
+                    string selectedText = _items[_selectedIndex];
+                    Vector2 textSize = font.MeasureString(selectedText);
+                    spriteBatch.DrawString(font, selectedText, 
+                        new Vector2(Bounds.X + 10, Bounds.Y + (Bounds.Height - textSize.Y) / 2),
+                        Color.White);
+                    
+                    // Draw dropdown arrow
+                    string arrow = _isOpen ? "<" : ">";
+                    Vector2 arrowSize = font.MeasureString(arrow);
+                    spriteBatch.DrawString(font, arrow, 
+                        new Vector2(Bounds.X + Bounds.Width - arrowSize.X - 10, Bounds.Y + (Bounds.Height - arrowSize.Y) / 2),
+                        Color.White);
+                }
+            }
+            
+            public void DrawDropdownList(SpriteBatch spriteBatch, Texture2D pixelTexture, SpriteFont font)
+            {
+                if (!_isOpen) return;
+                
+                int borderThickness = 2;
+                
+                // Draw list background
+                spriteBatch.Draw(pixelTexture, _dropdownListBounds, Color.DarkGray * 0.9f);
+                
+                // Draw list border
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(_dropdownListBounds.X, _dropdownListBounds.Y, _dropdownListBounds.Width, borderThickness), 
+                    Color.White);
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(_dropdownListBounds.X, _dropdownListBounds.Y + _dropdownListBounds.Height - borderThickness, _dropdownListBounds.Width, borderThickness), 
+                    Color.White);
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(_dropdownListBounds.X, _dropdownListBounds.Y, borderThickness, _dropdownListBounds.Height), 
+                    Color.White);
+                spriteBatch.Draw(pixelTexture, 
+                    new Rectangle(_dropdownListBounds.X + _dropdownListBounds.Width - borderThickness, _dropdownListBounds.Y, borderThickness, _dropdownListBounds.Height), 
+                    Color.White);
+                
+                // Draw list items
+                if (font != null)
+                {
+                    for (int i = 0; i < _items.Count; i++)
+                    {
+                        Rectangle itemBounds = new Rectangle(
+                            _dropdownListBounds.X,
+                            _dropdownListBounds.Y + i * ITEM_HEIGHT,
+                            _dropdownListBounds.Width,
+                            ITEM_HEIGHT
+                        );
+                        
+                        // Draw item background (highlight if selected)
+                        Color itemBgColor = (i == _selectedIndex) ? Color.SlateGray : Color.Transparent;
+                        spriteBatch.Draw(pixelTexture, itemBounds, itemBgColor);
+                        
+                        // Draw item text
+                        spriteBatch.DrawString(font, _items[i], 
+                            new Vector2(itemBounds.X + 10, itemBounds.Y + (itemBounds.Height - font.LineSpacing) / 2),
+                            Color.White);
+                    }
+                }
+            }
+            
+            public bool IsOpen => _isOpen;
         }
         
         #endregion
