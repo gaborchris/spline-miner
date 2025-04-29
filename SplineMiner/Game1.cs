@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SplineMiner.WorldGrid;
 
 namespace SplineMiner
 {
@@ -19,6 +20,10 @@ namespace SplineMiner
         private DebugManager _debugManager;
         private MouseInteractionManager _mouseInteractionManager;
         private bool _useLargeTrack = false;
+        
+        // World grid components
+        private WorldGrid.WorldGrid _worldGrid;
+        private GridInteractionManager _gridInteractionManager;
         
         public Game1()
         {
@@ -41,6 +46,9 @@ namespace SplineMiner
             // Initialize camera
             CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
             CameraManager.Instance.SetTarget(_player);
+            
+            // Initialize world grid
+            _worldGrid = new WorldGrid.WorldGrid(50, 50, 20);
 
             base.Initialize();
         }
@@ -88,6 +96,10 @@ namespace SplineMiner
 
             // Precalculate arc length for the track
             _track.RecalculateArcLength();
+            
+            // Initialize world grid
+            _worldGrid.Initialize(GraphicsDevice);
+            _gridInteractionManager = new GridInteractionManager(_inputManager, _worldGrid);
         }
 
         private void InitializeTrack()
@@ -116,6 +128,9 @@ namespace SplineMiner
             
             // Update mouse interactions
             _mouseInteractionManager.Update(_uiManager.CurrentTool);
+            
+            // Update grid interactions
+            _gridInteractionManager.Update(_uiManager.CurrentTool);
 
             // Update player movement along the track
             _player.Update(gameTime, _track);
@@ -137,6 +152,12 @@ namespace SplineMiner
                 _track.LoadContent(GraphicsDevice);
                 _track.RecalculateArcLength();
             }
+            
+            // Regenerate world grid with F3
+            if (_inputManager.IsKeyPressed(Keys.F3))
+            {
+                _worldGrid.GenerateGrid();
+            }
 
             base.Update(gameTime);
         }
@@ -147,6 +168,7 @@ namespace SplineMiner
 
             // Draw game world (affected by camera)
             _spriteBatch.Begin(transformMatrix: CameraManager.Instance.Transform);
+            _worldGrid.Draw(_spriteBatch); // Draw grid first (below other elements)
             _track.Draw(_spriteBatch);
             _player.Draw(_spriteBatch);
             _spriteBatch.End();

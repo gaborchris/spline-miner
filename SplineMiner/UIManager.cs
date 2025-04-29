@@ -92,6 +92,12 @@ namespace SplineMiner
                         text = "Delete";
                         tool = UITool.DeleteTrack;
                         break;
+                    case 2:
+                        // New tool for destroying grid cells
+                        texture = _redCircle;
+                        text = "Destroy";
+                        tool = UITool.Destroy;
+                        break;
                 }
 
                 _buttons.Add(new UIButton(bounds, text, tool, _font, texture));
