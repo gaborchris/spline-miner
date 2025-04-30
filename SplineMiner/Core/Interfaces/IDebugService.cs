@@ -45,5 +45,9 @@ namespace SplineMiner.Core.Interfaces
         /// </summary>
         /// <returns>The control panel for world parameters.</returns>
         ControlPanel GetWorldParameterPanel();
+        IDebugLogger CreateLogger(string loggerName);
+        IDebugLogger GetLogger(string loggerName);
+
+        
     }
 } 

@@ -28,6 +28,8 @@ namespace SplineMiner.Core.Services
         private StatsPanel _statsPanel;
         private ControlPanel _worldParameterPanel;
 
+        private readonly Dictionary<string, IDebugLogger> _loggers = new();
+
         /// <summary>
         /// Gets or sets whether debug information should be displayed.
         /// </summary>
@@ -189,6 +191,10 @@ namespace SplineMiner.Core.Services
         public void UpdateDebug(GameTime gameTime)
         {
             Update(gameTime);
+            foreach (var logger in _loggers.Values)
+            {
+                logger.Update(gameTime);
+            }
         }
 
         /// <summary>
@@ -210,6 +216,21 @@ namespace SplineMiner.Core.Services
         {
             // TODO: Implement proper debug logging system
             System.Diagnostics.Debug.WriteLine($"[{category}] {message}");
+        }
+
+        public IDebugLogger CreateLogger(string loggerName)
+        {
+            if (_loggers.ContainsKey(loggerName))
+                return _loggers[loggerName];
+            
+            var logger = new TimedDebugLogger(this);
+            _loggers[loggerName] = logger;
+            return logger;
+        }
+
+        public IDebugLogger GetLogger(string loggerName)
+        {
+            return _loggers.TryGetValue(loggerName, out var logger) ? logger : null;
         }
     }
 }

@@ -165,6 +165,11 @@ namespace SplineMiner
             
             // Set up world parameter panel event handlers
             SetupWorldParameterEvents();
+
+            // Create and configure collision logger
+            var collisionLogger = debugManager.CreateLogger("Collision");
+            collisionLogger.IsEnabled = true;
+            collisionLogger.LogInterval = 1.0f;
         }
         
         private void SetupWorldParameterEvents()

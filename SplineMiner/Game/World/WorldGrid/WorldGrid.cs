@@ -18,6 +18,7 @@ namespace SplineMiner.Game.World.WorldGrid
         private readonly List<GridCell> _cells = new List<GridCell>();
         private readonly Random _random;
         private Texture2D _cellTexture;
+        private readonly IDebugService _debugService;
 
         // Performance tracking
         private int _totalCells = 0;
@@ -67,18 +68,15 @@ namespace SplineMiner.Game.World.WorldGrid
         public IWorldGenerationStrategy GenerationStrategy => _generationStrategy;
         public IReadOnlyList<IWorldGenerationStrategy> AvailableStrategies => _availableStrategies.AsReadOnly();
 
-        public WorldGrid(int width, int height, float cellSize, int seed = 0)
+        public WorldGrid(int width, int height, float cellSize, IDebugService debugService = null)
         {
             _width = width;
             _height = height;
             _cellSize = cellSize;
-            _random = seed == 0 ? new Random() : new Random(seed);
-
-            // Initialize with default generation parameters
-            _generationParameters = new GenerationParameters(_caveProbability, seed);
-
-            // Set default generation strategy
-            _generationStrategy = _availableStrategies[0]; // Center cave strategy
+            _debugService = debugService;
+            _random = new Random();
+            _generationParameters = new GenerationParameters(_caveProbability, _random.Next());
+            _generationStrategy = _availableStrategies[0];
         }
 
         /// <summary>
@@ -158,7 +156,7 @@ namespace SplineMiner.Game.World.WorldGrid
                         _random,
                         _generationParameters);
 
-                    var cell = new GridCell(new Vector2(posX, posY), _cellSize, isActive);
+                    var cell = new GridCell(new Vector2(posX, posY), _cellSize, isActive, _debugService);
                     _cells.Add(cell);
 
                     // Add cells to spatial partitioning
