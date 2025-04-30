@@ -2,8 +2,9 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using SplineMiner.Core.Interfaces;
+using SplineMiner.Game.Track;
 
-namespace SplineMiner
+namespace SplineMiner.Core.Utils
 {
     /// <summary>
     /// Handles calculations for Catmull-Rom spline curves used in track generation and manipulation.
@@ -127,7 +128,7 @@ namespace SplineMiner
                 float t = tStart + i * dt;
                 Vector2 currentPoint = GetPoint(t);
                 float segmentLength = Vector2.Distance(previousPoint, currentPoint);
-                
+
                 if (segmentLength > 10.0f)
                 {
                     float midT = tStart + (i - 0.5f) * dt;
@@ -139,10 +140,10 @@ namespace SplineMiner
                 {
                     arcLength += segmentLength;
                 }
-                
+
                 previousPoint = currentPoint;
             }
             return arcLength;
         }
     }
-} 
+}

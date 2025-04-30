@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
-namespace SplineMiner
+namespace SplineMiner.Game.Track
 {
     public class TrackPreview
     {
@@ -30,7 +30,7 @@ namespace SplineMiner
         public void Update(Vector2 mousePosition)
         {
             _previewPoint = mousePosition;
-            
+
             // Check if hovering over endpoint
             if (_parentTrack.PlacedNodes.Count > 0)
             {
@@ -108,4 +108,4 @@ namespace SplineMiner
             );
         }
     }
-} 
+}

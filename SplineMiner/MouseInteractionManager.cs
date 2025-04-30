@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SplineMiner.Game.Track;
 
 namespace SplineMiner
 {

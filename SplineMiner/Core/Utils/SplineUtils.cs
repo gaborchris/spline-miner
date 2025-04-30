@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace SplineMiner
+namespace SplineMiner.Core.Utils
 {
     public static class SplineUtils
     {
@@ -19,11 +19,11 @@ namespace SplineMiner
             float t3 = t2 * t;
 
             return 0.5f * (
-                (2 * p1) +
+                2 * p1 +
                 (-p0 + p2) * t +
                 (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
                 (-p0 + 3 * p1 - 3 * p2 + p3) * t3
             );
         }
     }
-} 
+}

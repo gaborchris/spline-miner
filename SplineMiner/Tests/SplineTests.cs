@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using SplineMiner.Core.Utils;
 using System;
 using System.Collections.Generic;
 using Xunit;

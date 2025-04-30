@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SplineMiner.WorldGrid;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,7 +27,7 @@ namespace SplineMiner.UI
         private const float UPDATE_INTERVAL = 0.25f;
         
         // References to game objects for stats
-        private WorldGrid.WorldGrid _worldGrid;
+        private Game.World.WorldGrid.WorldGrid _worldGrid;
         
         public bool IsVisible
         {
@@ -55,7 +54,7 @@ namespace SplineMiner.UI
             _frameTimer.Start();
         }
         
-        public void SetWorldGrid(WorldGrid.WorldGrid worldGrid)
+        public void SetWorldGrid(Game.World.WorldGrid.WorldGrid worldGrid)
         {
             _worldGrid = worldGrid;
         }

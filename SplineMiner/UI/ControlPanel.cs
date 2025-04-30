@@ -1,8 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using SplineMiner.WorldGrid;
-using SplineMiner.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;
 
@@ -11,10 +9,10 @@ namespace SplineMiner.UI
     /// <summary>
     /// A panel that provides interactive controls for adjusting WorldGrid parameters
     /// </summary>
-    public class WorldParameterPanel
+    public class ControlPanel
     {
         // World grid reference
-        private readonly WorldGrid.WorldGrid _worldGrid;
+        private readonly Game.World.WorldGrid.WorldGrid _worldGrid;
         private readonly InputManager _inputManager;
         
         // UI elements
@@ -70,7 +68,7 @@ namespace SplineMiner.UI
             }
         }
 
-        public WorldParameterPanel(WorldGrid.WorldGrid worldGrid, InputManager inputManager, SpriteFont font, GraphicsDevice graphicsDevice)
+        public ControlPanel(Game.World.WorldGrid.WorldGrid worldGrid, InputManager inputManager, SpriteFont font, GraphicsDevice graphicsDevice)
         {
             _worldGrid = worldGrid;
             _inputManager = inputManager;

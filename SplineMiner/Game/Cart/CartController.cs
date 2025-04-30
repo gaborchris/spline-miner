@@ -7,8 +7,9 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
 using SplineMiner.Core.Interfaces;
+using SplineMiner.Core.Utils;
 
-namespace SplineMiner
+namespace SplineMiner.Game.Cart
 {
     /// <summary>
     /// Controls the player's cart movement and physics along the track.
@@ -72,7 +73,8 @@ namespace SplineMiner
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (_debugVisualizer.IsTestingMovement) {
+            if (_debugVisualizer.IsTestingMovement)
+            {
                 _t += TEST_SPEED * deltaTime;
             }
             else
@@ -113,7 +115,7 @@ namespace SplineMiner
         public void Draw(SpriteBatch spriteBatch)
         {
             Vector2 origin = new Vector2(Texture.Width / 2f, Texture.Height);
-            
+
             spriteBatch.Draw(
                 Texture,
                 Position,
@@ -125,7 +127,7 @@ namespace SplineMiner
                 SpriteEffects.None,
                 0f
             );
-            
+
             if (_showDebugInfo)
             {
                 _debugVisualizer.DrawDebugInfo(spriteBatch, DebugTexture);
@@ -182,11 +184,11 @@ namespace SplineMiner
 
             // Update target position
             _targetPosition = track.GetPointByDistance(_t);
-            
+
             // Calculate movement vector
             Vector2 movement = _targetPosition - _previousPosition;
             float movementLength = movement.Length();
-            
+
             // Only update position if movement is significant
             if (movementLength > MIN_MOVEMENT_THRESHOLD)
             {
@@ -203,14 +205,14 @@ namespace SplineMiner
         {
             float targetRotation = track.GetRotationAtDistance(_t);
             _rotationChange = MathHelper.WrapAngle(targetRotation - _lastRotation);
-            
+
             if (Math.Abs(_rotationChange) > 0.01f)
             {
                 if (Math.Abs(_rotationChange) > MAX_ROTATION_CHANGE)
                 {
                     targetRotation = _lastRotation + Math.Sign(_rotationChange) * MAX_ROTATION_CHANGE;
                 }
-                
+
                 _rotation = targetRotation;
                 _lastRotation = _rotation;
             }
@@ -231,12 +233,12 @@ namespace SplineMiner
         {
             float frontDistance = currentDistance + WHEEL_DISTANCE;
             float backDistance = currentDistance - WHEEL_DISTANCE;
-            
+
             if (frontDistance > track.TotalArcLength)
                 frontDistance -= track.TotalArcLength;
             if (backDistance < 0)
                 backDistance += track.TotalArcLength;
-            
+
             _frontWheelPosition = track.GetPointByDistance(frontDistance);
             _backWheelPosition = track.GetPointByDistance(backDistance);
         }
@@ -265,13 +267,13 @@ namespace SplineMiner
             // Draw wheel positions
             DrawingHelpers.DrawCircle(spriteBatch, debugTexture, _wheelSystem.FrontWheelPosition, 3, Color.Green);
             DrawingHelpers.DrawCircle(spriteBatch, debugTexture, _wheelSystem.BackWheelPosition, 3, Color.Blue);
-            
+
             // Draw line between wheels
             DrawingHelpers.DrawLine(spriteBatch, debugTexture, _wheelSystem.FrontWheelPosition, _wheelSystem.BackWheelPosition, Color.Yellow, 1);
-            
+
             // Draw cart's position point
             DrawingHelpers.DrawCircle(spriteBatch, debugTexture, _movementController.Position, 3, Color.White);
-            
+
             // Draw rotation change indicator
             const float INDICATOR_LENGTH = 20f;
             Vector2 indicatorEnd = _movementController.Position + new Vector2(
@@ -343,23 +345,23 @@ namespace SplineMiner
             // Calculate velocity and acceleration magnitudes
             List<float> velocities = new();
             List<float> accelerations = new();
-            
+
             for (int i = 1; i < _positionHistory.Count; i++)
             {
                 float velocity = Vector2.Distance(_positionHistory[i - 1], _positionHistory[i]);
                 velocities.Add(velocity);
             }
-            
+
             for (int i = 1; i < velocities.Count; i++)
             {
                 float acceleration = Math.Abs(velocities[i] - velocities[i - 1]);
                 accelerations.Add(acceleration);
             }
-            
+
             float avgVelocity = velocities.Count > 0 ? velocities.Sum() / velocities.Count : 0;
             float avgAcceleration = accelerations.Count > 0 ? accelerations.Sum() / accelerations.Count : 0;
             float maxAcceleration = accelerations.Count > 0 ? accelerations.Max() : 0;
-            
+
             Debug.WriteLine($"[CartDebugVisualizer] Movement analysis complete:");
             Debug.WriteLine($"- Average velocity: {avgVelocity:F2} pixels per frame");
             Debug.WriteLine($"- Average acceleration: {avgAcceleration:F2}");

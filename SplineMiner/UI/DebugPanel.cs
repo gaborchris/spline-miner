@@ -1,12 +1,10 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using SplineMiner.UI;
-using SplineMiner.WorldGrid;
 using System;
 using System.Collections.Generic;
 
-namespace SplineMiner
+namespace SplineMiner.UI
 {
     /// <summary>
     /// Manages debug information display and development tools.
@@ -18,15 +16,15 @@ namespace SplineMiner
     /// TODO: Add support for performance profiling
     /// TODO: Implement debug command system
     /// </remarks>
-    public class DebugManager
+    public class DebugPanel
     {
         private readonly SpriteFont _debugFont;
         private bool _showDebugInfo = true;
-        
+
         // UI panels
         private StatsPanel _statsPanel;
-        private WorldParameterPanel _worldParameterPanel;
-        
+        private ControlPanel _worldParameterPanel;
+
         /// <summary>
         /// Gets or sets whether debug information should be displayed.
         /// </summary>
@@ -44,17 +42,17 @@ namespace SplineMiner
                 if (_worldParameterPanel != null) _worldParameterPanel.IsVisible = value;
             }
         }
-        
+
         /// <summary>
-        /// Gets the WorldParameterPanel for external configuration
+        /// Gets the ControlPanel for external configuration
         /// </summary>
-        public WorldParameterPanel GetWorldParameterPanel()
+        public ControlPanel GetWorldParameterPanel()
         {
             return _worldParameterPanel;
         }
 
         /// <summary>
-        /// Initializes a new instance of the DebugManager.
+        /// Initializes a new instance of the DebugPanel.
         /// </summary>
         /// <param name="debugFont">The font used for debug text.</param>
         /// <exception cref="ArgumentNullException">Thrown when debugFont is null.</exception>
@@ -62,11 +60,11 @@ namespace SplineMiner
         /// TODO: Implement proper debug initialization system
         /// TODO: Add support for debug configuration loading
         /// </remarks>
-        public DebugManager(SpriteFont debugFont)
+        public DebugPanel(SpriteFont debugFont)
         {
             _debugFont = debugFont;
         }
-        
+
         /// <summary>
         /// Initializes the debug manager with required components.
         /// </summary>
@@ -77,15 +75,15 @@ namespace SplineMiner
         /// TODO: Implement proper debug component initialization
         /// TODO: Add support for dynamic debug panel creation
         /// </remarks>
-        public void Initialize(GraphicsDevice graphicsDevice, WorldGrid.WorldGrid worldGrid, InputManager inputManager)
+        public void Initialize(GraphicsDevice graphicsDevice, Game.World.WorldGrid.WorldGrid worldGrid, InputManager inputManager)
         {
             // Initialize panels
             _statsPanel = new StatsPanel(_debugFont, graphicsDevice);
-            _worldParameterPanel = new WorldParameterPanel(worldGrid, inputManager, _debugFont, graphicsDevice);
-            
+            _worldParameterPanel = new ControlPanel(worldGrid, inputManager, _debugFont, graphicsDevice);
+
             // Set references
             _statsPanel.SetWorldGrid(worldGrid);
-            
+
             // Set initial visibility
             _statsPanel.IsVisible = _showDebugInfo;
             _worldParameterPanel.IsVisible = _showDebugInfo;
@@ -102,18 +100,18 @@ namespace SplineMiner
         public void Update(GameTime gameTime)
         {
             if (!_showDebugInfo) return;
-            
+
             // Update panels
             _statsPanel?.Update(gameTime);
             _worldParameterPanel?.Update();
-            
+
             // Toggle between panels with F4
             if (Keyboard.GetState().IsKeyDown(Keys.F4))
             {
                 TogglePanels();
             }
         }
-        
+
         private void TogglePanels()
         {
             // If both are visible, hide world parameter panel
@@ -153,11 +151,11 @@ namespace SplineMiner
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, UITool currentTool)
         {
             if (!_showDebugInfo) return;
-            
+
             // Draw panels
             _statsPanel?.Draw(spriteBatch);
             _worldParameterPanel?.Draw(spriteBatch);
-            
+
         }
     }
-} 
+}

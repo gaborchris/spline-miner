@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using SplineMiner.Core;
 using SplineMiner.Core.Interfaces;
+using SplineMiner.Core.Utils;
+using SplineMiner.Game.Cart;
 
-namespace SplineMiner
+namespace SplineMiner.Game.Track
 {
     /// <summary>
     /// Represents a track system composed of connected spline segments.
@@ -28,7 +30,7 @@ namespace SplineMiner
         private const int MIN_SHADOW_NODES = 3; // Minimum needed for Catmull-Rom
         private readonly UIManager _uiManager;
         private float _t = 0f;
-        
+
         private readonly SplineCalculator _splineCalculator;
         private readonly TrackCache _cache;
         private readonly TrackRenderer _renderer;
@@ -93,22 +95,22 @@ namespace SplineMiner
         public int GetHoveredPointIndex(Vector2 screenPosition)
         {
             const float HOVER_RADIUS = 10f;
-            
+
             // Convert screen position to world position using camera transform
             Vector2 worldPosition = CameraManager.Instance.ScreenToWorld(screenPosition);
-            
+
             // Get viewport bounds in world space for culling
             Vector2 viewportTopLeft = CameraManager.Instance.ScreenToWorld(Vector2.Zero);
             Vector2 viewportBottomRight = CameraManager.Instance.ScreenToWorld(new Vector2(
                 CameraManager.Instance.Viewport.Width,
                 CameraManager.Instance.Viewport.Height
             ));
-            
+
             // Check placed nodes first
             for (int i = 0; i < _placedNodes.Count; i++)
             {
                 Vector2 nodePosition = _placedNodes[i].Position;
-                
+
                 // Cull nodes outside viewport for better performance
                 if (nodePosition.X < viewportTopLeft.X - HOVER_RADIUS ||
                     nodePosition.X > viewportBottomRight.X + HOVER_RADIUS ||
@@ -117,18 +119,18 @@ namespace SplineMiner
                 {
                     continue;
                 }
-                
+
                 if (Vector2.Distance(nodePosition, worldPosition) <= HOVER_RADIUS)
                 {
                     return i;
                 }
             }
-            
+
             // Then check shadow nodes
             for (int i = 0; i < _shadowNodes.Count; i++)
             {
                 Vector2 nodePosition = _shadowNodes[i].Position;
-                
+
                 // Cull nodes outside viewport for better performance
                 if (nodePosition.X < viewportTopLeft.X - HOVER_RADIUS ||
                     nodePosition.X > viewportBottomRight.X + HOVER_RADIUS ||
@@ -137,13 +139,13 @@ namespace SplineMiner
                 {
                     continue;
                 }
-                
+
                 if (Vector2.Distance(nodePosition, worldPosition) <= HOVER_RADIUS)
                 {
                     return i + _placedNodes.Count; // Offset by placed nodes count
                 }
             }
-            
+
             return -1;
         }
 
@@ -190,7 +192,7 @@ namespace SplineMiner
                 {
                     _placedNodes.Add(new PlacedTrackNode(_shadowNodes[i].Position));
                 }
-                
+
                 // Only update shadow nodes and recalculate if we actually placed nodes
                 UpdateShadowNodes();
                 RecalculateArcLength();
@@ -309,10 +311,10 @@ namespace SplineMiner
             Vector2 currentPoint = GetPointByDistance(distance);
             Vector2 nextPoint = GetPointByDistance(distance + 10.0f);
             Vector2 prevPoint = GetPointByDistance(distance - 10.0f);
-            
-            Vector2 direction = (nextPoint - prevPoint);
+
+            Vector2 direction = nextPoint - prevPoint;
             direction.Normalize();
-            
+
             return (float)Math.Atan2(direction.Y, direction.X);
         }
 
@@ -337,15 +339,15 @@ namespace SplineMiner
         public void VisualizeEquallySpacedPoints(int count)
         {
             _debugPoints.Clear();
-            
+
             // Get the current position's distance along the track
             float currentDistance = _t;
             float stepSize = _totalArcLength / count;
-            
+
             // Start from current position and go forward
             for (int i = 0; i < count; i++)
             {
-                float distance = currentDistance + (i * stepSize);
+                float distance = currentDistance + i * stepSize;
                 // Wrap around if we exceed the total length
                 if (distance > _totalArcLength)
                 {

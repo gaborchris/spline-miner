@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace SplineMiner
+namespace SplineMiner.Game.Cart
 {
     /// <summary>
     /// Manages the game camera, including following targets and viewport transformations.
@@ -124,4 +124,4 @@ namespace SplineMiner
             return Vector2.Transform(worldPosition, _transform);
         }
     }
-} 
+}

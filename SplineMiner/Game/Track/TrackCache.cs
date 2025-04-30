@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using SplineMiner.Core.Interfaces;
 
-namespace SplineMiner
+namespace SplineMiner.Game.Track
 {
     public class TrackCache : ICache<int, Vector2>, ICache<int, float>
     {
@@ -33,4 +33,4 @@ namespace SplineMiner
             _parameterCache.Clear();
         }
     }
-} 
+}

@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace SplineMiner
+namespace SplineMiner.Game.Track
 {
     public interface ITrackNode
     {
@@ -52,8 +52,8 @@ namespace SplineMiner
         private readonly Color _normalColor = Color.Gray * 0.5f;
         private readonly Color _selectedColor = Color.Red * 0.5f;
 
-        public Vector2 Position 
-        { 
+        public Vector2 Position
+        {
             get => _position;
             set => _position = value;
         }
@@ -84,4 +84,4 @@ namespace SplineMiner
             );
         }
     }
-} 
+}

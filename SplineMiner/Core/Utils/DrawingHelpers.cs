@@ -2,14 +2,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace SplineMiner
+namespace SplineMiner.Core.Utils
 {
     public static class DrawingHelpers
     {
         public static void DrawLine(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, Vector2 end, Color color, int thickness)
         {
             Vector2 edge = end - start;
-            float angle = (float)System.Math.Atan2(edge.Y, edge.X);
+            float angle = (float)Math.Atan2(edge.Y, edge.X);
             spriteBatch.Draw(
                 texture: texture,
                 position: start,
@@ -67,4 +67,4 @@ namespace SplineMiner
             }
         }
     }
-} 
+}

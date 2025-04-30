@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-namespace SplineMiner.WorldGrid.Generation
+namespace SplineMiner.Game.World.WorldGrid.Generation
 {
     /// <summary>
     /// Generates caves using Cellular Automata, similar to Conway's Game of Life.
@@ -11,19 +11,19 @@ namespace SplineMiner.WorldGrid.Generation
     public class CellularAutomataStrategy : IWorldGenerationStrategy
     {
         public string Name => "Cellular Automata";
-        
+
         public string Description => "Creates natural-looking cave systems using cellular automata rules.";
-        
+
         // Cache for storing the grid state during CA iterations
         private bool[,] _initialGrid;
         private bool[,] _tempGrid;
-        
+
         public bool ShouldBeActive(
-            int x, int y, 
-            float worldX, float worldY, 
-            int width, int height, 
-            float worldWidth, float worldHeight, 
-            Random random, 
+            int x, int y,
+            float worldX, float worldY,
+            int width, int height,
+            float worldWidth, float worldHeight,
+            Random random,
             GenerationParameters parameters)
         {
             // Initialize caches if first cell or different size
@@ -32,16 +32,16 @@ namespace SplineMiner.WorldGrid.Generation
                 InitializeGrids(width, height, random, parameters);
                 RunCellularAutomata(width, height, parameters.CellularAutomataIterations);
             }
-            
+
             // Return the final state after CA iterations
             return _tempGrid[x, y];
         }
-        
+
         private void InitializeGrids(int width, int height, Random random, GenerationParameters parameters)
         {
             _initialGrid = new bool[width, height];
             _tempGrid = new bool[width, height];
-            
+
             // Initialize with random cells based on cave probability
             for (int y = 0; y < height; y++)
             {
@@ -58,13 +58,13 @@ namespace SplineMiner.WorldGrid.Generation
                         // Note: We invert the logic here because in CA, true means solid wall
                         _initialGrid[x, y] = random.NextDouble() > parameters.CaveProbability;
                     }
-                    
+
                     // Copy to temp grid
                     _tempGrid[x, y] = _initialGrid[x, y];
                 }
             }
         }
-        
+
         private void RunCellularAutomata(int width, int height, int iterations)
         {
             for (int i = 0; i < iterations; i++)
@@ -75,7 +75,7 @@ namespace SplineMiner.WorldGrid.Generation
                     for (int x = 1; x < width - 1; x++)
                     {
                         int wallCount = CountWallNeighbors(x, y);
-                        
+
                         // Apply B678/S345678 rule (a modified Conway's rule for caves)
                         // If a cell has 5+ wall neighbors, it becomes a wall
                         // If a cell has <4 wall neighbors, it becomes open space
@@ -90,7 +90,7 @@ namespace SplineMiner.WorldGrid.Generation
                         // Otherwise it remains unchanged
                     }
                 }
-                
+
                 // Copy temp grid back to initial grid for next iteration
                 if (i < iterations - 1)
                 {
@@ -104,11 +104,11 @@ namespace SplineMiner.WorldGrid.Generation
                 }
             }
         }
-        
+
         private int CountWallNeighbors(int x, int y)
         {
             int count = 0;
-            
+
             // Check all 8 neighbors
             for (int ny = y - 1; ny <= y + 1; ny++)
             {
@@ -116,7 +116,7 @@ namespace SplineMiner.WorldGrid.Generation
                 {
                     // Skip the cell itself
                     if (nx == x && ny == y) continue;
-                    
+
                     // Count wall neighbors
                     if (_initialGrid[nx, ny])
                     {
@@ -124,8 +124,8 @@ namespace SplineMiner.WorldGrid.Generation
                     }
                 }
             }
-            
+
             return count;
         }
     }
-} 
+}

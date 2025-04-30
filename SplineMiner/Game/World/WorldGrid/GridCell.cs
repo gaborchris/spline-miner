@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace SplineMiner.WorldGrid
+namespace SplineMiner.Game.World.WorldGrid
 {
     /// <summary>
     /// Represents a single destructible cell in the world grid
@@ -34,4 +34,4 @@ namespace SplineMiner.WorldGrid
             return GetBounds().Contains(point);
         }
     }
-} 
+}

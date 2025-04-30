@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using SplineMiner.Core.Interfaces;
 
-namespace SplineMiner
+namespace SplineMiner.Game.Track
 {
     public class TrackRenderer : ITrackRenderer
     {
@@ -26,4 +26,4 @@ namespace SplineMiner
             // Implementation of debug visualization
         }
     }
-} 
+}

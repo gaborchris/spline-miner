@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 
-namespace SplineMiner.WorldGrid.Generation
+namespace SplineMiner.Game.World.WorldGrid.Generation
 {
     /// <summary>
     /// Interface for world generation strategies using the Strategy pattern.
@@ -13,12 +13,12 @@ namespace SplineMiner.WorldGrid.Generation
         /// Gets the name of the generation strategy for UI display
         /// </summary>
         string Name { get; }
-        
+
         /// <summary>
         /// Gets a description of the generation algorithm for UI display
         /// </summary>
         string Description { get; }
-        
+
         /// <summary>
         /// Determines if a cell at the given position should be active (solid) or inactive (empty)
         /// </summary>
@@ -34,14 +34,14 @@ namespace SplineMiner.WorldGrid.Generation
         /// <param name="parameters">Generation parameters like cave density</param>
         /// <returns>True if the cell should be active (solid), false if it should be inactive (empty)</returns>
         bool ShouldBeActive(
-            int x, int y, 
+            int x, int y,
             float worldX, float worldY,
             int width, int height,
             float worldWidth, float worldHeight,
             Random random,
             GenerationParameters parameters);
     }
-    
+
     /// <summary>
     /// Parameters for controlling procedural generation
     /// </summary>
@@ -50,13 +50,13 @@ namespace SplineMiner.WorldGrid.Generation
         // Common parameters across generation strategies
         public float CaveProbability { get; set; } = 0.45f;
         public int Seed { get; set; } = 0;
-        
+
         // Parameters for specific strategies
         public int CellularAutomataIterations { get; set; } = 4;
         public float PerlinNoiseScale { get; set; } = 0.1f;
         public int DrunkWalkSteps { get; set; } = 1000;
         public float DrunkWalkTurnChance { get; set; } = 0.3f;
-        
+
         // Constructor
         public GenerationParameters(float caveProbability = 0.45f, int seed = 0)
         {
@@ -64,4 +64,4 @@ namespace SplineMiner.WorldGrid.Generation
             Seed = seed;
         }
     }
-} 
+}

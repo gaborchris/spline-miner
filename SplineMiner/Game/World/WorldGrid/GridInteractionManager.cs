@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
+using SplineMiner.Game.Cart;
 
-namespace SplineMiner.WorldGrid
+namespace SplineMiner.Game.World.WorldGrid
 {
     /// <summary>
     /// Handles mouse interactions with the world grid
@@ -27,10 +28,10 @@ namespace SplineMiner.WorldGrid
                 // Convert screen position to world position
                 Vector2 screenPos = _inputManager.MousePosition;
                 Vector2 worldPos = CameraManager.Instance.ScreenToWorld(screenPos);
-                
+
                 // Try to destroy a cell at the clicked position
                 _worldGrid.DestroyCell(worldPos);
             }
         }
     }
-} 
+}

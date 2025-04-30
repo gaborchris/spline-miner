@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace SplineMiner
 {
-    public class UIButton(Rectangle bounds, string text, UITool tool, SpriteFont font, Texture2D? texture = null)
+    public class UIButton(Rectangle bounds, string text, UITool tool, SpriteFont font, Texture2D texture = null)
     {
         private bool _isHovered;
         private bool _isSelected;
