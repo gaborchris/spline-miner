@@ -13,9 +13,6 @@ namespace SplineMiner
     /// <remarks>
     /// TODO: Implement track segment caching for better performance
     /// TODO: Add support for track branching and merging
-    /// TODO: Implement track physics properties (friction, elasticity)
-    /// TODO: Add support for track elevation changes
-    /// TODO: Implement track damage and repair system
     /// </remarks>
     public class SplineTrack : ITrack
     {
@@ -236,7 +233,6 @@ namespace SplineMiner
         /// <remarks>
         /// TODO: Implement proper rendering layers
         /// TODO: Add support for track decorations
-        /// TODO: Implement track lighting effects
         /// </remarks>
         public void Draw(SpriteBatch spriteBatch)
         {

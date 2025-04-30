@@ -205,7 +205,6 @@ namespace SplineMiner
         /// </summary>
         /// <remarks>
         /// TODO: Implement proper tool switching system
-        /// TODO: Add support for tool combinations
         /// </remarks>
         public UITool CurrentTool
         {

@@ -14,10 +14,7 @@ namespace SplineMiner
     /// Controls the player's cart movement and physics along the track.
     /// </summary>
     /// <remarks>
-    /// TODO: Implement proper physics simulation
-    /// TODO: Add support for cart upgrades and customization
-    /// TODO: Implement cart damage and repair system
-    /// TODO: Add support for multiple cart types
+    /// TODO: Add support for cart upgrades and customization through abstraction
     /// TODO: Implement proper collision detection and response
     /// </remarks>
     public class CartController : ICart, ICameraObserver
@@ -69,10 +66,7 @@ namespace SplineMiner
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         /// <param name="track">The current track the cart is on.</param>
         /// <remarks>
-        /// TODO: Implement proper physics integration
         /// TODO: Add support for track switching
-        /// TODO: Implement proper speed limits and acceleration
-        /// TODO: Add support for track obstacles
         /// </remarks>
         public void Update(GameTime gameTime, ITrack track)
         {
@@ -185,7 +179,6 @@ namespace SplineMiner
         public void UpdatePosition(GameTime gameTime, ITrack track)
         {
             _previousPosition = _position;
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Update target position
             _targetPosition = track.GetPointByDistance(_t);

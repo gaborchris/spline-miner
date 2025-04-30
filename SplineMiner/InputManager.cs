@@ -8,7 +8,6 @@ namespace SplineMiner
     /// </summary>
     /// <remarks>
     /// TODO: Implement input remapping system
-    /// TODO: Add support for gamepad input
     /// TODO: Implement input buffering
     /// TODO: Add support for input macros
     /// TODO: Implement proper input state management
