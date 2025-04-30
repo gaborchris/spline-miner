@@ -7,7 +7,16 @@ using SplineMiner.Core;
 
 namespace SplineMiner
 {
-    // Spline calculation component
+    /// <summary>
+    /// Represents a track system composed of connected spline segments.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Implement track segment caching for better performance
+    /// TODO: Add support for track branching and merging
+    /// TODO: Implement track physics properties (friction, elasticity)
+    /// TODO: Add support for track elevation changes
+    /// TODO: Implement track damage and repair system
+    /// </remarks>
     public class SplineTrack : ITrack
     {
         private readonly List<PlacedTrackNode> _placedNodes;
@@ -30,6 +39,12 @@ namespace SplineMiner
         public IReadOnlyList<ShadowTrackNode> ShadowNodes => _shadowNodes.AsReadOnly();
         public float TotalArcLength => _totalArcLength;
 
+        /// <summary>
+        /// Initializes a new instance of the SplineTrack.
+        /// </summary>
+        /// <param name="nodes">Initial set of track nodes.</param>
+        /// <param name="uiManager">Reference to the UI manager for track interactions.</param>
+        /// <exception cref="ArgumentNullException">Thrown when nodes or uiManager is null.</exception>
         public SplineTrack(List<Vector2> initialPoints, UIManager uiManager)
         {
             _placedNodes = initialPoints.Select(p => new PlacedTrackNode(p)).ToList();
@@ -61,6 +76,15 @@ namespace SplineMiner
             }
         }
 
+        /// <summary>
+        /// Loads and initializes track-specific content.
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device used for rendering.</param>
+        /// <remarks>
+        /// TODO: Implement proper content management system
+        /// TODO: Add support for different track textures
+        /// TODO: Implement track texture tiling
+        /// </remarks>
         public void LoadContent(GraphicsDevice graphicsDevice)
         {
             _pointTexture = new Texture2D(graphicsDevice, 1, 1);
@@ -205,6 +229,15 @@ namespace SplineMiner
             return _splineCalculator.GetPoint(t);
         }
 
+        /// <summary>
+        /// Draws the track using the provided sprite batch.
+        /// </summary>
+        /// <param name="spriteBatch">The sprite batch used for rendering.</param>
+        /// <remarks>
+        /// TODO: Implement proper rendering layers
+        /// TODO: Add support for track decorations
+        /// TODO: Implement track lighting effects
+        /// </remarks>
         public void Draw(SpriteBatch spriteBatch)
         {
             if (_placedNodes.Count < 4)
@@ -291,6 +324,14 @@ namespace SplineMiner
             _renderer.DrawDebugInfo(spriteBatch, distance, debugTexture);
         }
 
+        /// <summary>
+        /// Recalculates the arc length of the entire track.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Implement incremental updates for better performance
+        /// TODO: Add caching for frequently accessed segments
+        /// TODO: Consider parallel processing for long tracks
+        /// </remarks>
         public void RecalculateArcLength()
         {
             _totalArcLength = _splineCalculator.ComputeArcLength(0f, _placedNodes.Count - 1, 100);

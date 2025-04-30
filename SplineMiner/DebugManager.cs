@@ -8,6 +8,16 @@ using System.Collections.Generic;
 
 namespace SplineMiner
 {
+    /// <summary>
+    /// Manages debug information display and development tools.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Implement proper debug logging system
+    /// TODO: Add support for debug console
+    /// TODO: Implement debug visualization system
+    /// TODO: Add support for performance profiling
+    /// TODO: Implement debug command system
+    /// </remarks>
     public class DebugManager
     {
         private readonly SpriteFont _debugFont;
@@ -17,6 +27,13 @@ namespace SplineMiner
         private StatsPanel _statsPanel;
         private WorldParameterPanel _worldParameterPanel;
         
+        /// <summary>
+        /// Gets or sets whether debug information should be displayed.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Implement debug level system
+        /// TODO: Add support for conditional debug display
+        /// </remarks>
         public bool ShowDebugInfo
         {
             get => _showDebugInfo;
@@ -36,11 +53,30 @@ namespace SplineMiner
             return _worldParameterPanel;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the DebugManager.
+        /// </summary>
+        /// <param name="debugFont">The font used for debug text.</param>
+        /// <exception cref="ArgumentNullException">Thrown when debugFont is null.</exception>
+        /// <remarks>
+        /// TODO: Implement proper debug initialization system
+        /// TODO: Add support for debug configuration loading
+        /// </remarks>
         public DebugManager(SpriteFont debugFont)
         {
             _debugFont = debugFont;
         }
         
+        /// <summary>
+        /// Initializes the debug manager with required components.
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device used for rendering.</param>
+        /// <param name="worldGrid">The world grid for debug visualization.</param>
+        /// <param name="inputManager">The input manager for debug controls.</param>
+        /// <remarks>
+        /// TODO: Implement proper debug component initialization
+        /// TODO: Add support for dynamic debug panel creation
+        /// </remarks>
         public void Initialize(GraphicsDevice graphicsDevice, WorldGrid.WorldGrid worldGrid, InputManager inputManager)
         {
             // Initialize panels
@@ -55,6 +91,14 @@ namespace SplineMiner
             _worldParameterPanel.IsVisible = _showDebugInfo;
         }
 
+        /// <summary>
+        /// Updates the debug state and handles input.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        /// <remarks>
+        /// TODO: Implement proper debug update priority system
+        /// TODO: Add support for debug command processing
+        /// </remarks>
         public void Update(GameTime gameTime)
         {
             if (!_showDebugInfo) return;
@@ -95,6 +139,17 @@ namespace SplineMiner
             }
         }
 
+        /// <summary>
+        /// Draws the debug information using the provided sprite batch.
+        /// </summary>
+        /// <param name="spriteBatch">The sprite batch used for rendering.</param>
+        /// <param name="graphicsDevice">The graphics device used for rendering.</param>
+        /// <param name="currentTool">The current UI tool for context-sensitive debug info.</param>
+        /// <remarks>
+        /// TODO: Implement proper debug rendering layers
+        /// TODO: Add support for debug visualization toggles
+        /// TODO: Implement debug text formatting system
+        /// </remarks>
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, UITool currentTool)
         {
             if (!_showDebugInfo) return;

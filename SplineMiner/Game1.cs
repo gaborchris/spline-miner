@@ -9,6 +9,15 @@ using SplineMiner.UI;
 
 namespace SplineMiner
 {
+    /// <summary>
+    /// Main game class that initializes and manages the core game loop and components.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Consider splitting this into smaller, more focused components:
+    /// - SceneManager for handling different game states
+    /// - ResourceManager for content loading
+    /// - GameStateManager for managing game state transitions
+    /// </remarks>
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
@@ -26,6 +35,13 @@ namespace SplineMiner
         private WorldGrid.WorldGrid _worldGrid;
         private GridInteractionManager _gridInteractionManager;
         
+        /// <summary>
+        /// Initializes a new instance of the Game1 class.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Consider implementing a proper dependency injection system
+        /// TODO: Move initialization logic to separate initialization classes
+        /// </remarks>
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -38,6 +54,13 @@ namespace SplineMiner
             TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 60.0f); // Target 60 FPS
         }
 
+        /// <summary>
+        /// Initializes the game and its components.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Consider implementing a proper dependency injection system
+        /// TODO: Move initialization logic to separate initialization classes
+        /// </remarks>
         protected override void Initialize()
         {
             // Initialize the player at the start of the track
@@ -55,6 +78,14 @@ namespace SplineMiner
             base.Initialize();
         }
 
+        /// <summary>
+        /// Loads game content and initializes game components.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Consider implementing a proper content management system
+        /// TODO: Move content loading to a separate ContentManager class
+        /// TODO: Implement proper error handling for missing content
+        /// </remarks>
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -140,6 +171,15 @@ namespace SplineMiner
             _mouseInteractionManager = new MouseInteractionManager(_inputManager, _track);
         }
 
+        /// <summary>
+        /// Updates game state and components.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        /// <remarks>
+        /// TODO: Consider implementing a proper update priority system
+        /// TODO: Add frame rate independent updates
+        /// TODO: Implement proper game state management
+        /// </remarks>
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -175,6 +215,15 @@ namespace SplineMiner
             base.Update(gameTime);
         }
 
+        /// <summary>
+        /// Draws the game world and UI components.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        /// <remarks>
+        /// TODO: Implement proper rendering layers
+        /// TODO: Add sprite batching optimization
+        /// TODO: Consider implementing a proper scene graph
+        /// </remarks>
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);

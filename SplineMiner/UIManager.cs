@@ -6,6 +6,16 @@ using System;
 
 namespace SplineMiner
 {
+    /// <summary>
+    /// Manages the game's user interface elements and interactions.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Implement proper UI layout system
+    /// TODO: Add support for UI themes and styling
+    /// TODO: Implement UI animation system
+    /// TODO: Add support for localization
+    /// TODO: Implement proper UI event system
+    /// </remarks>
     public class UIManager
     {
         private readonly List<UIButton> _buttons;
@@ -18,14 +28,29 @@ namespace SplineMiner
         private const int TOTAL_BUTTONS = 8;
         private Texture2D _redCircle;
         private Texture2D _greenCircle;
-        public UITool CurrentTool => _currentTool;
+        private readonly SpriteFont _debugFont;
+        private readonly GraphicsDevice _graphicsDevice;
+        private readonly Dictionary<string, UIButton> _buttonMap;
 
-        public UIManager(SpriteFont font, GraphicsDevice graphicsDevice)
+        /// <summary>
+        /// Initializes a new instance of the UIManager.
+        /// </summary>
+        /// <param name="debugFont">The font used for debug text.</param>
+        /// <param name="graphicsDevice">The graphics device used for rendering.</param>
+        /// <exception cref="ArgumentNullException">Thrown when debugFont or graphicsDevice is null.</exception>
+        /// <remarks>
+        /// TODO: Implement proper UI initialization system
+        /// TODO: Add support for UI configuration loading
+        /// </remarks>
+        public UIManager(SpriteFont debugFont, GraphicsDevice graphicsDevice)
         {
-            _font = font;
+            _font = debugFont;
             _buttons = [];
             _currentTool = UITool.None;
             _scrollOffset = 0;
+            _debugFont = debugFont;
+            _graphicsDevice = graphicsDevice;
+            _buttonMap = new();
 
             // Create colored circle textures
             CreateCircleTextures(graphicsDevice);
@@ -100,7 +125,9 @@ namespace SplineMiner
                         break;
                 }
 
-                _buttons.Add(new UIButton(bounds, text, tool, _font, texture));
+                UIButton button = new UIButton(bounds, text, tool, _font, texture);
+                _buttons.Add(button);
+                _buttonMap[text] = button;
                 buttonX += BUTTON_SIZE + BUTTON_SPACING;
             }
 
@@ -123,6 +150,14 @@ namespace SplineMiner
             }
         }
 
+        /// <summary>
+        /// Updates the UI state and handles input.
+        /// </summary>
+        /// <param name="inputManager">The input manager for handling user input.</param>
+        /// <remarks>
+        /// TODO: Implement proper UI update priority system
+        /// TODO: Add support for UI focus management
+        /// </remarks>
         public void Update(InputManager inputManager)
         {
             // Handle mouse wheel scrolling with precise increments
@@ -148,12 +183,34 @@ namespace SplineMiner
             }
         }
 
+        /// <summary>
+        /// Draws the UI elements using the provided sprite batch.
+        /// </summary>
+        /// <param name="spriteBatch">The sprite batch used for rendering.</param>
+        /// <remarks>
+        /// TODO: Implement proper UI rendering layers
+        /// TODO: Add support for UI effects
+        /// TODO: Implement UI batching optimization
+        /// </remarks>
         public void Draw(SpriteBatch spriteBatch)
         {
             foreach (var button in _buttons)
             {
                 button.Draw(spriteBatch);
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the current UI tool.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Implement proper tool switching system
+        /// TODO: Add support for tool combinations
+        /// </remarks>
+        public UITool CurrentTool
+        {
+            get => _currentTool;
+            set => _currentTool = value;
         }
     }
 } 
