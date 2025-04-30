@@ -8,9 +8,11 @@ using System.Collections.Generic;
 using System;
 using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Utils;
-using SplineMiner.Core.Services;
+using SplineMiner.Core.Physics.Components;
+using SplineMiner.Core.Physics.Entities;
 
 namespace SplineMiner.Game.Cart
+
 {
     /// <summary>
     /// Controls the player's cart movement and physics along the track.
@@ -19,7 +21,7 @@ namespace SplineMiner.Game.Cart
     /// TODO: Add support for cart upgrades and customization through abstraction
     /// TODO: Implement proper collision detection and response
     /// </remarks>
-    public class CartController : ICart, ICameraObserver
+    public class CartController : ICart, ICameraObserver, ICollidable
     {
         private const float MIN_MOVEMENT_THRESHOLD = 0.1f;
         private const float POSITION_INTERPOLATION_FACTOR = 0.5f;
@@ -44,10 +46,22 @@ namespace SplineMiner.Game.Cart
         private bool _isTestRunning = false;
         private const float TEST_SPEED = 200f; // Speed in pixels per second
 
+        private readonly DynamicEntity _physicsEntity;
+
         public Texture2D Texture { get; set; }
         public Texture2D DebugTexture => _debugTexture;
         public float CurrentDistance => _t;
         public Vector2 Position => _movementController.Position;
+
+        // ICollidable implementation
+        public IBoundingBox BoundingBox => _physicsEntity.BoundingBox;
+        public Vector2 Velocity 
+        {
+            get => _physicsEntity.Velocity;
+            set => _physicsEntity.Velocity = value;
+        }
+        public float Mass => _physicsEntity.Mass;
+        public void OnCollision(CollisionInfo info) => _physicsEntity.OnCollision(info);
 
         /// <summary>
         /// Initializes a new instance of the CartController.
@@ -60,6 +74,15 @@ namespace SplineMiner.Game.Cart
             _movementController = new CartMovementController();
             _wheelSystem = new CartWheelSystem();
             _debugVisualizer = new CartDebugVisualizer(_movementController, _wheelSystem);
+
+            // Initialize with appropriate mass, bounce, and friction values
+            _physicsEntity = new DynamicEntity(
+                position: Vector2.Zero,
+                size: new Vector2(32, 32), // Cart size
+                mass: 1.0f,
+                bounceFactor: 0.5f,
+                frictionCoefficient: 0.1f
+            );
         }
 
         /// <summary>

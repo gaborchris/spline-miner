@@ -8,6 +8,7 @@ using SplineMiner.Game.Cart;
 using SplineMiner.Game.Track;
 using SplineMiner.Game.World.WorldGrid;
 using SplineMiner.Core.Interfaces;
+using SplineMiner.Core.Physics.Systems;
 
 namespace SplineMiner
 {
@@ -37,6 +38,10 @@ namespace SplineMiner
         private Game.World.WorldGrid.WorldGrid _worldGrid;
         private GridInteractionManager _gridInteractionManager;
         
+        private PhysicsSystem _physicsSystem;
+        private CollisionSystem _collisionSystem;
+        private CartController _cart;
+
         /// <summary>
         /// Initializes a new instance of the Game1 class.
         /// </summary>
@@ -80,6 +85,17 @@ namespace SplineMiner
             // Initialize world grid with a more reasonable size
             // (5000x500 was causing performance issues - 500x200 is more manageable)
             _worldGrid = new WorldGrid(500, 200, 20);
+
+            // Initialize physics systems
+            _physicsSystem = new PhysicsSystem(
+                gravity: new Vector2(0, 980f), // Adjust gravity as needed
+                airResistance: 0.01f
+            );
+            _collisionSystem = new CollisionSystem();
+
+            // Add cart to physics system
+            _physicsSystem.AddEntity(_player);
+            _collisionSystem.AddEntity(_player);
 
             base.Initialize();
         }
@@ -229,6 +245,25 @@ namespace SplineMiner
             {
                 debugManager.IsDebugEnabled = !debugManager.IsDebugEnabled;
             }
+
+            // Get nearby blocks for collision checking
+            var nearbyBlocks = _worldGrid.GetNearbyBlocks(
+                _player.Position,
+                radius: 128f // Adjust based on cart size and velocity
+            );
+
+            // Update physics
+            _physicsSystem.Update(gameTime);
+            
+            // Check collisions only with nearby blocks
+            foreach (var block in nearbyBlocks)
+            {
+                _collisionSystem.AddBlock(block);
+            }
+            _collisionSystem.Update(gameTime);
+
+            // Clear blocks after collision check
+            _collisionSystem.ClearBlocks();
 
             base.Update(gameTime);
         }
