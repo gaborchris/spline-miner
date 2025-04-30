@@ -43,7 +43,7 @@ namespace SplineMiner.Game.World.WorldGrid
 
         private void HandleDestroyTool(Vector2 screenPos)
         {
-            if (_inputService.IsLeftMousePressed())
+            if (_inputService.IsLeftMousePressed() || _inputService.IsLeftMouseHeld())
             {
                 // Delete cell at position
                 _worldGrid.DeleteCell(screenPos);

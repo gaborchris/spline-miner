@@ -9,16 +9,15 @@ using System.Linq;
 namespace SplineMiner.Game.World.WorldGrid
 {
     /// <summary>
-    /// Manages a collection of grid cells and handles procedural generation
+    /// Manages a procedurally generated grid of cells that forms the game world.
+    /// The world is generated once at startup and can be modified by deleting cells.
+    /// Note: This is a read-only world after generation - cells can only be deleted, not added or moved.
     /// </summary>
     public class WorldGrid
     {
         private readonly List<GridCell> _cells = new List<GridCell>();
         private readonly Random _random;
         private Texture2D _cellTexture;
-        private List<GridCell> _selectedCells = new List<GridCell>();
-        private Vector2 _selectionStart;
-        private bool _isMoving;
 
         // Performance tracking
         private int _totalCells = 0;
@@ -219,111 +218,6 @@ namespace SplineMiner.Game.World.WorldGrid
             return null;
         }
 
-        public void DestroyCell(Vector2 worldPosition)
-        {
-            var cell = GetCellAtPosition(worldPosition);
-            if (cell != null)
-            {
-                cell.IsActive = false;
-            }
-        }
-
-        public void StartSelection(Vector2 screenPosition)
-        {
-            _selectionStart = screenPosition;
-            _selectedCells.Clear();
-        }
-
-        public void UpdateSelection(Vector2 screenPosition)
-        {
-            // Convert screen positions to world positions
-            Vector2 worldStart = CameraManager.Instance.ScreenToWorld(_selectionStart);
-            Vector2 worldEnd = CameraManager.Instance.ScreenToWorld(screenPosition);
-
-            // Get the bounds of the selection rectangle
-            float minX = Math.Min(worldStart.X, worldEnd.X);
-            float maxX = Math.Max(worldStart.X, worldEnd.X);
-            float minY = Math.Min(worldStart.Y, worldEnd.Y);
-            float maxY = Math.Max(worldStart.Y, worldEnd.Y);
-
-            // Clear previous selection
-            foreach (var cell in _selectedCells)
-            {
-                cell.IsSelected = false;
-            }
-            _selectedCells.Clear();
-
-            // Find cells within the selection rectangle
-            foreach (var cell in _cells)
-            {
-                if (cell.IsActive && 
-                    cell.Position.X >= minX && cell.Position.X <= maxX &&
-                    cell.Position.Y >= minY && cell.Position.Y <= maxY)
-                {
-                    cell.IsSelected = true;
-                    _selectedCells.Add(cell);
-                }
-            }
-        }
-
-        public void EndSelection()
-        {
-            // Selection is complete, no additional action needed
-        }
-
-        public void StartMove(Vector2 screenPosition)
-        {
-            _isMoving = true;
-            _selectionStart = screenPosition;
-        }
-
-        public void UpdateMove(Vector2 screenPosition)
-        {
-            if (!_isMoving) return;
-
-            // Calculate movement delta
-            Vector2 worldStart = CameraManager.Instance.ScreenToWorld(_selectionStart);
-            Vector2 worldEnd = CameraManager.Instance.ScreenToWorld(screenPosition);
-            Vector2 delta = worldEnd - worldStart;
-
-            // Move all selected cells
-            foreach (var cell in _selectedCells)
-            {
-                cell.Position += delta;
-            }
-
-            _selectionStart = screenPosition;
-        }
-
-        public void EndMove()
-        {
-            _isMoving = false;
-        }
-
-        public void AddCell(Vector2 screenPosition)
-        {
-            Vector2 worldPosition = CameraManager.Instance.ScreenToWorld(screenPosition);
-            
-            // Check if position is within grid bounds
-            float worldWidth = _width * _cellSize;
-            float worldHeight = _height * _cellSize;
-            float startX = -worldWidth / 2;
-            float startY = -worldHeight / 2;
-
-            int gridX = (int)((worldPosition.X - startX) / _cellSize);
-            int gridY = (int)((worldPosition.Y - startY) / _cellSize);
-
-            if (gridX >= 0 && gridX < _width && gridY >= 0 && gridY < _height)
-            {
-                int index = gridY * _width + gridX;
-                if (index >= 0 && index < _cells.Count)
-                {
-                    var cell = _cells[index];
-                    cell.IsActive = true;
-                }
-            }
-        }
-
         public void DeleteCell(Vector2 screenPosition)
         {
             Vector2 worldPosition = CameraManager.Instance.ScreenToWorld(screenPosition);
@@ -331,7 +225,6 @@ namespace SplineMiner.Game.World.WorldGrid
             if (cell != null)
             {
                 cell.IsActive = false;
-                _selectedCells.Remove(cell);
             }
         }
     }

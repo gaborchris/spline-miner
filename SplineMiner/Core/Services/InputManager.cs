@@ -39,7 +39,6 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public InputManager()
         {
-            // ... existing code ...
         }
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public bool Forward()
         {
-            return IsKeyHeld(Keys.W) || IsKeyHeld(Keys.Up);
+            return IsKeyHeld(Keys.D) || IsKeyHeld(Keys.Right);
         }
 
         /// <summary>
@@ -104,7 +103,7 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public bool Backward()
         {
-            return IsKeyHeld(Keys.S) || IsKeyHeld(Keys.Down);
+            return IsKeyHeld(Keys.A) || IsKeyHeld(Keys.Left);
         }
 
         public bool IsKeyReleased(Keys key)
