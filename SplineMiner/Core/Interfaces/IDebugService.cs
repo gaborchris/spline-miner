@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SplineMiner.Game.Items.Tools;
+using SplineMiner.UI.DebugTools;
 
 namespace SplineMiner.Core.Interfaces
 {
@@ -12,7 +13,7 @@ namespace SplineMiner.Core.Interfaces
         /// <summary>
         /// Gets whether debug functionality is enabled.
         /// </summary>
-        bool IsDebugEnabled { get; }
+        bool IsDebugEnabled { get; set; }
 
         /// <summary>
         /// Updates the debug state.
@@ -38,5 +39,11 @@ namespace SplineMiner.Core.Interfaces
         /// <param name="category">The message category.</param>
         /// <param name="message">The message to log.</param>
         void LogDebug(string category, string message);
+
+        /// <summary>
+        /// Gets the world parameter panel for external configuration.
+        /// </summary>
+        /// <returns>The control panel for world parameters.</returns>
+        ControlPanel GetWorldParameterPanel();
     }
 } 

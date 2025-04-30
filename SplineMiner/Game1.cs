@@ -30,7 +30,6 @@ namespace SplineMiner
 
         private CartController _player;
         private SplineTrack _track;
-        private DebugManager _debugManager;
         private MouseInteractionManager _mouseInteractionManager;
         private bool _useLargeTrack = false;
         
@@ -126,11 +125,11 @@ namespace SplineMiner
 
             // Initialize managers
             var uiManager = new UIManager(debugFont, GraphicsDevice);
-            _debugManager = new DebugManager(debugFont);
+            var debugManager = new DebugManager(debugFont);
             
             // Register additional services
             _services.RegisterSingleton<IUIService>(uiManager);
-            _services.RegisterSingleton<IDebugService>(_debugManager);
+            _services.RegisterSingleton<IDebugService>(debugManager);
             
             // Initialize the track with test data
             InitializeTrack();
@@ -146,7 +145,7 @@ namespace SplineMiner
             _gridInteractionManager = new GridInteractionManager(_services.GetService<IInputService>(), _worldGrid);
             
             // Initialize debug panels with grid reference
-            _debugManager.Initialize(GraphicsDevice, _worldGrid, _services.GetService<IInputService>());
+            debugManager.Initialize(GraphicsDevice, _worldGrid, _services.GetService<IInputService>());
             
             // Set up world parameter panel event handlers
             SetupWorldParameterEvents();
@@ -155,7 +154,8 @@ namespace SplineMiner
         private void SetupWorldParameterEvents()
         {
             // Get reference to the world parameter panel from debug manager
-            var parameterPanel = _debugManager.GetWorldParameterPanel();
+            var debugManager = _services.GetService<IDebugService>();
+            var parameterPanel = debugManager.GetWorldParameterPanel();
             if (parameterPanel != null)
             {
                 // Set initial track size
@@ -221,12 +221,13 @@ namespace SplineMiner
             _player.Update(gameTime, _track);
 
             // Update debug manager
-            _debugManager.Update(gameTime);
+            var debugManager = _services.GetService<IDebugService>();
+            debugManager.UpdateDebug(gameTime);
 
             // Toggle debug info with F1
             if (inputService.IsKeyPressed(Keys.F1))
             {
-                _debugManager.ShowDebugInfo = !_debugManager.ShowDebugInfo;
+                debugManager.IsDebugEnabled = !debugManager.IsDebugEnabled;
             }
 
             base.Update(gameTime);
@@ -253,10 +254,11 @@ namespace SplineMiner
             _spriteBatch.End();
 
             var uiManager = _services.GetService<IUIService>();
+            var debugManager = _services.GetService<IDebugService>();
             // Draw UI (not affected by camera)
             _spriteBatch.Begin();
             uiManager.Draw(_spriteBatch);
-            _debugManager.Draw(_spriteBatch, GraphicsDevice, uiManager.CurrentTool);
+            debugManager.DrawDebug(_spriteBatch);
             _spriteBatch.End();
 
             base.Draw(gameTime);
