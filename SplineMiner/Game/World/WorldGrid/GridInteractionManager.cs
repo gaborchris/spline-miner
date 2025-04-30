@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using SplineMiner.Core.Services;
-using SplineMiner.Game.Cart;
 using SplineMiner.Game.Items.Tools;
 
 namespace SplineMiner.Game.World.WorldGrid
