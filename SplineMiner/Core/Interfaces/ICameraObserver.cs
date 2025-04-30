@@ -1,9 +1,9 @@
 using Microsoft.Xna.Framework;
 
-namespace SplineMiner
+namespace SplineMiner.Core.Interfaces
 {
     public interface ICameraObserver
     {
         Vector2 Position { get; }
     }
-} 
+}

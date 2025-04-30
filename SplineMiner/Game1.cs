@@ -3,10 +3,11 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SplineMiner.Core.Services;
 using SplineMiner.Game.Cart;
 using SplineMiner.Game.Track;
 using SplineMiner.Game.World.WorldGrid;
-using SplineMiner.UI;
+using SplineMiner.UI.DebugTools;
 
 namespace SplineMiner
 {

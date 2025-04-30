@@ -1,8 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SplineMiner.Game.Items.Tools;
 
-namespace SplineMiner
+namespace SplineMiner.UI.Components
 {
     public class UIButton(Rectangle bounds, string text, UITool tool, SpriteFont font, Texture2D texture = null)
     {
@@ -16,7 +17,7 @@ namespace SplineMiner
         public UITool Tool => tool;
         public bool IsSelected => _isSelected;
 
-        
+
         // Note: this does not unselect other buttons
         // This means than other logic can check for tool selection without
         // this button overriding the selection
@@ -41,8 +42,8 @@ namespace SplineMiner
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            Color buttonColor = _isSelected ? _selectedColor : (_isHovered ? _hoverColor : _normalColor);
-            
+            Color buttonColor = _isSelected ? _selectedColor : _isHovered ? _hoverColor : _normalColor;
+
             // Draw button background
             Texture2D pixel = new(spriteBatch.GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
@@ -71,4 +72,4 @@ namespace SplineMiner
             }
         }
     }
-} 
+}

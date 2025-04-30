@@ -1,8 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SplineMiner.Game.Items.Tools;
 using SplineMiner.Game.Track;
 
-namespace SplineMiner
+namespace SplineMiner.Core.Services
 {
     public class MouseInteractionManager
     {
@@ -21,7 +22,7 @@ namespace SplineMiner
         public void Update(UITool currentTool)
         {
             Vector2 mousePosition = _inputManager.MousePosition;
-            
+
             switch (currentTool)
             {
                 case UITool.Track:
@@ -32,7 +33,7 @@ namespace SplineMiner
                     HandleDeleteTool(mousePosition);
                     break;
             }
-            
+
             // Update hovered point for visual feedback
             _hoveredPointIndex = _track.GetHoveredPointIndex(mousePosition);
         }
@@ -78,4 +79,4 @@ namespace SplineMiner
             }
         }
     }
-} 
+}

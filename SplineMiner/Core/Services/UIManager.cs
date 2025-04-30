@@ -3,8 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
+using SplineMiner.UI.Components;
+using SplineMiner.Game.Items.Tools;
 
-namespace SplineMiner
+namespace SplineMiner.Core.Services
 {
     /// <summary>
     /// Manages the game's user interface elements and interactions.
@@ -100,7 +102,7 @@ namespace SplineMiner
             for (int i = 0; i < TOTAL_BUTTONS; i++)
             {
                 Rectangle bounds = new(buttonX, buttonY, BUTTON_SIZE, BUTTON_SIZE);
-                Texture2D? texture = null;
+                Texture2D texture = null;
                 string text = $"Tool {i + 1}";
                 UITool tool = UITool.None;
 
@@ -146,7 +148,7 @@ namespace SplineMiner
         {
             foreach (var button in _buttons)
             {
-                    button.Deselect();
+                button.Deselect();
             }
         }
 
@@ -174,7 +176,8 @@ namespace SplineMiner
             // Update buttons
             bool isMouseClicked = inputManager.IsLeftMousePressed();
             Vector2 mousePosition = inputManager.MousePosition;
-            for (int i = 0; i < _buttons.Count; i++) {
+            for (int i = 0; i < _buttons.Count; i++)
+            {
                 _buttons[i].Update(mousePosition, isMouseClicked);
                 if (_buttons[i].IsSelected)
                 {
@@ -212,4 +215,4 @@ namespace SplineMiner
             set => _currentTool = value;
         }
     }
-} 
+}

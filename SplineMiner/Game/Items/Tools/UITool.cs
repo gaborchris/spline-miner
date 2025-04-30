@@ -1,4 +1,4 @@
-namespace SplineMiner
+namespace SplineMiner.Game.Items.Tools
 {
     public enum UITool
     {
@@ -8,4 +8,4 @@ namespace SplineMiner
         DeleteTrack,    // Tool for deleting track elements
         Destroy         // Tool for destroying grid cells
     }
-} 
+}

@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace SplineMiner
+namespace SplineMiner.Core.Services
 {
     /// <summary>
     /// Manages and processes all user input for the game.
@@ -45,7 +45,7 @@ namespace SplineMiner
         {
             _previousKeyboardState = _currentKeyboardState;
             _currentKeyboardState = Keyboard.GetState();
-            
+
             _previousMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState();
         }
@@ -99,19 +99,19 @@ namespace SplineMiner
         {
             return !_currentKeyboardState.IsKeyDown(key) && _previousKeyboardState.IsKeyDown(key);
         }
-        
+
         public bool IsLeftMousePressed()
         {
-            return _currentMouseState.LeftButton == ButtonState.Pressed && 
+            return _currentMouseState.LeftButton == ButtonState.Pressed &&
                    _previousMouseState.LeftButton == ButtonState.Released;
         }
-        
+
         public bool IsLeftMouseReleased()
         {
-            return _currentMouseState.LeftButton == ButtonState.Released && 
+            return _currentMouseState.LeftButton == ButtonState.Released &&
                    _previousMouseState.LeftButton == ButtonState.Pressed;
         }
-        
+
         public bool IsLeftMouseHeld()
         {
             return _currentMouseState.LeftButton == ButtonState.Pressed;
@@ -119,16 +119,16 @@ namespace SplineMiner
 
         public bool IsRightMousePressed()
         {
-            return _currentMouseState.RightButton == ButtonState.Pressed && 
+            return _currentMouseState.RightButton == ButtonState.Pressed &&
                    _previousMouseState.RightButton == ButtonState.Released;
         }
-        
+
         public bool IsRightMouseReleased()
         {
-            return _currentMouseState.RightButton == ButtonState.Released && 
+            return _currentMouseState.RightButton == ButtonState.Released &&
                    _previousMouseState.RightButton == ButtonState.Pressed;
         }
-        
+
         public bool IsRightMouseHeld()
         {
             return _currentMouseState.RightButton == ButtonState.Pressed;

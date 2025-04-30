@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SplineMiner.Core.Interfaces;
 using System;
 
 namespace SplineMiner.Game.Cart
