@@ -160,7 +160,32 @@ namespace SplineMiner.Core.Services
         /// <param name="inputService">The input service to check for user input.</param>
         public void Update(IInputService inputService)
         {
-            // TODO: Implement proper UI input handling
+            if (!_isVisible) return;
+
+            // Handle mouse wheel scrolling with precise increments
+            if (inputService.IsMouseWheelScrolled())
+            {
+                float delta = inputService.GetMouseWheelDelta();
+                float newOffset = Math.Clamp(_scrollOffset + delta, 0, TOTAL_BUTTONS - 1);
+                if (newOffset != _scrollOffset)
+                {
+                    SetToolIndex((int)newOffset);
+                }
+            }
+
+            // Update buttons
+            bool isMouseClicked = inputService.IsLeftMousePressed();
+            Vector2 mousePosition = inputService.MousePosition;
+            for (int i = 0; i < _buttons.Count; i++)
+            {
+                _buttons[i].Update(mousePosition, isMouseClicked);
+                if (_buttons[i].IsSelected)
+                {
+                    SetToolIndex(i);
+                }
+            }
+
+            // Toggle UI visibility with Escape key
             if (inputService.IsKeyPressed(Keys.Escape))
             {
                 _isVisible = !_isVisible;
