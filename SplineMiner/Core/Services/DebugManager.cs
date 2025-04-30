@@ -21,7 +21,7 @@ namespace SplineMiner.Core.Services
     /// </remarks>
     public class DebugManager : IDebugService
     {
-        private readonly SpriteFont _debugFont;
+        private SpriteFont _debugFont;
         private bool _showDebugInfo = true;
 
         // UI panels
@@ -29,6 +29,15 @@ namespace SplineMiner.Core.Services
         private ControlPanel _worldParameterPanel;
 
         private readonly Dictionary<string, IDebugLogger> _loggers = new();
+
+        /// <summary>
+        /// Sets the debug font after initialization.
+        /// </summary>
+        /// <param name="debugFont">The font to use for debug text.</param>
+        public void SetDebugFont(SpriteFont debugFont)
+        {
+            _debugFont = debugFont;
+        }
 
         /// <summary>
         /// Gets or sets whether debug information should be displayed.
