@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SplineMiner.Core;
+using SplineMiner.Core.Interfaces;
 
 namespace SplineMiner
 {

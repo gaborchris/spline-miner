@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SplineMiner.WorldGrid;
 using SplineMiner.UI;
+using SplineMiner.Core.Interfaces;
 
 namespace SplineMiner
 {
