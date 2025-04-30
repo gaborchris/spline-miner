@@ -75,6 +75,10 @@ namespace SplineMiner
             var inputManager = new InputManager();
             _services.RegisterSingleton<IInputService>(inputManager);
 
+            // Initialize debug manager first
+            var debugManager = new DebugManager(null); // Font will be set in LoadContent
+            _services.RegisterSingleton<IDebugService>(debugManager);
+
             // Initialize the player at the start of the track
             _player = new CartController(inputManager);
 
@@ -82,9 +86,8 @@ namespace SplineMiner
             CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
             CameraManager.Instance.SetTarget(_player);
             
-            // Initialize world grid with a more reasonable size
-            // (5000x500 was causing performance issues - 500x200 is more manageable)
-            _worldGrid = new WorldGrid(500, 200, 20);
+            // Initialize world grid with debug service
+            _worldGrid = new WorldGrid(500, 200, 20, debugManager);
 
             // Initialize physics systems
             _physicsSystem = new PhysicsSystem(
@@ -141,11 +144,11 @@ namespace SplineMiner
 
             // Initialize managers
             var uiManager = new UIManager(debugFont, GraphicsDevice);
-            var debugManager = new DebugManager(debugFont);
+            var debugManager = _services.GetService<IDebugService>() as DebugManager;
+            debugManager?.SetDebugFont(debugFont);
             
             // Register additional services
             _services.RegisterSingleton<IUIService>(uiManager);
-            _services.RegisterSingleton<IDebugService>(debugManager);
             
             // Initialize the track with test data
             InitializeTrack();
@@ -161,10 +164,18 @@ namespace SplineMiner
             _gridInteractionManager = new GridInteractionManager(_services.GetService<IInputService>(), _worldGrid);
             
             // Initialize debug panels with grid reference
-            debugManager.Initialize(GraphicsDevice, _worldGrid, _services.GetService<IInputService>());
+            debugManager?.Initialize(GraphicsDevice, _worldGrid, _services.GetService<IInputService>());
             
             // Set up world parameter panel event handlers
             SetupWorldParameterEvents();
+
+            // Create and configure collision logger
+            var collisionLogger = debugManager?.CreateLogger("Collision");
+            if (collisionLogger != null)
+            {
+                collisionLogger.IsEnabled = true;
+                collisionLogger.LogInterval = 1.0f;
+            }
         }
         
         private void SetupWorldParameterEvents()
