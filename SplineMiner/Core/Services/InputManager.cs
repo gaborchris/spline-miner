@@ -39,7 +39,6 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public InputManager()
         {
-            // ... existing code ...
         }
 
         /// <summary>
@@ -52,9 +51,8 @@ namespace SplineMiner.Core.Services
         public void Update()
         {
             _previousKeyboardState = _currentKeyboardState;
-            _currentKeyboardState = Keyboard.GetState();
-
             _previousMouseState = _currentMouseState;
+            _currentKeyboardState = Keyboard.GetState();
             _currentMouseState = Mouse.GetState();
         }
 
@@ -69,7 +67,7 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public bool IsKeyPressed(Keys key)
         {
-            return _currentKeyboardState.IsKeyDown(key) && !_previousKeyboardState.IsKeyDown(key);
+            return _currentKeyboardState.IsKeyDown(key) && _previousKeyboardState.IsKeyUp(key);
         }
 
         /// <summary>

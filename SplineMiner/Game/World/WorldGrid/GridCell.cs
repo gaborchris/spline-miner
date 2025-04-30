@@ -7,9 +7,10 @@ namespace SplineMiner.Game.World.WorldGrid
     /// </summary>
     public class GridCell
     {
-        public Vector2 Position { get; }
+        public Vector2 Position { get; set; }
         public float Size { get; }
         public bool IsActive { get; set; }
+        public bool IsSelected { get; set; }
         public Color Color { get; set; }
 
         public GridCell(Vector2 position, float size, bool isActive = true)
@@ -17,6 +18,7 @@ namespace SplineMiner.Game.World.WorldGrid
             Position = position;
             Size = size;
             IsActive = isActive;
+            IsSelected = false;
             Color = Color.DarkGray;
         }
 

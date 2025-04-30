@@ -37,7 +37,7 @@ namespace SplineMiner.Game.Cart
         private readonly IMovementController _movementController;
         private readonly IWheelSystem _wheelSystem;
         private readonly IDebugVisualizer _debugVisualizer;
-        private readonly InputManager _inputManager;
+        private readonly IInputService _inputService;
         private Texture2D _texture;
         private Texture2D _debugTexture;
         private bool _showDebugInfo = true;
@@ -52,11 +52,11 @@ namespace SplineMiner.Game.Cart
         /// <summary>
         /// Initializes a new instance of the CartController.
         /// </summary>
-        /// <param name="inputManager">The input manager for handling player controls.</param>
-        /// <exception cref="ArgumentNullException">Thrown when inputManager is null.</exception>
-        public CartController(InputManager inputManager)
+        /// <param name="inputService">The input service for handling player controls.</param>
+        /// <exception cref="ArgumentNullException">Thrown when inputService is null.</exception>
+        public CartController(IInputService inputService)
         {
-            _inputManager = inputManager;
+            _inputService = inputService;
             _movementController = new CartMovementController();
             _wheelSystem = new CartWheelSystem();
             _debugVisualizer = new CartDebugVisualizer(_movementController, _wheelSystem);
@@ -81,11 +81,11 @@ namespace SplineMiner.Game.Cart
             else
             {
                 // Normal user-controlled movement
-                if (_inputManager.Forward())
+                if (_inputService.Forward())
                 {
                     _t += _movementController.Speed * deltaTime;
                 }
-                else if (_inputManager.Backward())
+                else if (_inputService.Backward())
                 {
                     _t -= _movementController.Speed * deltaTime;
                 }
@@ -96,7 +96,7 @@ namespace SplineMiner.Game.Cart
             _wheelSystem.UpdateWheelPositions(track, _t);
             _movementController.UpdateRotation(track);
 
-            if (_inputManager.IsKeyPressed(Keys.T))
+            if (_inputService.IsKeyPressed(Keys.T))
             {
                 Debug.WriteLine("[CartController] T key pressed, starting movement test");
                 _debugVisualizer.StartMovementTest();

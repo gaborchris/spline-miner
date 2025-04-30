@@ -7,6 +7,7 @@ using SplineMiner.Core.Services;
 using SplineMiner.Game.Cart;
 using SplineMiner.Game.Track;
 using SplineMiner.Game.World.WorldGrid;
+using SplineMiner.Core.Interfaces;
 
 namespace SplineMiner
 {
@@ -24,6 +25,10 @@ namespace SplineMiner
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        // Service container for dependency injection
+        private readonly IServiceContainer _services;
+
+        // Note: Keep InputManager for now until all dependencies are updated
         private InputManager _inputManager;
         private CartController _player;
         private SplineTrack _track;
@@ -46,6 +51,7 @@ namespace SplineMiner
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
+            _services = new ServiceContainer(); // Initialize service container
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             
@@ -75,6 +81,11 @@ namespace SplineMiner
             // Initialize world grid with a more reasonable size
             // (5000x500 was causing performance issues - 500x200 is more manageable)
             _worldGrid = new WorldGrid(500, 200, 20);
+
+            // Register services in the container
+            _services.RegisterSingleton<IInputService>(_inputManager);
+            // Note: CameraManager is still using singleton pattern, will be updated later
+            // Note: Other services will be registered after they are created in LoadContent
 
             base.Initialize();
         }
@@ -121,6 +132,10 @@ namespace SplineMiner
             // Initialize managers
             _uiManager = new UIManager(debugFont, GraphicsDevice);
             _debugManager = new DebugManager(debugFont);
+            
+            // Register additional services
+            _services.RegisterSingleton<IUIService>(_uiManager);
+            _services.RegisterSingleton<IDebugService>(_debugManager);
             
             // Initialize the track with test data
             InitializeTrack();
@@ -186,11 +201,14 @@ namespace SplineMiner
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            // Get input service from container
+            var inputService = _services.GetService<IInputService>();
+
             // Update input
             _inputManager.Update();
             
             // Update UI
-            _uiManager.Update(_inputManager);
+            _uiManager.Update(inputService);
             
             // Update camera
             CameraManager.Instance.Update(gameTime);
@@ -208,7 +226,7 @@ namespace SplineMiner
             _debugManager.Update(gameTime);
 
             // Toggle debug info with F1
-            if (_inputManager.IsKeyPressed(Keys.F1))
+            if (inputService.IsKeyPressed(Keys.F1))
             {
                 _debugManager.ShowDebugInfo = !_debugManager.ShowDebugInfo;
             }

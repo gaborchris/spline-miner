@@ -4,11 +4,14 @@ using SplineMiner.Core.Services;
 using SplineMiner.Game.World.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SplineMiner.Game.World.WorldGrid
 {
     /// <summary>
-    /// Manages a collection of grid cells and handles procedural generation
+    /// Manages a procedurally generated grid of cells that forms the game world.
+    /// The world is generated once at startup and can be modified by deleting cells.
+    /// Note: This is a read-only world after generation - cells can only be deleted, not added or moved.
     /// </summary>
     public class WorldGrid
     {
@@ -215,8 +218,9 @@ namespace SplineMiner.Game.World.WorldGrid
             return null;
         }
 
-        public void DestroyCell(Vector2 worldPosition)
+        public void DeleteCell(Vector2 screenPosition)
         {
+            Vector2 worldPosition = CameraManager.Instance.ScreenToWorld(screenPosition);
             var cell = GetCellAtPosition(worldPosition);
             if (cell != null)
             {

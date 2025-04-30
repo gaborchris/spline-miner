@@ -1,47 +1,48 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using SplineMiner.Game.Items.Tools;
+using SplineMiner.Core.Interfaces;
 using SplineMiner.Game.Track;
+using SplineMiner.Game.Items.Tools;
 
 namespace SplineMiner.Core.Services
 {
     public class MouseInteractionManager
     {
-        private readonly InputManager _inputManager;
+        private readonly IInputService _inputService;
         private readonly SplineTrack _track;
-        private int _hoveredPointIndex = -1;
+        private Vector2 _lastMousePosition;
+        private bool _isDragging;
 
-        public int HoveredPointIndex => _hoveredPointIndex;
-
-        public MouseInteractionManager(InputManager inputManager, SplineTrack track)
+        public MouseInteractionManager(IInputService inputService, SplineTrack track)
         {
-            _inputManager = inputManager;
+            _inputService = inputService;
             _track = track;
+            _lastMousePosition = Vector2.Zero;
+            _isDragging = false;
         }
 
         public void Update(UITool currentTool)
         {
-            Vector2 mousePosition = _inputManager.MousePosition;
+            Vector2 mousePosition = _inputService.MousePosition;
 
             switch (currentTool)
             {
                 case UITool.Track:
                     HandleTrackTool(mousePosition);
                     break;
-
+                case UITool.Select:
+                    HandleSelectTool(mousePosition);
+                    break;
                 case UITool.DeleteTrack:
                     HandleDeleteTool(mousePosition);
                     break;
             }
 
-            // Update hovered point for visual feedback
-            _hoveredPointIndex = _track.GetHoveredPointIndex(mousePosition);
+            _lastMousePosition = mousePosition;
         }
 
         private void HandleTrackTool(Vector2 mousePosition)
         {
-            // Handle right-click drag for editing shadow nodes
-            if (_inputManager.IsRightMousePressed())
+            if (_inputService.IsRightMousePressed())
             {
                 int pointIndex = _track.GetHoveredPointIndex(mousePosition);
                 if (pointIndex != -1)
@@ -49,16 +50,15 @@ namespace SplineMiner.Core.Services
                     _track.SelectPoint(pointIndex);
                 }
             }
-            else if (_inputManager.IsRightMouseHeld())
+            else if (_inputService.IsRightMouseHeld())
             {
                 _track.MoveSelectedPoint(mousePosition);
             }
-            else if (_inputManager.IsRightMouseReleased())
+            else if (_inputService.IsRightMouseReleased())
             {
                 _track.ReleaseSelectedPoint();
             }
-            // Handle left-click for placing new points
-            else if (_inputManager.IsLeftMousePressed())
+            else if (_inputService.IsLeftMousePressed())
             {
                 if (!_track.IsHoveringEndpoint)
                 {
@@ -67,13 +67,46 @@ namespace SplineMiner.Core.Services
             }
         }
 
-        private void HandleDeleteTool(Vector2 mousePosition)
+        private void HandleSelectTool(Vector2 mousePosition)
         {
-            if (_inputManager.IsLeftMousePressed())
+            if (_inputService.IsRightMousePressed())
             {
-                int pointIndex = _track.GetHoveredPointIndex(mousePosition);
+                // Start selection
+                _isDragging = true;
+            }
+            else if (_inputService.IsRightMouseHeld())
+            {
+                // Continue selection
+                if (_isDragging)
+                {
+                    // Update selection area
+                }
+            }
+            else if (_inputService.IsRightMouseReleased())
+            {
+                // End selection
+                _isDragging = false;
+            }
+            else if (_inputService.IsLeftMousePressed())
+            {
+                // Select single point
+                var pointIndex = _track.GetHoveredPointIndex(mousePosition);
                 if (pointIndex != -1)
                 {
+                    // Handle point selection
+                    _track.SelectPoint(pointIndex);
+                }
+            }
+        }
+
+        private void HandleDeleteTool(Vector2 mousePosition)
+        {
+            if (_inputService.IsLeftMousePressed())
+            {
+                var pointIndex = _track.GetHoveredPointIndex(mousePosition);
+                if (pointIndex != -1)
+                {
+                    // Delete the point
                     _track.DeletePoint(pointIndex);
                 }
             }

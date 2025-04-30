@@ -1,5 +1,5 @@
 using Microsoft.Xna.Framework;
-using SplineMiner.Core.Services;
+using SplineMiner.Core.Interfaces;
 using SplineMiner.Game.Items.Tools;
 
 namespace SplineMiner.Game.World.WorldGrid
@@ -9,29 +9,44 @@ namespace SplineMiner.Game.World.WorldGrid
     /// </summary>
     public class GridInteractionManager
     {
-        private readonly InputManager _inputManager;
+        private readonly IInputService _inputService;
         private readonly WorldGrid _worldGrid;
+        private Vector2 _lastMousePosition;
+        private bool _isDragging;
 
-        public GridInteractionManager(InputManager inputManager, WorldGrid worldGrid)
+        public GridInteractionManager(IInputService inputService, WorldGrid worldGrid)
         {
-            _inputManager = inputManager;
+            _inputService = inputService;
             _worldGrid = worldGrid;
+            _lastMousePosition = Vector2.Zero;
+            _isDragging = false;
         }
 
         public void Update(UITool currentTool)
         {
-            // Only allow interaction with grid when using the appropriate tool
-            if (currentTool != UITool.Destroy) return;
+            Vector2 mousePosition = _inputService.MousePosition;
 
-            // Check for both initial click and held-down mouse state
-            if (_inputManager.IsLeftMousePressed() || _inputManager.IsLeftMouseHeld())
+            if (_inputService.IsLeftMousePressed() || _inputService.IsLeftMouseHeld())
             {
-                // Convert screen position to world position
-                Vector2 screenPos = _inputManager.MousePosition;
-                Vector2 worldPos = CameraManager.Instance.ScreenToWorld(screenPos);
+                Vector2 screenPos = _inputService.MousePosition;
+                // Handle grid interaction based on current tool
+                switch (currentTool)
+                {
+                    case UITool.Destroy:
+                        HandleDestroyTool(screenPos);
+                        break;
+                }
+            }
 
-                // Try to destroy a cell at the clicked position
-                _worldGrid.DestroyCell(worldPos);
+            _lastMousePosition = mousePosition;
+        }
+
+        private void HandleDestroyTool(Vector2 screenPos)
+        {
+            if (_inputService.IsLeftMousePressed() || _inputService.IsLeftMouseHeld())
+            {
+                // Delete cell at position
+                _worldGrid.DeleteCell(screenPos);
             }
         }
     }
