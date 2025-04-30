@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SplineMiner.Game.Track;
 using System.Collections.Generic;
 
 namespace SplineMiner.Core.Interfaces

@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using SplineMiner.WorldGrid;
-using SplineMiner.UI;
-using SplineMiner.Core.Interfaces;
+using SplineMiner.Core.Services;
+using SplineMiner.Game.Cart;
+using SplineMiner.Game.Track;
+using SplineMiner.Game.World.WorldGrid;
+using SplineMiner.UI.DebugTools;
 
 namespace SplineMiner
 {
@@ -19,7 +20,7 @@ namespace SplineMiner
     /// - ResourceManager for content loading
     /// - GameStateManager for managing game state transitions
     /// </remarks>
-    public class Game1 : Game
+    public class Game1 : Microsoft.Xna.Framework.Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -28,12 +29,12 @@ namespace SplineMiner
         private CartController _player;
         private SplineTrack _track;
         private UIManager _uiManager;
-        private DebugManager _debugManager;
+        private DebugPanel _debugManager;
         private MouseInteractionManager _mouseInteractionManager;
         private bool _useLargeTrack = false;
         
         // World grid components
-        private WorldGrid.WorldGrid _worldGrid;
+        private Game.World.WorldGrid.WorldGrid _worldGrid;
         private GridInteractionManager _gridInteractionManager;
         
         /// <summary>
@@ -74,7 +75,7 @@ namespace SplineMiner
             
             // Initialize world grid with a more reasonable size
             // (5000x500 was causing performance issues - 500x200 is more manageable)
-            _worldGrid = new WorldGrid.WorldGrid(500, 200, 20);
+            _worldGrid = new WorldGrid(500, 200, 20);
 
             base.Initialize();
         }
@@ -120,7 +121,7 @@ namespace SplineMiner
 
             // Initialize managers
             _uiManager = new UIManager(debugFont, GraphicsDevice);
-            _debugManager = new DebugManager(debugFont);
+            _debugManager = new DebugPanel(debugFont);
             
             // Initialize the track with test data
             InitializeTrack();
