@@ -73,16 +73,16 @@ namespace SplineMiner.Core.Services
         /// </summary>
         /// <param name="graphicsDevice">The graphics device used for rendering.</param>
         /// <param name="worldGrid">The world grid for debug visualization.</param>
-        /// <param name="inputManager">The input manager for debug controls.</param>
+        /// <param name="inputService">The input service for debug controls.</param>
         /// <remarks>
         /// TODO: Implement proper debug component initialization
         /// TODO: Add support for dynamic debug panel creation
         /// </remarks>
-        public void Initialize(GraphicsDevice graphicsDevice, Game.World.WorldGrid.WorldGrid worldGrid, InputManager inputManager)
+        public void Initialize(GraphicsDevice graphicsDevice, Game.World.WorldGrid.WorldGrid worldGrid, IInputService inputService)
         {
             // Initialize panels
             _statsPanel = new StatsPanel(_debugFont, graphicsDevice);
-            _worldParameterPanel = new ControlPanel(worldGrid, inputManager, _debugFont, graphicsDevice);
+            _worldParameterPanel = new ControlPanel(worldGrid, inputService, _debugFont, graphicsDevice);
 
             // Set references
             _statsPanel.SetWorldGrid(worldGrid);

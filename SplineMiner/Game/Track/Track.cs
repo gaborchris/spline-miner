@@ -29,7 +29,7 @@ namespace SplineMiner.Game.Track
         private float _totalArcLength = 0f;
         private TrackPreview _preview;
         private const int MIN_SHADOW_NODES = 3; // Minimum needed for Catmull-Rom
-        private readonly UIManager _uiManager;
+        private readonly IUIService _uiService;
         private float _t = 0f;
 
         private readonly SplineCalculator _splineCalculator;
@@ -44,13 +44,13 @@ namespace SplineMiner.Game.Track
         /// Initializes a new instance of the SplineTrack.
         /// </summary>
         /// <param name="nodes">Initial set of track nodes.</param>
-        /// <param name="uiManager">Reference to the UI manager for track interactions.</param>
-        /// <exception cref="ArgumentNullException">Thrown when nodes or uiManager is null.</exception>
-        public SplineTrack(List<Vector2> initialPoints, UIManager uiManager)
+        /// <param name="uiService">Reference to the UI service for track interactions.</param>
+        /// <exception cref="ArgumentNullException">Thrown when nodes or uiService is null.</exception>
+        public SplineTrack(List<Vector2> initialPoints, IUIService uiService)
         {
             _placedNodes = initialPoints.Select(p => new PlacedTrackNode(p)).ToList();
             _shadowNodes = [];
-            _uiManager = uiManager;
+            _uiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
             _splineCalculator = new SplineCalculator(_placedNodes);
             _cache = new TrackCache();
             _renderer = new TrackRenderer(_pointTexture);
@@ -248,7 +248,7 @@ namespace SplineMiner.Game.Track
             Vector2[] placedPoints = _placedNodes.Select(n => n.Position).ToArray();
             DrawingHelpers.DrawSplineCurve(spriteBatch, _pointTexture, placedPoints, segments, Color.Black, 2);
 
-            switch (_uiManager.CurrentTool)
+            switch (_uiService.CurrentTool)
             {
                 case UITool.Track:
                     // Draw shadow nodes and their connecting curve
