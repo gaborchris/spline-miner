@@ -73,5 +73,17 @@ namespace SplineMiner.Core.Interfaces
         /// </summary>
         /// <returns>The mouse wheel scroll delta.</returns>
         float GetMouseWheelDelta();
+
+        /// <summary>
+        /// Checks if the forward movement key is pressed.
+        /// </summary>
+        /// <returns>True if the forward movement key is pressed, false otherwise.</returns>
+        bool Forward();
+
+        /// <summary>
+        /// Checks if the backward movement key is pressed.
+        /// </summary>
+        /// <returns>True if the backward movement key is pressed, false otherwise.</returns>
+        bool Backward();
     }
 } 

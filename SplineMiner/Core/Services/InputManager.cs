@@ -52,9 +52,8 @@ namespace SplineMiner.Core.Services
         public void Update()
         {
             _previousKeyboardState = _currentKeyboardState;
-            _currentKeyboardState = Keyboard.GetState();
-
             _previousMouseState = _currentMouseState;
+            _currentKeyboardState = Keyboard.GetState();
             _currentMouseState = Mouse.GetState();
         }
 
@@ -69,7 +68,7 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public bool IsKeyPressed(Keys key)
         {
-            return _currentKeyboardState.IsKeyDown(key) && !_previousKeyboardState.IsKeyDown(key);
+            return _currentKeyboardState.IsKeyDown(key) && _previousKeyboardState.IsKeyUp(key);
         }
 
         /// <summary>
@@ -92,7 +91,7 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public bool Forward()
         {
-            return IsKeyHeld(Keys.D) || IsKeyHeld(Keys.Right);
+            return IsKeyHeld(Keys.W) || IsKeyHeld(Keys.Up);
         }
 
         /// <summary>
@@ -105,7 +104,7 @@ namespace SplineMiner.Core.Services
         /// </remarks>
         public bool Backward()
         {
-            return IsKeyHeld(Keys.A) || IsKeyHeld(Keys.Left);
+            return IsKeyHeld(Keys.S) || IsKeyHeld(Keys.Down);
         }
 
         public bool IsKeyReleased(Keys key)
