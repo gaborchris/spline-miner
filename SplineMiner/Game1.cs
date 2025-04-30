@@ -262,9 +262,6 @@ namespace SplineMiner
             }
             _collisionSystem.Update(gameTime);
 
-            // Clear blocks after collision check
-            _collisionSystem.ClearBlocks();
-
             base.Update(gameTime);
         }
 
