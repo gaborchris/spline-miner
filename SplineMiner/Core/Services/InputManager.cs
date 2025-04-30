@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SplineMiner.Core.Interfaces;
 
 namespace SplineMiner.Core.Services
 {
@@ -12,14 +13,21 @@ namespace SplineMiner.Core.Services
     /// TODO: Add support for input macros
     /// TODO: Implement proper input state management
     /// </remarks>
-    public class InputManager
+    public class InputManager : IInputService
     {
         private KeyboardState _currentKeyboardState;
         private KeyboardState _previousKeyboardState;
         private MouseState _currentMouseState;
         private MouseState _previousMouseState;
 
+        /// <summary>
+        /// Gets the current mouse position.
+        /// </summary>
         public Vector2 MousePosition => new Vector2(_currentMouseState.X, _currentMouseState.Y);
+
+        /// <summary>
+        /// Gets the previous mouse position.
+        /// </summary>
         public Vector2 PreviousMousePosition => new Vector2(_previousMouseState.X, _previousMouseState.Y);
 
         /// <summary>
@@ -65,6 +73,16 @@ namespace SplineMiner.Core.Services
         }
 
         /// <summary>
+        /// Checks if a key is being held down.
+        /// </summary>
+        /// <param name="key">The key to check.</param>
+        /// <returns>True if the key is being held, false otherwise.</returns>
+        public bool IsKeyHeld(Keys key)
+        {
+            return _currentKeyboardState.IsKeyDown(key);
+        }
+
+        /// <summary>
         /// Checks if the forward movement key is pressed.
         /// </summary>
         /// <returns>True if forward movement is requested, false otherwise.</returns>
@@ -90,55 +108,72 @@ namespace SplineMiner.Core.Services
             return IsKeyHeld(Keys.A) || IsKeyHeld(Keys.Left);
         }
 
-        public bool IsKeyHeld(Keys key)
-        {
-            return _currentKeyboardState.IsKeyDown(key);
-        }
-
         public bool IsKeyReleased(Keys key)
         {
             return !_currentKeyboardState.IsKeyDown(key) && _previousKeyboardState.IsKeyDown(key);
         }
 
+        /// <summary>
+        /// Checks if the left mouse button is currently pressed.
+        /// </summary>
+        /// <returns>True if the left mouse button is pressed, false otherwise.</returns>
         public bool IsLeftMousePressed()
         {
             return _currentMouseState.LeftButton == ButtonState.Pressed &&
                    _previousMouseState.LeftButton == ButtonState.Released;
         }
 
-        public bool IsLeftMouseReleased()
-        {
-            return _currentMouseState.LeftButton == ButtonState.Released &&
-                   _previousMouseState.LeftButton == ButtonState.Pressed;
-        }
-
+        /// <summary>
+        /// Checks if the left mouse button is being held down.
+        /// </summary>
+        /// <returns>True if the left mouse button is being held, false otherwise.</returns>
         public bool IsLeftMouseHeld()
         {
             return _currentMouseState.LeftButton == ButtonState.Pressed;
         }
 
+        /// <summary>
+        /// Checks if the right mouse button is currently pressed.
+        /// </summary>
+        /// <returns>True if the right mouse button is pressed, false otherwise.</returns>
         public bool IsRightMousePressed()
         {
             return _currentMouseState.RightButton == ButtonState.Pressed &&
                    _previousMouseState.RightButton == ButtonState.Released;
         }
 
+        /// <summary>
+        /// Checks if the right mouse button is being held down.
+        /// </summary>
+        /// <returns>True if the right mouse button is being held, false otherwise.</returns>
+        public bool IsRightMouseHeld()
+        {
+            return _currentMouseState.RightButton == ButtonState.Pressed;
+        }
+
+        /// <summary>
+        /// Checks if the right mouse button was just released.
+        /// </summary>
+        /// <returns>True if the right mouse button was just released, false otherwise.</returns>
         public bool IsRightMouseReleased()
         {
             return _currentMouseState.RightButton == ButtonState.Released &&
                    _previousMouseState.RightButton == ButtonState.Pressed;
         }
 
-        public bool IsRightMouseHeld()
-        {
-            return _currentMouseState.RightButton == ButtonState.Pressed;
-        }
-
+        /// <summary>
+        /// Checks if the mouse wheel was scrolled.
+        /// </summary>
+        /// <returns>True if the mouse wheel was scrolled, false otherwise.</returns>
         public bool IsMouseWheelScrolled()
         {
             return _currentMouseState.ScrollWheelValue != _previousMouseState.ScrollWheelValue;
         }
 
+        /// <summary>
+        /// Gets the mouse wheel scroll delta.
+        /// </summary>
+        /// <returns>The mouse wheel scroll delta.</returns>
         public float GetMouseWheelDelta()
         {
             return (_currentMouseState.ScrollWheelValue - _previousMouseState.ScrollWheelValue) / 120f;

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using SplineMiner.UI.Components;
 using SplineMiner.Game.Items.Tools;
+using SplineMiner.Core.Interfaces;
 
 namespace SplineMiner.Core.Services
 {
@@ -18,7 +19,7 @@ namespace SplineMiner.Core.Services
     /// TODO: Add support for localization
     /// TODO: Implement proper UI event system
     /// </remarks>
-    public class UIManager
+    public class UIManager : IUIService
     {
         private readonly List<UIButton> _buttons;
         private readonly SpriteFont _font;
@@ -33,6 +34,7 @@ namespace SplineMiner.Core.Services
         private readonly SpriteFont _debugFont;
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Dictionary<string, UIButton> _buttonMap;
+        private bool _isVisible = true;
 
         /// <summary>
         /// Initializes a new instance of the UIManager.
@@ -153,37 +155,25 @@ namespace SplineMiner.Core.Services
         }
 
         /// <summary>
-        /// Updates the UI state and handles input.
+        /// Updates the UI state based on input.
         /// </summary>
-        /// <param name="inputManager">The input manager for handling user input.</param>
-        /// <remarks>
-        /// TODO: Implement proper UI update priority system
-        /// TODO: Add support for UI focus management
-        /// </remarks>
-        public void Update(InputManager inputManager)
+        /// <param name="inputService">The input service to check for user input.</param>
+        public void Update(IInputService inputService)
         {
-            // Handle mouse wheel scrolling with precise increments
-            if (inputManager.IsMouseWheelScrolled())
+            // TODO: Implement proper UI input handling
+            if (inputService.IsKeyPressed(Keys.Escape))
             {
-                float delta = inputManager.GetMouseWheelDelta();
-                float newOffset = Math.Clamp(_scrollOffset + delta, 0, TOTAL_BUTTONS - 1);
-                if (newOffset != _scrollOffset)
-                {
-                    SetToolIndex((int)newOffset);
-                }
+                _isVisible = !_isVisible;
             }
+        }
 
-            // Update buttons
-            bool isMouseClicked = inputManager.IsLeftMousePressed();
-            Vector2 mousePosition = inputManager.MousePosition;
-            for (int i = 0; i < _buttons.Count; i++)
-            {
-                _buttons[i].Update(mousePosition, isMouseClicked);
-                if (_buttons[i].IsSelected)
-                {
-                    SetToolIndex(i);
-                }
-            }
+        /// <summary>
+        /// Updates the UI state.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        public void UpdateUI(GameTime gameTime)
+        {
+            // TODO: Implement proper UI animation and state updates
         }
 
         /// <summary>
@@ -213,6 +203,35 @@ namespace SplineMiner.Core.Services
         {
             get => _currentTool;
             set => _currentTool = value;
+        }
+
+        /// <summary>
+        /// Gets or sets whether the UI is visible.
+        /// </summary>
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set => _isVisible = value;
+        }
+
+        /// <summary>
+        /// Shows a UI element.
+        /// </summary>
+        /// <param name="elementId">The ID of the element to show.</param>
+        public void ShowElement(string elementId)
+        {
+            // TODO: Implement proper UI element management
+            _isVisible = true;
+        }
+
+        /// <summary>
+        /// Hides a UI element.
+        /// </summary>
+        /// <param name="elementId">The ID of the element to hide.</param>
+        public void HideElement(string elementId)
+        {
+            // TODO: Implement proper UI element management
+            _isVisible = false;
         }
     }
 }
