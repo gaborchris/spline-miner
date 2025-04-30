@@ -7,7 +7,6 @@ using SplineMiner.Core.Services;
 using SplineMiner.Game.Cart;
 using SplineMiner.Game.Track;
 using SplineMiner.Game.World.WorldGrid;
-using SplineMiner.UI.DebugTools;
 
 namespace SplineMiner
 {
@@ -29,7 +28,7 @@ namespace SplineMiner
         private CartController _player;
         private SplineTrack _track;
         private UIManager _uiManager;
-        private DebugPanel _debugManager;
+        private DebugManager _debugManager;
         private MouseInteractionManager _mouseInteractionManager;
         private bool _useLargeTrack = false;
         
@@ -121,7 +120,7 @@ namespace SplineMiner
 
             // Initialize managers
             _uiManager = new UIManager(debugFont, GraphicsDevice);
-            _debugManager = new DebugPanel(debugFont);
+            _debugManager = new DebugManager(debugFont);
             
             // Initialize the track with test data
             InitializeTrack();

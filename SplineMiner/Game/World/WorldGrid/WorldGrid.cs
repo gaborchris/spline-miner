@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SplineMiner.Game.Cart;
+using SplineMiner.Core.Services;
 using SplineMiner.Game.World.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;

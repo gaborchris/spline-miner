@@ -1,12 +1,13 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using SplineMiner.Core.Services;
 using SplineMiner.Game.Items.Tools;
+using SplineMiner.UI.DebugTools;
+using SplineMiner.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 
-namespace SplineMiner.UI.DebugTools
+namespace SplineMiner.Core.Services
 {
     /// <summary>
     /// Manages debug information display and development tools.
@@ -18,7 +19,7 @@ namespace SplineMiner.UI.DebugTools
     /// TODO: Add support for performance profiling
     /// TODO: Implement debug command system
     /// </remarks>
-    public class DebugPanel
+    public class DebugManager : IDebugService
     {
         private readonly SpriteFont _debugFont;
         private bool _showDebugInfo = true;
@@ -62,7 +63,7 @@ namespace SplineMiner.UI.DebugTools
         /// TODO: Implement proper debug initialization system
         /// TODO: Add support for debug configuration loading
         /// </remarks>
-        public DebugPanel(SpriteFont debugFont)
+        public DebugManager(SpriteFont debugFont)
         {
             _debugFont = debugFont;
         }
@@ -157,7 +158,58 @@ namespace SplineMiner.UI.DebugTools
             // Draw panels
             _statsPanel?.Draw(spriteBatch);
             _worldParameterPanel?.Draw(spriteBatch);
+        }
 
+        /// <summary>
+        /// Draws debug information using the provided sprite batch.
+        /// </summary>
+        /// <param name="spriteBatch">The sprite batch used for rendering.</param>
+        public void DrawDebug(SpriteBatch spriteBatch)
+        {
+            if (!_showDebugInfo) return;
+
+            // Draw panels
+            _statsPanel?.Draw(spriteBatch);
+            _worldParameterPanel?.Draw(spriteBatch);
+        }
+
+        /// <summary>
+        /// Gets or sets whether debug mode is enabled.
+        /// </summary>
+        public bool IsDebugEnabled
+        {
+            get => _showDebugInfo;
+            set => ShowDebugInfo = value;
+        }
+
+        /// <summary>
+        /// Updates the debug state.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        public void UpdateDebug(GameTime gameTime)
+        {
+            Update(gameTime);
+        }
+
+        /// <summary>
+        /// Logs a debug message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        public void LogDebug(string message)
+        {
+            // TODO: Implement proper debug logging system
+            System.Diagnostics.Debug.WriteLine(message);
+        }
+
+        /// <summary>
+        /// Logs a debug message with a category.
+        /// </summary>
+        /// <param name="category">The category of the message.</param>
+        /// <param name="message">The message to log.</param>
+        public void LogDebug(string category, string message)
+        {
+            // TODO: Implement proper debug logging system
+            System.Diagnostics.Debug.WriteLine($"[{category}] {message}");
         }
     }
 }

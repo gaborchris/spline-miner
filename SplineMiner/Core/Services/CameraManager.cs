@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SplineMiner.Core.Interfaces;
 using System;
 
-namespace SplineMiner.Game.Cart
+namespace SplineMiner.Core.Services
 {
     /// <summary>
     /// Manages the game camera, including following targets and viewport transformations.
