@@ -1,10 +1,10 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Services;
 using SplineMiner.Game.World.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SplineMiner.Game.World.WorldGrid
 {
@@ -41,6 +41,18 @@ namespace SplineMiner.Game.World.WorldGrid
             new DrunkardWalkStrategy(),
             new MazeGenerationStrategy()
         };
+
+        // Add spatial partitioning
+        private Dictionary<Point, List<GridCell>> _spatialGrid;
+        private const int PARTITION_SIZE = 64; // Size of each partition
+
+        private Point GetPartitionKey(Vector2 position)
+        {
+            return new Point(
+                (int)Math.Floor(position.X / PARTITION_SIZE),
+                (int)Math.Floor(position.Y / PARTITION_SIZE)
+            );
+        }
 
         public int Width => _width;
         public int Height => _height;
@@ -108,6 +120,9 @@ namespace SplineMiner.Game.World.WorldGrid
             _cellTexture = new Texture2D(graphicsDevice, 1, 1);
             _cellTexture.SetData(new[] { Color.White });
 
+            // Initialize spatial partitioning
+            _spatialGrid = new Dictionary<Point, List<GridCell>>();
+
             // Generate the grid
             GenerateGrid();
         }
@@ -115,6 +130,7 @@ namespace SplineMiner.Game.World.WorldGrid
         public void GenerateGrid()
         {
             _cells.Clear();
+            _spatialGrid.Clear();
 
             // Calculate world bounds
             float worldWidth = _width * _cellSize;
@@ -142,7 +158,16 @@ namespace SplineMiner.Game.World.WorldGrid
                         _random,
                         _generationParameters);
 
-                    _cells.Add(new GridCell(new Vector2(posX, posY), _cellSize, isActive));
+                    var cell = new GridCell(new Vector2(posX, posY), _cellSize, isActive);
+                    _cells.Add(cell);
+
+                    // Add cells to spatial partitioning
+                    var key = GetPartitionKey(cell.Position);
+                    if (!_spatialGrid.ContainsKey(key))
+                    {
+                        _spatialGrid[key] = new List<GridCell>();
+                    }
+                    _spatialGrid[key].Add(cell);
                 }
             }
 
@@ -225,6 +250,31 @@ namespace SplineMiner.Game.World.WorldGrid
             if (cell != null)
             {
                 cell.IsActive = false;
+            }
+        }
+
+        // Get only nearby blocks for collision checking
+        public IEnumerable<IWorldBlock> GetNearbyBlocks(Vector2 position, float radius)
+        {
+            var centerPartition = GetPartitionKey(position);
+            var radiusInPartitions = (int)Math.Ceiling(radius / PARTITION_SIZE);
+
+            for (int y = -radiusInPartitions; y <= radiusInPartitions; y++)
+            {
+                for (int x = -radiusInPartitions; x <= radiusInPartitions; x++)
+                {
+                    var key = new Point(centerPartition.X + x, centerPartition.Y + y);
+                    if (_spatialGrid.TryGetValue(key, out var cells))
+                    {
+                        foreach (var cell in cells)
+                        {
+                            if (cell.IsActive && Vector2.Distance(position, cell.Position) <= radius)
+                            {
+                                yield return cell;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
