@@ -10,6 +10,143 @@ using SplineMiner.Core;
 
 namespace SplineMiner
 {
+    /// <summary>
+    /// Controls the player's cart movement and physics along the track.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Add support for cart upgrades and customization through abstraction
+    /// TODO: Implement proper collision detection and response
+    /// </remarks>
+    public class CartController : ICart, ICameraObserver
+    {
+        private const float MIN_MOVEMENT_THRESHOLD = 0.1f;
+        private const float POSITION_INTERPOLATION_FACTOR = 0.5f;
+        private const float MAX_ROTATION_CHANGE = MathHelper.Pi / 6;
+
+        private Vector2 _position;
+        private Vector2 _previousPosition;
+        private Vector2 _targetPosition;
+        private float _rotation;
+        private float _lastRotation;
+        private float _rotationChange;
+        private float _t = 0f;
+        private float _speed = 300;
+
+        private readonly IMovementController _movementController;
+        private readonly IWheelSystem _wheelSystem;
+        private readonly IDebugVisualizer _debugVisualizer;
+        private readonly InputManager _inputManager;
+        private Texture2D _texture;
+        private Texture2D _debugTexture;
+        private bool _showDebugInfo = true;
+        private bool _isTestRunning = false;
+        private const float TEST_SPEED = 200f; // Speed in pixels per second
+
+        public Texture2D Texture { get; set; }
+        public Texture2D DebugTexture => _debugTexture;
+        public float CurrentDistance => _t;
+        public Vector2 Position => _movementController.Position;
+
+        /// <summary>
+        /// Initializes a new instance of the CartController.
+        /// </summary>
+        /// <param name="inputManager">The input manager for handling player controls.</param>
+        /// <exception cref="ArgumentNullException">Thrown when inputManager is null.</exception>
+        public CartController(InputManager inputManager)
+        {
+            _inputManager = inputManager;
+            _movementController = new CartMovementController();
+            _wheelSystem = new CartWheelSystem();
+            _debugVisualizer = new CartDebugVisualizer(_movementController, _wheelSystem);
+        }
+
+        /// <summary>
+        /// Updates the cart's position and physics based on input and track state.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        /// <param name="track">The current track the cart is on.</param>
+        /// <remarks>
+        /// TODO: Add support for track switching
+        /// </remarks>
+        public void Update(GameTime gameTime, ITrack track)
+        {
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_debugVisualizer.IsTestingMovement) {
+                _t += TEST_SPEED * deltaTime;
+            }
+            else
+            {
+                // Normal user-controlled movement
+                if (_inputManager.Forward())
+                {
+                    _t += _movementController.Speed * deltaTime;
+                }
+                else if (_inputManager.Backward())
+                {
+                    _t -= _movementController.Speed * deltaTime;
+                }
+            }
+
+            _movementController.CurrentDistance = _t;
+            _movementController.UpdatePosition(gameTime, track);
+            _wheelSystem.UpdateWheelPositions(track, _t);
+            _movementController.UpdateRotation(track);
+
+            if (_inputManager.IsKeyPressed(Keys.T))
+            {
+                Debug.WriteLine("[CartController] T key pressed, starting movement test");
+                _debugVisualizer.StartMovementTest();
+            }
+            _debugVisualizer.Update(gameTime);
+        }
+
+        /// <summary>
+        /// Draws the cart using the provided sprite batch.
+        /// </summary>
+        /// <param name="spriteBatch">The sprite batch used for rendering.</param>
+        /// <remarks>
+        /// TODO: Add support for cart animations
+        /// TODO: Implement proper cart rotation based on track curvature
+        /// TODO: Add support for cart effects (sparks, smoke)
+        /// </remarks>
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            Vector2 origin = new Vector2(Texture.Width / 2f, Texture.Height);
+            
+            spriteBatch.Draw(
+                Texture,
+                Position,
+                null,
+                Color.Red,
+                _movementController.Rotation,
+                origin,
+                1.0f,
+                SpriteEffects.None,
+                0f
+            );
+            
+            if (_showDebugInfo)
+            {
+                _debugVisualizer.DrawDebugInfo(spriteBatch, DebugTexture);
+            }
+        }
+
+        /// <summary>
+        /// Loads debug textures for visualization purposes.
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device used for rendering.</param>
+        /// <remarks>
+        /// TODO: Remove debug textures in release builds
+        /// TODO: Implement proper debug visualization system
+        /// </remarks>
+        public void LoadDebugTexture(GraphicsDevice graphicsDevice)
+        {
+            _debugTexture = new Texture2D(graphicsDevice, 1, 1);
+            _debugTexture.SetData(new[] { Color.White });
+        }
+    }
+
     // Core interfaces
     public class CartMovementController : IMovementController
     {
@@ -42,7 +179,6 @@ namespace SplineMiner
         public void UpdatePosition(GameTime gameTime, ITrack track)
         {
             _previousPosition = _position;
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Update target position
             _targetPosition = track.GetPointByDistance(_t);
@@ -228,95 +364,6 @@ namespace SplineMiner
             Debug.WriteLine($"- Average velocity: {avgVelocity:F2} pixels per frame");
             Debug.WriteLine($"- Average acceleration: {avgAcceleration:F2}");
             Debug.WriteLine($"- Maximum acceleration: {maxAcceleration:F2}");
-        }
-    }
-
-    // Main CartController class
-    public class CartController : ICart, ICameraObserver
-    {
-        private readonly IMovementController _movementController;
-        private readonly IWheelSystem _wheelSystem;
-        private readonly IDebugVisualizer _debugVisualizer;
-        private readonly InputManager _inputManager;
-        private Texture2D _texture;
-        private Texture2D _debugTexture;
-        private bool _showDebugInfo = true;
-        private float _t = 0f;
-        private bool _isTestRunning = false;
-        private const float TEST_SPEED = 200f; // Speed in pixels per second
-
-        public Texture2D Texture { get; set; }
-        public Texture2D DebugTexture => _debugTexture;
-        public float CurrentDistance => _t;
-        public Vector2 Position => _movementController.Position;
-
-        public CartController(InputManager inputManager)
-        {
-            _inputManager = inputManager;
-            _movementController = new CartMovementController();
-            _wheelSystem = new CartWheelSystem();
-            _debugVisualizer = new CartDebugVisualizer(_movementController, _wheelSystem);
-        }
-
-        public void Update(GameTime gameTime, ITrack track)
-        {
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            if (_debugVisualizer.IsTestingMovement) {
-                _t += TEST_SPEED * deltaTime;
-            }
-            else
-            {
-                // Normal user-controlled movement
-                if (_inputManager.Forward())
-                {
-                    _t += _movementController.Speed * deltaTime;
-                }
-                else if (_inputManager.Backward())
-                {
-                    _t -= _movementController.Speed * deltaTime;
-                }
-            }
-
-            _movementController.CurrentDistance = _t;
-            _movementController.UpdatePosition(gameTime, track);
-            _wheelSystem.UpdateWheelPositions(track, _t);
-            _movementController.UpdateRotation(track);
-
-            if (_inputManager.IsKeyPressed(Keys.T))
-            {
-                Debug.WriteLine("[CartController] T key pressed, starting movement test");
-                _debugVisualizer.StartMovementTest();
-            }
-            _debugVisualizer.Update(gameTime);
-        }
-
-        public void Draw(SpriteBatch spriteBatch)
-        {
-            Vector2 origin = new Vector2(Texture.Width / 2f, Texture.Height);
-            
-            spriteBatch.Draw(
-                Texture,
-                Position,
-                null,
-                Color.Red,
-                _movementController.Rotation,
-                origin,
-                1.0f,
-                SpriteEffects.None,
-                0f
-            );
-            
-            if (_showDebugInfo)
-            {
-                _debugVisualizer.DrawDebugInfo(spriteBatch, DebugTexture);
-            }
-        }
-
-        public void LoadDebugTexture(GraphicsDevice graphicsDevice)
-        {
-            _debugTexture = new Texture2D(graphicsDevice, 1, 1);
-            _debugTexture.SetData(new[] { Color.White });
         }
     }
 }

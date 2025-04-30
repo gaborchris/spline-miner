@@ -5,16 +5,36 @@ using SplineMiner.Core;
 
 namespace SplineMiner
 {
+    /// <summary>
+    /// Handles calculations for Catmull-Rom spline curves used in track generation and manipulation.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Consider implementing caching for frequently calculated values
+    /// TODO: Add support for different spline types (Bezier, B-spline)
+    /// TODO: Implement parallel processing for arc length calculations
+    /// TODO: Add validation for input parameters
+    /// </remarks>
     public class SplineCalculator : ISplineCalculator
     {
         private readonly List<PlacedTrackNode> _placedNodes;
         private const int MIN_NODES = 4;
 
+        /// <summary>
+        /// Initializes a new instance of the SplineCalculator.
+        /// </summary>
+        /// <param name="placedNodes">List of track nodes that define the spline curve.</param>
+        /// <exception cref="ArgumentNullException">Thrown when placedNodes is null.</exception>
         public SplineCalculator(List<PlacedTrackNode> placedNodes)
         {
-            _placedNodes = placedNodes;
+            _placedNodes = placedNodes ?? throw new ArgumentNullException(nameof(placedNodes));
         }
 
+        /// <summary>
+        /// Calculates a point on the spline at the given parameter value.
+        /// </summary>
+        /// <param name="t">Parameter value. Integer part determines segment index, fractional part determines position within segment.</param>
+        /// <returns>A Vector2 position on the spline curve.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when there are fewer than 4 control points.</exception>
         public Vector2 GetPoint(float t)
         {
             if (_placedNodes.Count < MIN_NODES)
@@ -37,6 +57,17 @@ namespace SplineMiner
             );
         }
 
+        /// <summary>
+        /// Converts a distance along the spline into a parameter value.
+        /// </summary>
+        /// <param name="distance">The distance along the spline.</param>
+        /// <param name="totalLength">The total length of the spline.</param>
+        /// <returns>The parameter value t that corresponds to the given distance.</returns>
+        /// <remarks>
+        /// Uses binary search to find the parameter value. The accuracy improves with more iterations,
+        /// but the default maximum iterations should be sufficient for most cases.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown when totalLength is less than or equal to 0.</exception>
         public float GetParameterForDistance(float distance, float totalLength)
         {
             if (totalLength <= 0) return 0f;
@@ -72,6 +103,18 @@ namespace SplineMiner
             return tMid;
         }
 
+        /// <summary>
+        /// Calculates the arc length of a portion of the spline curve.
+        /// </summary>
+        /// <param name="tStart">Starting parameter value.</param>
+        /// <param name="tEnd">Ending parameter value.</param>
+        /// <param name="baseSteps">Base number of steps for length calculation. Higher values give more accurate results.</param>
+        /// <returns>The approximate length of the spline segment.</returns>
+        /// <remarks>
+        /// Uses adaptive sampling to improve accuracy for segments with high curvature.
+        /// When segment length exceeds 10 units, additional midpoints are calculated.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown when tStart is greater than tEnd.</exception>
         public float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40)
         {
             float arcLength = 0f;

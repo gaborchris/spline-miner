@@ -4,6 +4,16 @@ using System;
 
 namespace SplineMiner
 {
+    /// <summary>
+    /// Manages the game camera, including following targets and viewport transformations.
+    /// </summary>
+    /// <remarks>
+    /// TODO: Implement camera smoothing and interpolation
+    /// TODO: Add support for camera shake effects
+    /// TODO: Implement camera zoom functionality
+    /// TODO: Add support for multiple camera modes
+    /// TODO: Implement camera constraints and boundaries
+    /// </remarks>
     public class CameraManager
     {
         private static CameraManager _instance;
@@ -14,6 +24,13 @@ namespace SplineMiner
         private float _smoothSpeed = 0.1f;
         private Viewport _viewport;
 
+        /// <summary>
+        /// Gets the singleton instance of the CameraManager.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Consider implementing dependency injection instead of singleton
+        /// TODO: Add support for multiple cameras
+        /// </remarks>
         public static CameraManager Instance
         {
             get
@@ -26,6 +43,13 @@ namespace SplineMiner
             }
         }
 
+        /// <summary>
+        /// Gets the camera's transformation matrix.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Add support for custom transformation matrices
+        /// TODO: Implement proper matrix caching
+        /// </remarks>
         public Matrix Transform => _transform;
         public Vector2 Position => _position;
         public float Zoom => _zoom;
@@ -37,16 +61,40 @@ namespace SplineMiner
             UpdateTransform();
         }
 
+        /// <summary>
+        /// Initializes the camera with the specified viewport.
+        /// </summary>
+        /// <param name="viewport">The game viewport.</param>
+        /// <remarks>
+        /// TODO: Add support for viewport resizing
+        /// TODO: Implement proper aspect ratio handling
+        /// </remarks>
         public void Initialize(Viewport viewport)
         {
             _viewport = viewport;
         }
 
+        /// <summary>
+        /// Sets the camera's target to follow.
+        /// </summary>
+        /// <param name="target">The target to follow.</param>
+        /// <remarks>
+        /// TODO: Implement target switching with smooth transitions
+        /// TODO: Add support for target offset
+        /// </remarks>
         public void SetTarget(ICameraObserver target)
         {
             _target = target;
         }
 
+        /// <summary>
+        /// Updates the camera's position and transformation matrix.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        /// <remarks>
+        /// TODO: Implement proper camera interpolation
+        /// TODO: Add support for camera effects
+        /// </remarks>
         public void Update(GameTime gameTime)
         {
             if (_target != null)
