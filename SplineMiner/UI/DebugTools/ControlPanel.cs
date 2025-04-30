@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SplineMiner.Core.Services;
+using SplineMiner.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 
@@ -14,7 +15,7 @@ namespace SplineMiner.UI.DebugTools
     {
         // World grid reference
         private readonly Game.World.WorldGrid.WorldGrid _worldGrid;
-        private readonly InputManager _inputManager;
+        private readonly IInputService _inputService;
 
         // UI elements
         private readonly SpriteFont _font;
@@ -69,10 +70,10 @@ namespace SplineMiner.UI.DebugTools
             }
         }
 
-        public ControlPanel(Game.World.WorldGrid.WorldGrid worldGrid, InputManager inputManager, SpriteFont font, GraphicsDevice graphicsDevice)
+        public ControlPanel(Game.World.WorldGrid.WorldGrid worldGrid, IInputService inputService, SpriteFont font, GraphicsDevice graphicsDevice)
         {
             _worldGrid = worldGrid;
-            _inputManager = inputManager;
+            _inputService = inputService;
             _font = font;
 
             // Create the pixel texture for drawing rectangles
@@ -203,13 +204,13 @@ namespace SplineMiner.UI.DebugTools
         public void CheckForKeyboardShortcuts()
         {
             // Handle F3 key for grid regeneration
-            if (_inputManager.IsKeyPressed(Keys.F3))
+            if (_inputService.IsKeyPressed(Keys.F3))
             {
                 RegenerateWorld();
             }
 
             // Handle F2 key for track size toggle
-            if (_inputManager.IsKeyPressed(Keys.F2))
+            if (_inputService.IsKeyPressed(Keys.F2))
             {
                 ToggleTrackSize();
             }
@@ -223,9 +224,9 @@ namespace SplineMiner.UI.DebugTools
             CheckForKeyboardShortcuts();
 
             // Update all sliders
-            bool isMousePressed = _inputManager.IsLeftMousePressed();
-            bool isMouseHeld = _inputManager.IsLeftMouseHeld();
-            Vector2 mousePosition = _inputManager.MousePosition;
+            bool isMousePressed = _inputService.IsLeftMousePressed();
+            bool isMouseHeld = _inputService.IsLeftMouseHeld();
+            Vector2 mousePosition = _inputService.MousePosition;
 
             // Update strategy dropdown
             _strategyDropdown.Update(mousePosition, isMousePressed, isMouseHeld);

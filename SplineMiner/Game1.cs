@@ -28,8 +28,6 @@ namespace SplineMiner
         // Service container for dependency injection
         private readonly IServiceContainer _services;
 
-        // Note: Keep InputManager for now until all dependencies are updated
-        private InputManager _inputManager;
         private CartController _player;
         private SplineTrack _track;
         private UIManager _uiManager;
@@ -70,9 +68,12 @@ namespace SplineMiner
         /// </remarks>
         protected override void Initialize()
         {
+            // Create and register input service
+            var inputManager = new InputManager();
+            _services.RegisterSingleton<IInputService>(inputManager);
+
             // Initialize the player at the start of the track
-            _inputManager = new InputManager();
-            _player = new CartController(_inputManager);
+            _player = new CartController(inputManager);
 
             // Initialize camera
             CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
@@ -81,11 +82,6 @@ namespace SplineMiner
             // Initialize world grid with a more reasonable size
             // (5000x500 was causing performance issues - 500x200 is more manageable)
             _worldGrid = new WorldGrid(500, 200, 20);
-
-            // Register services in the container
-            _services.RegisterSingleton<IInputService>(_inputManager);
-            // Note: CameraManager is still using singleton pattern, will be updated later
-            // Note: Other services will be registered after they are created in LoadContent
 
             base.Initialize();
         }
@@ -148,10 +144,10 @@ namespace SplineMiner
             
             // Initialize world grid
             _worldGrid.Initialize(GraphicsDevice);
-            _gridInteractionManager = new GridInteractionManager(_inputManager, _worldGrid);
+            _gridInteractionManager = new GridInteractionManager(_services.GetService<IInputService>(), _worldGrid);
             
             // Initialize debug panels with grid reference
-            _debugManager.Initialize(GraphicsDevice, _worldGrid, _inputManager);
+            _debugManager.Initialize(GraphicsDevice, _worldGrid, _services.GetService<IInputService>());
             
             // Set up world parameter panel event handlers
             SetupWorldParameterEvents();
@@ -179,12 +175,14 @@ namespace SplineMiner
 
         private void InitializeTrack()
         {
+            // TODO: In the future, this will be replaced with world generation and track state deserialization
+            // from saved game files. For now, we use test data as a placeholder.
             var trackNodes = _useLargeTrack 
                 ? TestData.TestTrack.GetLargeTrackNodes() 
                 : TestData.TestTrack.GetSmallTrackNodes();
             
-            _track = new SplineTrack(trackNodes, _uiManager);
-            _mouseInteractionManager = new MouseInteractionManager(_inputManager, _track);
+            _track = new SplineTrack(trackNodes, _services.GetService<IUIService>());
+            _mouseInteractionManager = new MouseInteractionManager(_services.GetService<IInputService>(), _track);
         }
 
         /// <summary>
@@ -205,7 +203,7 @@ namespace SplineMiner
             var inputService = _services.GetService<IInputService>();
 
             // Update input
-            _inputManager.Update();
+            inputService.Update();
             
             // Update UI
             _uiManager.Update(inputService);
