@@ -30,7 +30,6 @@ namespace SplineMiner
 
         private CartController _player;
         private SplineTrack _track;
-        private UIManager _uiManager;
         private DebugManager _debugManager;
         private MouseInteractionManager _mouseInteractionManager;
         private bool _useLargeTrack = false;
@@ -126,11 +125,11 @@ namespace SplineMiner
             }
 
             // Initialize managers
-            _uiManager = new UIManager(debugFont, GraphicsDevice);
+            var uiManager = new UIManager(debugFont, GraphicsDevice);
             _debugManager = new DebugManager(debugFont);
             
             // Register additional services
-            _services.RegisterSingleton<IUIService>(_uiManager);
+            _services.RegisterSingleton<IUIService>(uiManager);
             _services.RegisterSingleton<IDebugService>(_debugManager);
             
             // Initialize the track with test data
@@ -201,21 +200,22 @@ namespace SplineMiner
 
             // Get input service from container
             var inputService = _services.GetService<IInputService>();
+            var uiManager = _services.GetService<IUIService>();
 
             // Update input
             inputService.Update();
             
             // Update UI
-            _uiManager.Update(inputService);
+            uiManager.Update(inputService);
             
             // Update camera
             CameraManager.Instance.Update(gameTime);
             
             // Update mouse interactions
-            _mouseInteractionManager.Update(_uiManager.CurrentTool);
+            _mouseInteractionManager.Update(uiManager.CurrentTool);
             
             // Update grid interactions
-            _gridInteractionManager.Update(_uiManager.CurrentTool);
+            _gridInteractionManager.Update(uiManager.CurrentTool);
 
             // Update player movement along the track
             _player.Update(gameTime, _track);
@@ -252,10 +252,11 @@ namespace SplineMiner
             _player.Draw(_spriteBatch);
             _spriteBatch.End();
 
+            var uiManager = _services.GetService<IUIService>();
             // Draw UI (not affected by camera)
             _spriteBatch.Begin();
-            _uiManager.Draw(_spriteBatch);
-            _debugManager.Draw(_spriteBatch, GraphicsDevice, _uiManager.CurrentTool);
+            uiManager.Draw(_spriteBatch);
+            _debugManager.Draw(_spriteBatch, GraphicsDevice, uiManager.CurrentTool);
             _spriteBatch.End();
 
             base.Draw(gameTime);
