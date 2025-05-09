@@ -34,14 +34,8 @@ namespace SplineMiner.Game.World.WorldGrid
         private IWorldGenerationStrategy _generationStrategy;
         private GenerationParameters _generationParameters;
 
-        // Available generation strategies
-        private static readonly List<IWorldGenerationStrategy> _availableStrategies = new List<IWorldGenerationStrategy>
-        {
-            new CenterCaveStrategy(),
-            new CellularAutomataStrategy(),
-            new DrunkardWalkStrategy(),
-            new MazeGenerationStrategy()
-        };
+        // Current available strategies
+        private readonly List<IWorldGenerationStrategy> _availableStrategies;
 
         // Add spatial partitioning
         private Dictionary<Point, List<GridCell>> _spatialGrid;
@@ -68,7 +62,12 @@ namespace SplineMiner.Game.World.WorldGrid
         public IWorldGenerationStrategy GenerationStrategy => _generationStrategy;
         public IReadOnlyList<IWorldGenerationStrategy> AvailableStrategies => _availableStrategies.AsReadOnly();
 
-        public WorldGrid(int width, int height, float cellSize, IDebugService debugService = null)
+        public WorldGrid(
+            int width, 
+            int height, 
+            float cellSize, 
+            IEnumerable<IWorldGenerationStrategy> strategies,
+            IDebugService debugService = null)
         {
             _width = width;
             _height = height;
@@ -76,6 +75,13 @@ namespace SplineMiner.Game.World.WorldGrid
             _debugService = debugService;
             _random = new Random();
             _generationParameters = new GenerationParameters(_caveProbability, _random.Next());
+            
+            // Set available strategies from constructor parameter
+            _availableStrategies = new List<IWorldGenerationStrategy>(strategies);
+            if (_availableStrategies.Count == 0)
+            {
+                throw new ArgumentException("At least one generation strategy must be provided", nameof(strategies));
+            }
             _generationStrategy = _availableStrategies[0];
         }
 

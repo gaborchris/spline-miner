@@ -199,11 +199,22 @@ namespace SplineMiner.Core.Services
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void UpdateDebug(GameTime gameTime)
         {
-            Update(gameTime);
-            foreach (var logger in _loggers.Values)
+            if (!_showDebugInfo) return;
+
+            // Update panels
+            _statsPanel?.Update(gameTime);
+            _worldParameterPanel?.Update();
+
+            // Toggle between panels with F4
+            if (Keyboard.GetState().IsKeyDown(Keys.F4))
             {
-                logger.Update(gameTime);
+                TogglePanels();
             }
+        }
+
+        public void UpdatePlayerStats(Vector2 position, Vector2 velocity, float currentDistance)
+        {
+            _statsPanel?.UpdatePlayerStats(position, velocity, currentDistance);
         }
 
         /// <summary>
