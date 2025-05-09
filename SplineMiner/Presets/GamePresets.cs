@@ -56,7 +56,7 @@ namespace SplineMiner.Presets
             _worldPresets = new Dictionary<WorldPresetId, WorldPresetConfig>
             {
                 { WorldPresetId.Default, new WorldPresetConfig(500, 200, 20f, 0.3f, 0.1f, 3, 10) },
-                { WorldPresetId.Test, new WorldPresetConfig(5, 5, 20f, 0.1f, 0.05f, 5, 15) },
+                { WorldPresetId.Test, new WorldPresetConfig(5, 5, 20f, 0.1f, 0.05f, 5, 15, new Vector2(300, 250)) },  // Test wall centered at (300, 250)
                 { WorldPresetId.Dense, new WorldPresetConfig(500, 200, 20f, 0.5f, 0.2f, 2, 8) }
             };
 
@@ -125,7 +125,8 @@ namespace SplineMiner.Presets
                 config.GridHeight,
                 config.CellSize,
                 strategies,
-                debugManager
+                debugManager,
+                config.WorldOrigin
             );
 
             // Update the grid parameters
@@ -133,7 +134,8 @@ namespace SplineMiner.Presets
                 config.GridWidth,
                 config.GridHeight,
                 config.CellSize,
-                config.CaveProbability
+                config.CaveProbability,
+                config.WorldOrigin
             );
 
             // Initialize the grid with graphics device
@@ -273,6 +275,7 @@ namespace SplineMiner.Presets
         public float OreProbability { get; }
         public int MinCaveSize { get; }
         public int MaxCaveSize { get; }
+        public Vector2 WorldOrigin { get; }  // Position of the world grid's origin
 
         /// <summary>
         /// Creates a new WorldPresetConfig with the specified parameters
@@ -284,7 +287,8 @@ namespace SplineMiner.Presets
             float caveProbability,
             float oreProbability,
             int minCaveSize,
-            int maxCaveSize)
+            int maxCaveSize,
+            Vector2? worldOrigin = null)  // Optional parameter with default null
         {
             GridWidth = gridWidth;
             GridHeight = gridHeight;
@@ -293,6 +297,7 @@ namespace SplineMiner.Presets
             OreProbability = oreProbability;
             MinCaveSize = minCaveSize;
             MaxCaveSize = maxCaveSize;
+            WorldOrigin = worldOrigin ?? Vector2.Zero;  // Default to (0,0) if not specified
         }
     }
 } 
