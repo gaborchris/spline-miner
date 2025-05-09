@@ -32,4 +32,4 @@ namespace SplineMiner.Core.Interfaces
         /// </summary>
         float CurrentDistance { get; }
     }
-} 
+}

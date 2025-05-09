@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Xna.Framework;
 
 namespace SplineMiner.Game.World.WorldGrid.Generation
 {

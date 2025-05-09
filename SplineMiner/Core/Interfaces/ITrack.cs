@@ -1,7 +1,6 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using SplineMiner.Game.Track;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using SplineMiner.Game.Track;
 
 namespace SplineMiner.Core.Interfaces
 {
@@ -31,20 +30,6 @@ namespace SplineMiner.Core.Interfaces
         float TotalArcLength { get; }
 
         /// <summary>
-        /// Draws the track using the provided sprite batch.
-        /// </summary>
-        /// <param name="spriteBatch">The sprite batch to use for drawing.</param>
-        void Draw(SpriteBatch spriteBatch);
-
-        /// <summary>
-        /// Draws debug information about the track.
-        /// </summary>
-        /// <param name="spriteBatch">The sprite batch to use for drawing.</param>
-        /// <param name="distance">The current distance along the track.</param>
-        /// <param name="debugTexture">The texture to use for debug visualization.</param>
-        void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture);
-
-        /// <summary>
         /// Gets the list of placed track nodes.
         /// </summary>
         IReadOnlyList<PlacedTrackNode> PlacedNodes { get; }
@@ -54,4 +39,4 @@ namespace SplineMiner.Core.Interfaces
         /// </summary>
         IReadOnlyList<ShadowTrackNode> ShadowNodes { get; }
     }
-} 
+}

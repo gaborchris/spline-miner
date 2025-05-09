@@ -1,10 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using SplineMiner.Core.Services;
 using SplineMiner.Core.Interfaces;
-using System;
-using System.Collections.Generic;
 
 namespace SplineMiner.UI.DebugTools
 {

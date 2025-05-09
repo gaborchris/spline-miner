@@ -9,8 +9,8 @@ public class TimedDebugLogger : IDebugLogger
     private bool _isEnabled;
     private float _logInterval = 1.0f;  // Default 1 second
 
-    public bool IsEnabled 
-    { 
+    public bool IsEnabled
+    {
         get => _isEnabled;
         set => _isEnabled = value;
     }
@@ -29,8 +29,8 @@ public class TimedDebugLogger : IDebugLogger
     public void Log(string category, string message)
     {
         if (!_isEnabled || _timer > 0) return;
-        
-        _debugService.LogDebug(category, message);
+
+        _debugService.GetLogger("Default")?.Log(category, message);
         _timer = _logInterval;
     }
 

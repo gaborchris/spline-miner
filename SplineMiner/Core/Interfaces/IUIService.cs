@@ -1,6 +1,4 @@
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SplineMiner.Core.Interfaces;
 using SplineMiner.Game.Items.Tools;
 
 namespace SplineMiner.Core.Interfaces
@@ -27,4 +25,4 @@ namespace SplineMiner.Core.Interfaces
         /// <param name="spriteBatch">The sprite batch used for rendering.</param>
         void Draw(SpriteBatch spriteBatch);
     }
-} 
+}

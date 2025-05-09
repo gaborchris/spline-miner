@@ -53,4 +53,4 @@ namespace SplineMiner.Core.Interfaces
         /// <returns>The world position.</returns>
         Vector2 ScreenToWorld(Vector2 screenPosition);
     }
-} 
+}

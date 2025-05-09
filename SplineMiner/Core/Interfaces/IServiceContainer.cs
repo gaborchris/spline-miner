@@ -29,4 +29,4 @@ namespace SplineMiner.Core.Interfaces
         /// <exception cref="InvalidOperationException">Thrown when the service is not registered.</exception>
         TService GetService<TService>() where TService : class;
     }
-} 
+}

@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using SplineMiner.Game.Items.Tools;
 
 namespace SplineMiner.UI.Components

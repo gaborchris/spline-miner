@@ -34,21 +34,11 @@ namespace SplineMiner.Core.Physics.Entities
         /// <inheritdoc />
         public override void OnCollision(CollisionInfo info)
         {
-            // Apply bounce
-            CollisionResponse.ApplyBounce(this, info.Normal, _bounceFactor);
-
-            // Apply friction
-            CollisionResponse.ApplyFriction(this, _frictionCoefficient);
-
             // Update position to resolve collision
             Vector2 newPosition = CollisionResponse.ResolveCollision(
-                this,
-                info.Block,
-                info.Penetration,
-                info.Normal
-            );
+                this);
 
             UpdatePosition(newPosition);
         }
     }
-} 
+}

@@ -1,7 +1,6 @@
-using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using SplineMiner.Core.Interfaces;
-using SplineMiner.Core.Physics.Components;
 
 namespace SplineMiner.Core.Physics.Systems
 {
@@ -11,19 +10,13 @@ namespace SplineMiner.Core.Physics.Systems
     public class PhysicsSystem
     {
         private readonly List<ICollidable> _entities;
-        private readonly Vector2 _gravity;
-        private readonly float _airResistance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhysicsSystem"/> class.
         /// </summary>
-        /// <param name="gravity">The gravity force to apply.</param>
-        /// <param name="airResistance">The air resistance coefficient.</param>
-        public PhysicsSystem(Vector2 gravity, float airResistance)
+        public PhysicsSystem()
         {
-            _entities = new List<ICollidable>();
-            _gravity = gravity;
-            _airResistance = airResistance;
+            _entities = [];
         }
 
         /// <summary>
@@ -44,24 +37,14 @@ namespace SplineMiner.Core.Physics.Systems
         /// <param name="gameTime">The current game time.</param>
         public void Update(GameTime gameTime)
         {
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             foreach (var entity in _entities)
             {
-                // Apply gravity
-                entity.Velocity += _gravity * deltaTime;
-
-                // Apply air resistance
-                Vector2 airResistanceForce = -entity.Velocity * _airResistance;
-                entity.Velocity += airResistanceForce * deltaTime;
-
-                // Update position based on velocity
                 if (entity.BoundingBox is Components.BoundingBox boundingBox)
                 {
-                    Vector2 newPosition = boundingBox.Position + entity.Velocity * deltaTime;
+                    Vector2 newPosition = boundingBox.Position;
                     boundingBox.UpdatePosition(newPosition);
                 }
             }
         }
     }
-} 
+}

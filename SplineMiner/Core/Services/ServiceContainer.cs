@@ -9,8 +9,8 @@ namespace SplineMiner.Core.Services
     /// </summary>
     public class ServiceContainer : IServiceContainer
     {
-        private readonly Dictionary<Type, object> _services = new();
-        private readonly Dictionary<Type, object> _singletons = new();
+        private readonly Dictionary<Type, object> _services = [];
+        private readonly Dictionary<Type, object> _singletons = [];
 
         /// <summary>
         /// Registers a service implementation.
@@ -20,8 +20,7 @@ namespace SplineMiner.Core.Services
         /// <exception cref="ArgumentNullException">Thrown when implementation is null.</exception>
         public void RegisterService<TService>(TService implementation) where TService : class
         {
-            if (implementation == null)
-                throw new ArgumentNullException(nameof(implementation));
+            ArgumentNullException.ThrowIfNull(implementation);
 
             _services[typeof(TService)] = implementation;
         }
@@ -34,8 +33,7 @@ namespace SplineMiner.Core.Services
         /// <exception cref="ArgumentNullException">Thrown when implementation is null.</exception>
         public void RegisterSingleton<TService>(TService implementation) where TService : class
         {
-            if (implementation == null)
-                throw new ArgumentNullException(nameof(implementation));
+            ArgumentNullException.ThrowIfNull(implementation);
 
             _singletons[typeof(TService)] = implementation;
         }
@@ -57,4 +55,4 @@ namespace SplineMiner.Core.Services
             throw new InvalidOperationException($"Service of type {typeof(TService)} not registered.");
         }
     }
-} 
+}

@@ -15,12 +15,5 @@ namespace SplineMiner.Core.Interfaces
         /// <param name="track">The track to draw.</param>
         void Draw(SpriteBatch spriteBatch, ITrack track);
 
-        /// <summary>
-        /// Draws debug information about the track.
-        /// </summary>
-        /// <param name="spriteBatch">The sprite batch to use for drawing.</param>
-        /// <param name="distance">The current distance along the track.</param>
-        /// <param name="debugTexture">The texture to use for debug visualization.</param>
-        void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture);
     }
-} 
+}

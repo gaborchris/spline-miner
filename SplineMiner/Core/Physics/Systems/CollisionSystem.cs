@@ -1,9 +1,9 @@
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
 using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Physics.Components;
-using System.Diagnostics;
 
 namespace SplineMiner.Core.Physics.Systems
 {
@@ -24,7 +24,7 @@ namespace SplineMiner.Core.Physics.Systems
             _entities = new List<ICollidable>();
             _blocks = new List<IWorldBlock>();
             _logger = debugService?.CreateLogger("CollisionSystem");
-            
+
             if (_logger != null)
             {
                 _logger.IsEnabled = true;
@@ -55,7 +55,7 @@ namespace SplineMiner.Core.Physics.Systems
         /// <param name="block">The block to add.</param>
         public void AddBlock(IWorldBlock block)
         {
-                _blocks.Add(block);
+            _blocks.Add(block);
         }
 
         /// <summary>
@@ -63,10 +63,6 @@ namespace SplineMiner.Core.Physics.Systems
         /// </summary>
         public void ClearBlocks()
         {
-            if (_logger != null && _blocks.Count > 0)
-            {
-                // _logger.Log("CollisionSystem", $"Clearing {_blocks.Count} blocks from collision system");
-            }
             _blocks.Clear();
         }
 
@@ -82,21 +78,17 @@ namespace SplineMiner.Core.Physics.Systems
                 {
                     if (CheckCollision(entity.BoundingBox, block.BoundingBox))
                     {
-                        if (_logger != null)
-                        {
-                            _logger.Log("CollisionDetected", "Collision detected between entity and block!");
-                        }
                         ResolveCollision(entity, block);
                     }
                 }
             }
         }
 
-        private bool CheckCollision(IBoundingBox entityBox, Rectangle blockBox)
+        private static bool CheckCollision(IBoundingBox entityBox, Rectangle blockBox)
         {
-            bool noCollision = entityBox.Right < blockBox.Left || 
+            bool noCollision = entityBox.Right < blockBox.Left ||
                              entityBox.Left > blockBox.Right ||
-                             entityBox.Bottom < blockBox.Top || 
+                             entityBox.Bottom < blockBox.Top ||
                              entityBox.Top > blockBox.Bottom;
 
             return !noCollision;
@@ -105,9 +97,7 @@ namespace SplineMiner.Core.Physics.Systems
         private void ResolveCollision(ICollidable entity, IWorldBlock block)
         {
             // Calculate penetration depth and normal
-            float penetration;
-            Vector2 normal;
-            CalculateCollisionInfo(entity.BoundingBox, block.BoundingBox, out penetration, out normal);
+            CalculateCollisionInfo(entity.BoundingBox, block.BoundingBox, out float penetration, out Vector2 normal);
 
             // Create collision info
             var collisionInfo = new CollisionInfo(
@@ -129,11 +119,7 @@ namespace SplineMiner.Core.Physics.Systems
 
             // Resolve the collision
             Vector2 newPosition = CollisionResponse.ResolveCollision(
-                entity,
-                block,
-                penetration,
-                normal
-            );
+                entity);
 
             // Update entity position through its bounding box
             if (entity.BoundingBox is Components.BoundingBox boundingBox)
@@ -142,7 +128,7 @@ namespace SplineMiner.Core.Physics.Systems
             }
         }
 
-        private void CalculateCollisionInfo(IBoundingBox entityBox, Rectangle blockBox, out float penetration, out Vector2 normal)
+        private static void CalculateCollisionInfo(IBoundingBox entityBox, Rectangle blockBox, out float penetration, out Vector2 normal)
         {
             // Calculate overlap on each axis
             float xOverlap = Math.Min(entityBox.Right - blockBox.Left, blockBox.Right - entityBox.Left);
@@ -164,9 +150,9 @@ namespace SplineMiner.Core.Physics.Systems
         private Vector2 CalculateCollisionPoint(ICollidable entity, Rectangle blockBox)
         {
             // Calculate the point of collision based on the direction of movement
-            float x = entity.Velocity.X > 0 ? entity.BoundingBox.Left : entity.BoundingBox.Right;
-            float y = entity.Velocity.Y > 0 ? entity.BoundingBox.Top : entity.BoundingBox.Bottom;
+            float x = entity.BoundingBox.Right;
+            float y = entity.BoundingBox.Bottom;
             return new Vector2(x, y);
         }
     }
-} 
+}

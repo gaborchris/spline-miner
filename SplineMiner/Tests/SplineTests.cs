@@ -1,7 +1,5 @@
 using Microsoft.Xna.Framework;
 using SplineMiner.Core.Utils;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace SplineMiner.Tests
@@ -57,4 +55,4 @@ namespace SplineMiner.Tests
             Assert.Equal(p, result);
         }
     }
-} 
+}

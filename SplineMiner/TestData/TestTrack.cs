@@ -183,4 +183,4 @@ namespace SplineMiner.TestData
             };
         }
     }
-} 
+}

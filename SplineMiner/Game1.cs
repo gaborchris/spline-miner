@@ -3,12 +3,12 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SplineMiner.Core.Interfaces;
+using SplineMiner.Core.Physics.Systems;
 using SplineMiner.Core.Services;
 using SplineMiner.Game.Cart;
 using SplineMiner.Game.Track;
 using SplineMiner.Game.World.WorldGrid;
-using SplineMiner.Core.Interfaces;
-using SplineMiner.Core.Physics.Systems;
 using SplineMiner.Presets;
 
 namespace SplineMiner
@@ -33,13 +33,14 @@ namespace SplineMiner
         private CartController _player;
         private SplineTrack _track;
         private MouseInteractionManager _mouseInteractionManager;
+
         private TrackPresetId _currentTrackPreset = TrackPresetId.Small;
         private readonly WorldPresetId _currentWorldPreset = WorldPresetId.Test;
-        
+
         // World grid components
         private Game.World.WorldGrid.WorldGrid _worldGrid;
         private GridInteractionManager _gridInteractionManager;
-        
+
         private PhysicsSystem _physicsSystem;
         private CollisionSystem _collisionSystem;
 
@@ -52,17 +53,15 @@ namespace SplineMiner
         /// </remarks>
         public Game1()
         {
-            Debug.WriteLine("Game1.Constructor: Starting game initialization");
             _graphics = new GraphicsDeviceManager(this);
             _services = new ServiceContainer(); // Initialize service container
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-            
+
             // Enable fixed time step for more consistent updates
             IsFixedTimeStep = true;
             _graphics.SynchronizeWithVerticalRetrace = true;
             TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 60.0f); // Target 60 FPS
-            Debug.WriteLine("Game1.Constructor: Basic initialization complete");
         }
 
         /// <summary>
@@ -76,65 +75,52 @@ namespace SplineMiner
         {
             try
             {
-                Debug.WriteLine("Game1.Initialize: Starting initialization");
-                
                 // Create and register input service
                 var inputManager = new InputManager();
                 _services.RegisterSingleton<IInputService>(inputManager);
-                Debug.WriteLine("Game1.Initialize: Input service registered");
 
                 // Initialize debug manager first
                 var debugManager = new DebugManager(null); // Font will be set in LoadContent
                 debugManager.IsDebugEnabled = true; // Explicitly enable debug mode
                 _services.RegisterSingleton<IDebugService>(debugManager);
-                Debug.WriteLine("Game1.Initialize: Debug manager registered and enabled");
 
                 // Verify debug service is working
                 var logger = debugManager.GetLogger("GameInit");
                 logger?.Log("GameInit", "Game initialization started");
-                Debug.WriteLine("Game1.Initialize: Initial logger created");
 
                 // Initialize the player at the start of the track
-                _player = new CartController(inputManager, debugManager);
-                Debug.WriteLine("Game1.Initialize: Player initialized");
+                _player = new CartController(inputManager);
 
                 // Initialize camera
                 CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
                 CameraManager.Instance.SetTarget(_player);
-                Debug.WriteLine("Game1.Initialize: Camera initialized");
-                
+
                 // Initialize world grid using presets
                 _worldGrid = GamePresets.CreateWorldGrid(
                     _currentWorldPreset,
                     debugManager,
                     GraphicsDevice
                 );
-                Debug.WriteLine("Game1.Initialize: World grid created");
 
                 // Initialize physics systems
                 _physicsSystem = new PhysicsSystem(
-                    gravity: new Vector2(0, 980f), // Adjust gravity as needed
-                    airResistance: 0.01f
                 );
                 _collisionSystem = new CollisionSystem(debugManager);
-                Debug.WriteLine("Game1.Initialize: Physics systems initialized");
 
                 // Verify collision system logger
                 var collisionLogger = debugManager.GetLogger("CollisionSystem");
                 collisionLogger?.Log("CollisionSystem", "Collision system initialized");
-                Debug.WriteLine("Game1.Initialize: Collision logger created");
 
                 // Add cart to physics system
                 _physicsSystem.AddEntity(_player);
                 _collisionSystem.AddEntity(_player);
-                Debug.WriteLine("Game1.Initialize: Player added to physics systems");
 
                 base.Initialize();
-                Debug.WriteLine("Game1.Initialize: Base initialization complete");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Game1.Initialize: Error during initialization: {ex}");
+                // Handle initialization errors
+                Debug.WriteLine($"Error during initialization: {ex.Message}");
                 throw;
             }
         }
@@ -149,9 +135,8 @@ namespace SplineMiner
         /// </remarks>
         protected override void LoadContent()
         {
-            Debug.WriteLine("Game1.LoadContent: Starting content load");
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            
+
             // Load player texture (placeholder: a white rectangle)
             var w = 64;
             var h = (int)(w * 0.67);
@@ -163,7 +148,6 @@ namespace SplineMiner
                 data[i] = Color.Gray;
 
             minecartTexture.SetData(data);
-            Debug.WriteLine("Game1.LoadContent: Player texture created");
 
             // Use this texture for your player or minecart
             _player.Texture = minecartTexture;
@@ -171,15 +155,7 @@ namespace SplineMiner
 
             // Load fonts
             SpriteFont debugFont = null;
-            try 
-            {
-                debugFont = Content.Load<SpriteFont>("debug_font");
-                Debug.WriteLine("Debug font loaded successfully");
-            }
-            catch 
-            {
-                Debug.WriteLine("Fonts not found. Debug text and UI will not be rendered.");
-            }
+            debugFont = Content.Load<SpriteFont>("debug_font");
 
             // Initialize managers
             var uiManager = new UIManager(debugFont, GraphicsDevice);
@@ -188,42 +164,31 @@ namespace SplineMiner
             {
                 debugManager.SetDebugFont(debugFont);
                 debugManager.IsDebugEnabled = true; // Ensure debug is enabled
-                Debug.WriteLine("Game1.LoadContent: Debug manager configured");
-                
+
                 // Verify debug is working after font setup
                 var logger = debugManager.GetLogger("GameLoad");
                 logger?.Log("GameLoad", "Game content loaded and debug system initialized");
-                Debug.WriteLine("Game1.LoadContent: GameLoad logger created");
             }
-            else
-            {
-                Debug.WriteLine("Debug manager not found in service container!");
-            }
-            
+
             // Register additional services
             _services.RegisterSingleton<IUIService>(uiManager);
-            Debug.WriteLine("Game1.LoadContent: UI service registered");
-            
+
             // Initialize the track with test data
             InitializeTrack();
-            Debug.WriteLine("Game1.LoadContent: Track initialized");
-            
+
             // Load track textures
             _track.LoadContent(GraphicsDevice);
-            Debug.WriteLine("Game1.LoadContent: Track textures loaded");
 
             // Precalculate arc length for the track
             _track.RecalculateArcLength();
-            
+
             // Initialize world grid
             _worldGrid.Initialize(GraphicsDevice);
             _gridInteractionManager = new GridInteractionManager(_services.GetService<IInputService>(), _worldGrid);
-            Debug.WriteLine("Game1.LoadContent: World grid initialized");
-            
+
             // Initialize debug panels with grid reference
             debugManager?.Initialize(GraphicsDevice, _worldGrid, _services.GetService<IInputService>());
-            Debug.WriteLine("Game1.LoadContent: Debug panels initialized");
-            
+
             // Set up world parameter panel event handlers
             SetupWorldParameterEvents();
 
@@ -233,11 +198,9 @@ namespace SplineMiner
             {
                 collisionLogger.IsEnabled = true;
                 collisionLogger.LogInterval = 0.1f; // Log every 100ms
-                Debug.WriteLine("Game1.LoadContent: Collision logger configured");
             }
-            Debug.WriteLine("Game1.LoadContent: Content loading complete");
         }
-        
+
         private void SetupWorldParameterEvents()
         {
             // Get reference to the world parameter panel from debug manager
@@ -247,7 +210,7 @@ namespace SplineMiner
             {
                 // Set initial track size
                 parameterPanel.UseLargeTrack = _currentTrackPreset == TrackPresetId.Large;
-                
+
                 // Subscribe to track size toggle event
                 parameterPanel.OnTrackSizeToggle += (useLargeTrack) =>
                 {
@@ -263,7 +226,7 @@ namespace SplineMiner
         {
             // Get track nodes from presets
             var trackNodes = GamePresets.GetTrack(_currentTrackPreset);
-            
+
             _track = new SplineTrack(trackNodes, _services.GetService<IUIService>());
             _mouseInteractionManager = new MouseInteractionManager(_services.GetService<IInputService>(), _track);
         }
@@ -288,16 +251,16 @@ namespace SplineMiner
 
             // Update input
             inputService.Update();
-            
+
             // Update UI
             uiManager.Update(inputService);
-            
+
             // Update camera
             CameraManager.Instance.Update(gameTime);
-            
+
             // Update mouse interactions
             _mouseInteractionManager.Update(uiManager.CurrentTool);
-            
+
             // Update grid interactions
             _gridInteractionManager.Update(uiManager.CurrentTool);
 
@@ -330,7 +293,7 @@ namespace SplineMiner
             );
             // Update physics
             _physicsSystem.Update(gameTime);
-            
+
             // Clear previous blocks and add new ones for collision checking
             int count = 0;
             _collisionSystem.ClearBlocks();

@@ -1,6 +1,4 @@
 using System;
-using Microsoft.Xna.Framework;
-using SplineMiner.Presets;
 using SplineMiner.Core.Interfaces;
 
 namespace SplineMiner.Game.World.WorldGrid.Generation
@@ -17,7 +15,7 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
         public TestWallStrategy(IDebugService debugService = null)
         {
             _debugService = debugService;
-            _debugService?.LogDebug("TestWall", "TestWallStrategy initialized");
+            _debugService?.GetLogger("TestWall")?.Log("TestWall", "TestWallStrategy initialized");
         }
 
         public string Name => "Test Wall";
@@ -55,4 +53,4 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
             }
         }
     }
-} 
+}

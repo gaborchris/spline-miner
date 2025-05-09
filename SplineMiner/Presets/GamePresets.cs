@@ -1,10 +1,8 @@
-using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using SplineMiner.Core.Enums;
-using SplineMiner.Game.World.WorldGrid;
-using SplineMiner.Game.Track;
-using SplineMiner.Core.Interfaces;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SplineMiner.Core.Interfaces;
+using SplineMiner.Game.World.WorldGrid;
 using SplineMiner.Game.World.WorldGrid.Generation;
 
 namespace SplineMiner.Presets
@@ -101,12 +99,12 @@ namespace SplineMiner.Presets
         public static WorldGrid CreateWorldGrid(WorldPresetId presetId, IDebugService debugManager, GraphicsDevice graphicsDevice)
         {
             var config = GetWorld(presetId);
-            
+
             // Create strategies based on preset
             var strategies = presetId switch
             {
                 WorldPresetId.Test => new IWorldGenerationStrategy[] { new TestWallStrategy(debugManager) },
-                WorldPresetId.Dense => new IWorldGenerationStrategy[] 
+                WorldPresetId.Dense => new IWorldGenerationStrategy[]
                 {
                     new CellularAutomataStrategy(),
                     new DrunkardWalkStrategy()
@@ -210,11 +208,11 @@ namespace SplineMiner.Presets
             float centerY = 250;  // Center Y position
             float wallWidth = 100;  // Total width of the wall (5 cells * 20 units)
             float wallHeight = 100; // Total height of the wall (5 cells * 20 units)
-            
+
             // Calculate start position to center the wall
             float startX = centerX - wallWidth / 2;
             float startY = centerY - wallHeight / 2;
-            
+
             // Create a 5x5 wall
             for (int i = 0; i < 5; i++)
             {
@@ -223,7 +221,7 @@ namespace SplineMiner.Presets
                     wall.Add(new Vector2(startX + i * 20, startY + j * 20));
                 }
             }
-            
+
             return wall;
         }
 
@@ -232,7 +230,7 @@ namespace SplineMiner.Presets
             var tunnel = new List<Vector2>();
             float startX = 100;
             float y = 300;
-            
+
             // Create tunnel walls
             for (int i = 0; i < 20; i++)
             {
@@ -241,7 +239,7 @@ namespace SplineMiner.Presets
                 // Bottom wall
                 tunnel.Add(new Vector2(startX + i * 20, y + 40));
             }
-            
+
             return tunnel;
         }
 
@@ -250,14 +248,14 @@ namespace SplineMiner.Presets
             var vein = new List<Vector2>();
             float startX = 300;
             float startY = 200;
-            
+
             // Create a branching ore vein
             for (int i = 0; i < 5; i++)
             {
                 vein.Add(new Vector2(startX + i * 20, startY + i * 10));
                 vein.Add(new Vector2(startX + i * 20, startY - i * 10));
             }
-            
+
             return vein;
         }
         #endregion
@@ -300,4 +298,4 @@ namespace SplineMiner.Presets
             WorldOrigin = worldOrigin ?? Vector2.Zero;  // Default to (0,0) if not specified
         }
     }
-} 
+}

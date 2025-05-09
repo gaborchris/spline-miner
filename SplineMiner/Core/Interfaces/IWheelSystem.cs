@@ -25,4 +25,4 @@ namespace SplineMiner.Core.Interfaces
         /// </summary>
         Vector2 BackWheelPosition { get; }
     }
-} 
+}

@@ -28,4 +28,4 @@ namespace SplineMiner.Core.Interfaces
         /// </summary>
         void Clear();
     }
-} 
+}

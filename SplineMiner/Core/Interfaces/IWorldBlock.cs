@@ -38,4 +38,4 @@ namespace SplineMiner.Core.Interfaces
         /// </summary>
         void Destroy();
     }
-} 
+}

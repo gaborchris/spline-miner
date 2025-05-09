@@ -49,4 +49,4 @@ namespace SplineMiner.Core.Interfaces
         /// <returns>True if the boxes intersect, false otherwise.</returns>
         bool Intersects(IBoundingBox other);
     }
-} 
+}
