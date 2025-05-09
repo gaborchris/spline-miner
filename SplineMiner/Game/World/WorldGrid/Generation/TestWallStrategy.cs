@@ -37,14 +37,6 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
                 GenerateWall(width, height);
             }
 
-            // Debug log when the strategy is called for the first cell
-            if (x == 0 && y == 0)
-            {
-                _debugService?.LogDebug("TestWall", $"First cell world pos: ({worldX}, {worldY})");
-                _debugService?.LogDebug("TestWall", $"World dimensions: {worldWidth}x{worldHeight}");
-                _debugService?.LogDebug("TestWall", $"First cell grid pos: ({x}, {y})");
-            }
-
             // Return true if this cell should be a wall
             return _wallMap[x, y];
         }
@@ -52,7 +44,6 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
         private void GenerateWall(int width, int height)
         {
             _wallMap = new bool[width, height];
-            var wallPattern = GamePresets.GetBlockPattern(BlockPresetId.CollisionTestWall);
 
             // For a 5x5 grid, we want all cells to be walls
             for (int y = 0; y < height; y++)
@@ -62,8 +53,6 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
                     _wallMap[x, y] = true;
                 }
             }
-
-            _debugService?.LogDebug("TestWall", $"Generated {width}x{height} wall grid");
         }
     }
 } 
