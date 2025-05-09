@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Collections.Generic;
-using System;
-using SplineMiner.UI.Components;
-using SplineMiner.Game.Items.Tools;
 using SplineMiner.Core.Interfaces;
+using SplineMiner.Game.Items.Tools;
+using SplineMiner.UI.Components;
 
 namespace SplineMiner.Core.Services
 {
@@ -31,8 +31,6 @@ namespace SplineMiner.Core.Services
         private const int TOTAL_BUTTONS = 8;
         private Texture2D _redCircle;
         private Texture2D _greenCircle;
-        private readonly SpriteFont _debugFont;
-        private readonly GraphicsDevice _graphicsDevice;
         private readonly Dictionary<string, UIButton> _buttonMap;
         private bool _isVisible = true;
 
@@ -52,9 +50,7 @@ namespace SplineMiner.Core.Services
             _buttons = [];
             _currentTool = UITool.None;
             _scrollOffset = 0;
-            _debugFont = debugFont;
-            _graphicsDevice = graphicsDevice;
-            _buttonMap = new();
+            _buttonMap = [];
 
             // Create colored circle textures
             CreateCircleTextures(graphicsDevice);
@@ -129,7 +125,7 @@ namespace SplineMiner.Core.Services
                         break;
                 }
 
-                UIButton button = new UIButton(bounds, text, tool, _font, texture);
+                UIButton button = new(bounds, text, tool, _font, texture);
                 _buttons.Add(button);
                 _buttonMap[text] = button;
                 buttonX += BUTTON_SIZE + BUTTON_SPACING;
@@ -193,15 +189,6 @@ namespace SplineMiner.Core.Services
         }
 
         /// <summary>
-        /// Updates the UI state.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void UpdateUI(GameTime gameTime)
-        {
-            // TODO: Implement proper UI animation and state updates
-        }
-
-        /// <summary>
         /// Draws the UI elements using the provided sprite batch.
         /// </summary>
         /// <param name="spriteBatch">The sprite batch used for rendering.</param>
@@ -242,20 +229,16 @@ namespace SplineMiner.Core.Services
         /// <summary>
         /// Shows a UI element.
         /// </summary>
-        /// <param name="elementId">The ID of the element to show.</param>
-        public void ShowElement(string elementId)
+        public void ShowElement()
         {
-            // TODO: Implement proper UI element management
             _isVisible = true;
         }
 
         /// <summary>
         /// Hides a UI element.
         /// </summary>
-        /// <param name="elementId">The ID of the element to hide.</param>
-        public void HideElement(string elementId)
+        public void HideElement()
         {
-            // TODO: Implement proper UI element management
             _isVisible = false;
         }
     }

@@ -46,4 +46,4 @@ namespace SplineMiner.Core.Interfaces
         Paused,
         GameOver
     }
-} 
+}

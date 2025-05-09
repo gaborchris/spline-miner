@@ -1,14 +1,13 @@
 using Microsoft.Xna.Framework;
-using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Enums;
-using SplineMiner.Core.Physics.Components;
+using SplineMiner.Core.Interfaces;
 
 namespace SplineMiner.Game.World.WorldGrid
 {
     /// <summary>
     /// Represents a single destructible cell in the world grid
     /// </summary>
-    public class GridCell : IWorldBlock, ICollidable
+    public class GridCell : IWorldBlock
     {
         public Vector2 Position { get; set; }
         public float Width { get; }
@@ -27,9 +26,8 @@ namespace SplineMiner.Game.World.WorldGrid
         public Vector2 Size => new Vector2(Width, Width);
 
         // ICollidable implementation
-        IBoundingBox ICollidable.BoundingBox => _boundingBox;
-        public Vector2 Velocity 
-        { 
+        public Vector2 Velocity
+        {
             get => _velocity;
             set => _velocity = value;
         }
@@ -45,10 +43,10 @@ namespace SplineMiner.Game.World.WorldGrid
             _logger = debugService?.CreateLogger("PlayerCollision");
             _velocity = Vector2.Zero;
             _boundingBox = new SplineMiner.Core.Physics.Components.BoundingBox(position, new Vector2(width, width));
-            
+
             if (_logger != null)
             {
-                _logger.Log("GridCell", 
+                _logger.Log("GridCell",
                     $"Created GridCell at {position} with width {width}\n" +
                     $"BoundingBox: Left={_boundingBox.Left:F1}, Right={_boundingBox.Right:F1}, " +
                     $"Top={_boundingBox.Top:F1}, Bottom={_boundingBox.Bottom:F1}");
@@ -84,16 +82,6 @@ namespace SplineMiner.Game.World.WorldGrid
         public void Destroy()
         {
             IsActive = false;
-        }
-
-        public void OnCollision(CollisionInfo info)
-        {
-            if (_logger != null)
-            {
-                _logger.Log("PlayerCollision", 
-                    $"Block at {Position} collided with player at {info.Entity.BoundingBox.Position} " +
-                    $"with velocity ({info.Entity.Velocity.X:F1}, {info.Entity.Velocity.Y:F1})");
-            }
         }
     }
 }

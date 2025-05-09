@@ -1,24 +1,15 @@
 using Microsoft.Xna.Framework;
 using SplineMiner.Core.Interfaces;
-using SplineMiner.Game.Track;
 using SplineMiner.Game.Items.Tools;
+using SplineMiner.Game.Track;
 
 namespace SplineMiner.Core.Services
 {
-    public class MouseInteractionManager
+    public class MouseInteractionManager(IInputService inputService, SplineTrack track)
     {
-        private readonly IInputService _inputService;
-        private readonly SplineTrack _track;
-        private Vector2 _lastMousePosition;
-        private bool _isDragging;
-
-        public MouseInteractionManager(IInputService inputService, SplineTrack track)
-        {
-            _inputService = inputService;
-            _track = track;
-            _lastMousePosition = Vector2.Zero;
-            _isDragging = false;
-        }
+        private readonly IInputService _inputService = inputService;
+        private readonly SplineTrack _track = track;
+        private bool _isDragging = false;
 
         public void Update(UITool currentTool)
         {
@@ -36,8 +27,6 @@ namespace SplineMiner.Core.Services
                     HandleDeleteTool(mousePosition);
                     break;
             }
-
-            _lastMousePosition = mousePosition;
         }
 
         private void HandleTrackTool(Vector2 mousePosition)

@@ -1,12 +1,11 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SplineMiner.Core;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using SplineMiner.Core.Interfaces;
-using SplineMiner.Core.Utils;
 using SplineMiner.Core.Services;
+using SplineMiner.Core.Utils;
 using SplineMiner.Game.Items.Tools;
 
 namespace SplineMiner.Game.Track
@@ -319,11 +318,6 @@ namespace SplineMiner.Game.Track
             return (float)Math.Atan2(direction.Y, direction.X);
         }
 
-        public void DrawDebugInfo(SpriteBatch spriteBatch, float distance, Texture2D debugTexture)
-        {
-            _renderer.DrawDebugInfo(spriteBatch, distance, debugTexture);
-        }
-
         /// <summary>
         /// Recalculates the arc length of the entire track.
         /// </summary>
@@ -357,11 +351,6 @@ namespace SplineMiner.Game.Track
                 Vector2 point = GetPointByDistance(distance);
                 _debugPoints.Add(point);
             }
-        }
-
-        public void UpdateCurrentPosition(float distance)
-        {
-            _t = distance;
         }
 
     }

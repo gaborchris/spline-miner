@@ -1,11 +1,10 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using SplineMiner.Game.Items.Tools;
-using SplineMiner.UI.DebugTools;
-using SplineMiner.Core.Interfaces;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using SplineMiner.Core.Interfaces;
+using SplineMiner.Game.Items.Tools;
+using SplineMiner.UI.DebugTools;
 
 namespace SplineMiner.Core.Services
 {
@@ -28,7 +27,7 @@ namespace SplineMiner.Core.Services
         private StatsPanel _statsPanel;
         private ControlPanel _worldParameterPanel;
 
-        private readonly Dictionary<string, IDebugLogger> _loggers = new();
+        private readonly Dictionary<string, IDebugLogger> _loggers = [];
 
         /// <summary>
         /// Sets the debug font after initialization.
@@ -74,10 +73,7 @@ namespace SplineMiner.Core.Services
         /// TODO: Implement proper debug initialization system
         /// TODO: Add support for debug configuration loading
         /// </remarks>
-        public DebugManager(SpriteFont debugFont)
-        {
-            _debugFont = debugFont;
-        }
+        public DebugManager(SpriteFont debugFont) => _debugFont = debugFont;
 
         /// <summary>
         /// Initializes the debug manager with required components.
@@ -176,27 +172,21 @@ namespace SplineMiner.Core.Services
         /// Logs a debug message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        public void LogDebug(string message)
-        {
-            LogDebug("General", message);
-        }
+        public void Log(string message) => Log("General", message);
 
         /// <summary>
         /// Logs a debug message with a category.
         /// </summary>
         /// <param name="category">The category of the message.</param>
         /// <param name="message">The message to log.</param>
-        public void LogDebug(string category, string message)
-        {
-            // TODO: Implement proper debug logging system
+        public void Log(string category, string message) =>
             System.Diagnostics.Debug.WriteLine($"[{category}] {message}");
-        }
 
         public IDebugLogger CreateLogger(string loggerName)
         {
-            if (_loggers.ContainsKey(loggerName))
-                return _loggers[loggerName];
-            
+            if (_loggers.TryGetValue(loggerName, out IDebugLogger value))
+                return value;
+
             var logger = new TimedDebugLogger(this);
             _loggers[loggerName] = logger;
             System.Diagnostics.Debug.WriteLine($"DebugManager: Created new logger '{loggerName}'");

@@ -59,4 +59,4 @@ namespace SplineMiner.Core.Physics.Entities
             _boundingBox.UpdateSize(newSize);
         }
     }
-} 
+}

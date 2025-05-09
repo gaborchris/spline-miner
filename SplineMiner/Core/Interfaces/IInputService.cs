@@ -86,4 +86,4 @@ namespace SplineMiner.Core.Interfaces
         /// <returns>True if the backward movement key is pressed, false otherwise.</returns>
         bool Backward();
     }
-} 
+}

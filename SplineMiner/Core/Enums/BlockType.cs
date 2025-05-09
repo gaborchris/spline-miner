@@ -25,4 +25,4 @@ namespace SplineMiner.Core.Enums
         /// </summary>
         Special
     }
-} 
+}

@@ -32,4 +32,4 @@ namespace SplineMiner.Core.Interfaces
         /// <returns>The arc length of the specified segment.</returns>
         float ComputeArcLength(float tStart, float tEnd, int baseSteps = 40);
     }
-} 
+}

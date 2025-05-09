@@ -68,4 +68,4 @@ namespace SplineMiner.Core.Physics.Components
             _size = newSize;
         }
     }
-} 
+}

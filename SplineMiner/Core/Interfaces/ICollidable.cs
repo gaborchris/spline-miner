@@ -1,4 +1,3 @@
-using Microsoft.Xna.Framework;
 using SplineMiner.Core.Physics.Components;
 
 namespace SplineMiner.Core.Interfaces
@@ -14,19 +13,9 @@ namespace SplineMiner.Core.Interfaces
         IBoundingBox BoundingBox { get; }
 
         /// <summary>
-        /// Gets or sets the velocity of the entity.
-        /// </summary>
-        Vector2 Velocity { get; set; }
-
-        /// <summary>
-        /// Gets the mass of the entity.
-        /// </summary>
-        float Mass { get; }
-
-        /// <summary>
         /// Called when a collision occurs.
         /// </summary>
         /// <param name="info">Information about the collision.</param>
         void OnCollision(CollisionInfo info);
     }
-} 
+}

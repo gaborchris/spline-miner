@@ -1,5 +1,5 @@
-using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace SplineMiner.Core.Interfaces
 {
@@ -31,4 +31,4 @@ namespace SplineMiner.Core.Interfaces
         /// <returns>The new position for the entity after collision resolution.</returns>
         Vector2 ResolveCollision(ICollidable entity, IWorldBlock block);
     }
-} 
+}

@@ -1,11 +1,10 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Services;
 using SplineMiner.Game.World.WorldGrid.Generation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SplineMiner.Game.World.WorldGrid
 {
@@ -66,9 +65,9 @@ namespace SplineMiner.Game.World.WorldGrid
         public IReadOnlyList<IWorldGenerationStrategy> AvailableStrategies => _availableStrategies.AsReadOnly();
 
         public WorldGrid(
-            int width, 
-            int height, 
-            float cellSize, 
+            int width,
+            int height,
+            float cellSize,
             IEnumerable<IWorldGenerationStrategy> strategies,
             IDebugService debugService = null,
             Vector2? worldOrigin = null)
@@ -80,7 +79,7 @@ namespace SplineMiner.Game.World.WorldGrid
             _random = new Random();
             _generationParameters = new GenerationParameters(_caveProbability, _random.Next());
             _worldOrigin = worldOrigin ?? Vector2.Zero;
-            
+
             // Set available strategies from constructor parameter
             _availableStrategies = new List<IWorldGenerationStrategy>(strategies);
             if (_availableStrategies.Count == 0)
@@ -148,7 +147,7 @@ namespace SplineMiner.Game.World.WorldGrid
             // Calculate world bounds
             float worldWidth = _width * _cellSize;
             float worldHeight = _height * _cellSize;
-            
+
             // Calculate start position based on world origin
             float startX = _worldOrigin.X - worldWidth / 2;
             float startY = _worldOrigin.Y - worldHeight / 2;
@@ -235,7 +234,7 @@ namespace SplineMiner.Game.World.WorldGrid
             // Calculate grid coordinates from world position
             float worldWidth = _width * _cellSize;
             float worldHeight = _height * _cellSize;
-            
+
             // Calculate start position based on world origin
             float startX = _worldOrigin.X - worldWidth / 2;
             float startY = _worldOrigin.Y - worldHeight / 2;

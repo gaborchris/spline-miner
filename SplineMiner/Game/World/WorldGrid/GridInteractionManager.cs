@@ -11,15 +11,11 @@ namespace SplineMiner.Game.World.WorldGrid
     {
         private readonly IInputService _inputService;
         private readonly WorldGrid _worldGrid;
-        private Vector2 _lastMousePosition;
-        private bool _isDragging;
 
         public GridInteractionManager(IInputService inputService, WorldGrid worldGrid)
         {
             _inputService = inputService;
             _worldGrid = worldGrid;
-            _lastMousePosition = Vector2.Zero;
-            _isDragging = false;
         }
 
         public void Update(UITool currentTool)
@@ -37,8 +33,6 @@ namespace SplineMiner.Game.World.WorldGrid
                         break;
                 }
             }
-
-            _lastMousePosition = mousePosition;
         }
 
         private void HandleDestroyTool(Vector2 screenPos)
