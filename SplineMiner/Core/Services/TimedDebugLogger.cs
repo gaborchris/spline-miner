@@ -29,17 +29,16 @@ public class TimedDebugLogger : IDebugLogger
     public void Log(string category, string message)
     {
         if (!_isEnabled || _timer > 0) return;
+        
         _debugService.LogDebug(category, message);
+        _timer = _logInterval;
     }
 
     public void Update(GameTime gameTime)
     {
-        if (!_isEnabled) return;
-        
-        _timer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-        if (_timer <= 0)
+        if (_timer > 0)
         {
-            _timer = _logInterval;
+            _timer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
     }
 }

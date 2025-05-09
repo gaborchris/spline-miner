@@ -23,27 +23,16 @@ namespace SplineMiner.Game.Cart
     /// </remarks>
     public class CartController : ICart, ICameraObserver, ICollidable
     {
-        private const float MIN_MOVEMENT_THRESHOLD = 0.1f;
-        private const float POSITION_INTERPOLATION_FACTOR = 0.5f;
-        private const float MAX_ROTATION_CHANGE = MathHelper.Pi / 6;
-
-        private Vector2 _position;
-        private Vector2 _previousPosition;
-        private Vector2 _targetPosition;
-        private float _rotation;
-        private float _lastRotation;
-        private float _rotationChange;
         private float _t = 0f;
-        private float _speed = 300;
+        private float _previousT;
 
         private readonly IMovementController _movementController;
         private readonly IWheelSystem _wheelSystem;
         private readonly IDebugVisualizer _debugVisualizer;
         private readonly IInputService _inputService;
-        private Texture2D _texture;
+        private readonly IDebugService _debugService;
         private Texture2D _debugTexture;
         private bool _showDebugInfo = true;
-        private bool _isTestRunning = false;
         private const float TEST_SPEED = 200f; // Speed in pixels per second
 
         private readonly DynamicEntity _physicsEntity;
@@ -61,16 +50,25 @@ namespace SplineMiner.Game.Cart
             set => _physicsEntity.Velocity = value;
         }
         public float Mass => _physicsEntity.Mass;
-        public void OnCollision(CollisionInfo info) => _physicsEntity.OnCollision(info);
+        public void OnCollision(CollisionInfo info)
+        {
+            // First, let the physics entity handle basic collision response
+            _physicsEntity.OnCollision(info);
+
+            // Stop movement in both directions by resetting the distance parameter
+            _t = _previousT;
+        }
 
         /// <summary>
         /// Initializes a new instance of the CartController.
         /// </summary>
         /// <param name="inputService">The input service for handling player controls.</param>
-        /// <exception cref="ArgumentNullException">Thrown when inputService is null.</exception>
-        public CartController(IInputService inputService)
+        /// <param name="debugService">The debug service for logging collision information.</param>
+        /// <exception cref="ArgumentNullException">Thrown when inputService or debugService is null.</exception>
+        public CartController(IInputService inputService, IDebugService debugService)
         {
             _inputService = inputService;
+            _debugService = debugService;
             _movementController = new CartMovementController();
             _wheelSystem = new CartWheelSystem();
             _debugVisualizer = new CartDebugVisualizer(_movementController, _wheelSystem);
@@ -78,7 +76,7 @@ namespace SplineMiner.Game.Cart
             // Initialize with appropriate mass, bounce, and friction values
             _physicsEntity = new DynamicEntity(
                 position: Vector2.Zero,
-                size: new Vector2(32, 32), // Cart size
+                size: new Vector2(16, 16), // Smaller box size
                 mass: 1.0f,
                 bounceFactor: 0.5f,
                 frictionCoefficient: 0.1f
@@ -96,6 +94,9 @@ namespace SplineMiner.Game.Cart
         public void Update(GameTime gameTime, ITrack track)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            // Store the previous t value before updating
+            _previousT = _t;
 
             if (_debugVisualizer.IsTestingMovement)
             {
@@ -118,6 +119,16 @@ namespace SplineMiner.Game.Cart
             _movementController.UpdatePosition(gameTime, track);
             _wheelSystem.UpdateWheelPositions(track, _t);
             _movementController.UpdateRotation(track);
+
+            // Update physics entity position to match cart position, accounting for the origin point
+            if (_physicsEntity.BoundingBox is SplineMiner.Core.Physics.Components.BoundingBox boundingBox)
+            {
+                // Calculate the position that centers the bounding box horizontally and places it higher on the cart
+                Vector2 boundingBoxPosition = _movementController.Position - new Vector2(8, 40); // Center horizontally (half of 16), place higher up
+                boundingBox.UpdatePosition(boundingBoxPosition);
+                // Reset velocity to prevent drift
+                _physicsEntity.Velocity = Vector2.Zero;
+            }
 
             if (_inputService.IsKeyPressed(Keys.T))
             {
@@ -155,6 +166,23 @@ namespace SplineMiner.Game.Cart
             if (_showDebugInfo)
             {
                 _debugVisualizer.DrawDebugInfo(spriteBatch, DebugTexture);
+
+                // Draw the bounding box
+                if (_physicsEntity.BoundingBox is SplineMiner.Core.Physics.Components.BoundingBox boundingBox)
+                {
+                    DrawingHelpers.DrawRectangle(
+                        spriteBatch,
+                        DebugTexture,
+                        new Rectangle(
+                            (int)boundingBox.Left,
+                            (int)boundingBox.Top,
+                            (int)(boundingBox.Right - boundingBox.Left),
+                            (int)(boundingBox.Bottom - boundingBox.Top)
+                        ),
+                        Color.Yellow,
+                        2
+                    );
+                }
             }
         }
 

@@ -66,5 +66,26 @@ namespace SplineMiner.Core.Utils
                 }
             }
         }
+
+        public static void DrawRectangle(SpriteBatch spriteBatch, Texture2D texture, Rectangle rectangle, Color color, int thickness)
+        {
+            // Draw the four sides of the rectangle
+            DrawLine(spriteBatch, texture, 
+                new Vector2(rectangle.Left, rectangle.Top), 
+                new Vector2(rectangle.Right, rectangle.Top), 
+                color, thickness);
+            DrawLine(spriteBatch, texture, 
+                new Vector2(rectangle.Right, rectangle.Top), 
+                new Vector2(rectangle.Right, rectangle.Bottom), 
+                color, thickness);
+            DrawLine(spriteBatch, texture, 
+                new Vector2(rectangle.Right, rectangle.Bottom), 
+                new Vector2(rectangle.Left, rectangle.Bottom), 
+                color, thickness);
+            DrawLine(spriteBatch, texture, 
+                new Vector2(rectangle.Left, rectangle.Bottom), 
+                new Vector2(rectangle.Left, rectangle.Top), 
+                color, thickness);
+        }
     }
 }
