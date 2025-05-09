@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Physics.Components;
+using System.Diagnostics;
 
 namespace SplineMiner.Core.Physics.Systems
 {
@@ -13,14 +14,27 @@ namespace SplineMiner.Core.Physics.Systems
     {
         private readonly List<ICollidable> _entities;
         private readonly List<IWorldBlock> _blocks;
+        private readonly IDebugLogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CollisionSystem"/> class.
         /// </summary>
-        public CollisionSystem()
+        public CollisionSystem(IDebugService debugService = null)
         {
             _entities = new List<ICollidable>();
             _blocks = new List<IWorldBlock>();
+            _logger = debugService?.CreateLogger("CollisionSystem");
+            
+            if (_logger != null)
+            {
+                _logger.IsEnabled = true;
+                _logger.LogInterval = 0.1f; // Log every 100ms
+                _logger.Log("CollisionSystem", "CollisionSystem constructor: Logger initialized");
+            }
+            else
+            {
+                Debug.WriteLine("CollisionSystem constructor: Logger is null");
+            }
         }
 
         /// <summary>
@@ -41,10 +55,19 @@ namespace SplineMiner.Core.Physics.Systems
         /// <param name="block">The block to add.</param>
         public void AddBlock(IWorldBlock block)
         {
-            if (!_blocks.Contains(block))
-            {
                 _blocks.Add(block);
+        }
+
+        /// <summary>
+        /// Clears all blocks from the collision system.
+        /// </summary>
+        public void ClearBlocks()
+        {
+            if (_logger != null && _blocks.Count > 0)
+            {
+                // _logger.Log("CollisionSystem", $"Clearing {_blocks.Count} blocks from collision system");
             }
+            _blocks.Clear();
         }
 
         /// <summary>
@@ -59,6 +82,10 @@ namespace SplineMiner.Core.Physics.Systems
                 {
                     if (CheckCollision(entity.BoundingBox, block.BoundingBox))
                     {
+                        if (_logger != null)
+                        {
+                            _logger.Log("CollisionDetected", "Collision detected between entity and block!");
+                        }
                         ResolveCollision(entity, block);
                     }
                 }
@@ -67,8 +94,12 @@ namespace SplineMiner.Core.Physics.Systems
 
         private bool CheckCollision(IBoundingBox entityBox, Rectangle blockBox)
         {
-            return !(entityBox.Right < blockBox.Left || entityBox.Left > blockBox.Right ||
-                    entityBox.Bottom < blockBox.Top || entityBox.Top > blockBox.Bottom);
+            bool noCollision = entityBox.Right < blockBox.Left || 
+                             entityBox.Left > blockBox.Right ||
+                             entityBox.Bottom < blockBox.Top || 
+                             entityBox.Top > blockBox.Bottom;
+
+            return !noCollision;
         }
 
         private void ResolveCollision(ICollidable entity, IWorldBlock block)
@@ -89,6 +120,12 @@ namespace SplineMiner.Core.Physics.Systems
 
             // Notify the entity of the collision
             entity.OnCollision(collisionInfo);
+
+            // If the block is also collidable, notify it
+            if (block is ICollidable collidableBlock)
+            {
+                collidableBlock.OnCollision(collisionInfo);
+            }
 
             // Resolve the collision
             Vector2 newPosition = CollisionResponse.ResolveCollision(

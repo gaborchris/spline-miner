@@ -115,6 +115,12 @@ namespace SplineMiner.Core.Services
         {
             if (!_showDebugInfo) return;
 
+            // Update all loggers
+            foreach (var logger in _loggers.Values)
+            {
+                logger.Update(gameTime);
+            }
+
             // Update panels
             _statsPanel?.Update(gameTime);
             _worldParameterPanel?.Update();
@@ -193,12 +199,19 @@ namespace SplineMiner.Core.Services
             
             var logger = new TimedDebugLogger(this);
             _loggers[loggerName] = logger;
+            System.Diagnostics.Debug.WriteLine($"DebugManager: Created new logger '{loggerName}'");
             return logger;
         }
 
         public IDebugLogger GetLogger(string loggerName)
         {
-            return _loggers.TryGetValue(loggerName, out var logger) ? logger : null;
+            if (_loggers.TryGetValue(loggerName, out var logger))
+            {
+                System.Diagnostics.Debug.WriteLine($"DebugManager: Retrieved existing logger '{loggerName}'");
+                return logger;
+            }
+            System.Diagnostics.Debug.WriteLine($"DebugManager: No logger found for '{loggerName}'");
+            return null;
         }
     }
 }
