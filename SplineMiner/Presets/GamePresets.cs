@@ -56,7 +56,7 @@ namespace SplineMiner.Presets
             _worldPresets = new Dictionary<WorldPresetId, WorldPresetConfig>
             {
                 { WorldPresetId.Default, new WorldPresetConfig(500, 200, 20f, 0.3f, 0.1f, 3, 10) },
-                { WorldPresetId.Test, new WorldPresetConfig(300, 150, 20f, 0.1f, 0.05f, 5, 15) },
+                { WorldPresetId.Test, new WorldPresetConfig(5, 5, 20f, 0.1f, 0.05f, 5, 15) },
                 { WorldPresetId.Dense, new WorldPresetConfig(500, 200, 20f, 0.5f, 0.2f, 2, 8) }
             };
 

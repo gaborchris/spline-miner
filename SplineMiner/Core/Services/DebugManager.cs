@@ -118,37 +118,6 @@ namespace SplineMiner.Core.Services
             // Update panels
             _statsPanel?.Update(gameTime);
             _worldParameterPanel?.Update();
-
-            // Toggle between panels with F4
-            if (Keyboard.GetState().IsKeyDown(Keys.F4))
-            {
-                TogglePanels();
-            }
-        }
-
-        private void TogglePanels()
-        {
-            // If both are visible, hide world parameter panel
-            if (_statsPanel.IsVisible && _worldParameterPanel.IsVisible)
-            {
-                _worldParameterPanel.IsVisible = false;
-            }
-            // If only stats panel is visible, hide stats and show parameters
-            else if (_statsPanel.IsVisible)
-            {
-                _statsPanel.IsVisible = false;
-                _worldParameterPanel.IsVisible = true;
-            }
-            // If only parameters panel is visible, show both
-            else if (_worldParameterPanel.IsVisible)
-            {
-                _statsPanel.IsVisible = true;
-            }
-            // If both are hidden, show stats panel
-            else
-            {
-                _statsPanel.IsVisible = true;
-            }
         }
 
         /// <summary>
@@ -175,11 +144,10 @@ namespace SplineMiner.Core.Services
         /// Draws debug information using the provided sprite batch.
         /// </summary>
         /// <param name="spriteBatch">The sprite batch used for rendering.</param>
-        public void DrawDebug(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch)
         {
             if (!_showDebugInfo) return;
 
-            // Draw panels
             _statsPanel?.Draw(spriteBatch);
             _worldParameterPanel?.Draw(spriteBatch);
         }
@@ -193,28 +161,9 @@ namespace SplineMiner.Core.Services
             set => ShowDebugInfo = value;
         }
 
-        /// <summary>
-        /// Updates the debug state.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void UpdateDebug(GameTime gameTime)
+        public void UpdatePlayerStats(Vector2 position, float currentDistance)
         {
-            if (!_showDebugInfo) return;
-
-            // Update panels
-            _statsPanel?.Update(gameTime);
-            _worldParameterPanel?.Update();
-
-            // Toggle between panels with F4
-            if (Keyboard.GetState().IsKeyDown(Keys.F4))
-            {
-                TogglePanels();
-            }
-        }
-
-        public void UpdatePlayerStats(Vector2 position, Vector2 velocity, float currentDistance)
-        {
-            _statsPanel?.UpdatePlayerStats(position, velocity, currentDistance);
+            _statsPanel?.UpdatePlayerStats(position, currentDistance);
         }
 
         /// <summary>
@@ -223,8 +172,7 @@ namespace SplineMiner.Core.Services
         /// <param name="message">The message to log.</param>
         public void LogDebug(string message)
         {
-            // TODO: Implement proper debug logging system
-            System.Diagnostics.Debug.WriteLine(message);
+            LogDebug("General", message);
         }
 
         /// <summary>

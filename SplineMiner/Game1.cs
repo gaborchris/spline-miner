@@ -251,14 +251,13 @@ namespace SplineMiner
 
             // Update debug manager
             var debugManager = _services.GetService<IDebugService>();
-            debugManager.UpdateDebug(gameTime);
+            debugManager.Update(gameTime);
 
             // Update player stats in debug panel
             if (debugManager is DebugManager debugManagerImpl)
             {
                 debugManagerImpl.UpdatePlayerStats(
                     position: _player.Position,
-                    velocity: _player.Velocity,
                     currentDistance: _player.CurrentDistance
                 );
             }
@@ -313,7 +312,7 @@ namespace SplineMiner
             // Draw UI (not affected by camera)
             _spriteBatch.Begin();
             uiManager.Draw(_spriteBatch);
-            debugManager.DrawDebug(_spriteBatch);
+            debugManager.Draw(_spriteBatch);
             _spriteBatch.End();
 
             base.Draw(gameTime);

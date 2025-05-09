@@ -5,6 +5,7 @@ using SplineMiner.Core.Services;
 using SplineMiner.Game.World.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SplineMiner.Game.World.WorldGrid
 {
@@ -139,8 +140,10 @@ namespace SplineMiner.Game.World.WorldGrid
             // Calculate world bounds
             float worldWidth = _width * _cellSize;
             float worldHeight = _height * _cellSize;
-            float startX = -worldWidth / 2;
-            float startY = -worldHeight / 2;
+            
+            // For test wall, center at (300, 250)
+            float startX = 300 - worldWidth / 2;  // Center X at 300
+            float startY = 250 - worldHeight / 2; // Center Y at 250
 
             // Update generation parameters with current settings
             _generationParameters.CaveProbability = _caveProbability;
@@ -224,8 +227,10 @@ namespace SplineMiner.Game.World.WorldGrid
             // Calculate grid coordinates from world position
             float worldWidth = _width * _cellSize;
             float worldHeight = _height * _cellSize;
-            float startX = -worldWidth / 2;
-            float startY = -worldHeight / 2;
+            
+            // Use same position calculation as GenerateGrid
+            float startX = 300 - worldWidth / 2;  // Center X at 300
+            float startY = 250 - worldHeight / 2; // Center Y at 250
 
             int gridX = (int)((worldPosition.X - startX) / _cellSize);
             int gridY = (int)((worldPosition.Y - startY) / _cellSize);

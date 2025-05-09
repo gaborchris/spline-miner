@@ -54,20 +54,16 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
             _wallMap = new bool[width, height];
             var wallPattern = GamePresets.GetBlockPattern(BlockPresetId.CollisionTestWall);
 
-            // Convert wall pattern positions to grid coordinates
-            foreach (var wallPos in wallPattern)
+            // For a 5x5 grid, we want all cells to be walls
+            for (int y = 0; y < height; y++)
             {
-                // Convert world position to grid coordinates
-                int gridX = (int)((wallPos.X + 3000) / CELL_SIZE);  // Add half world width to center
-                int gridY = (int)((wallPos.Y + 1500) / CELL_SIZE);  // Add half world height to center
-
-                // Ensure within bounds
-                if (gridX >= 0 && gridX < width && gridY >= 0 && gridY < height)
+                for (int x = 0; x < width; x++)
                 {
-                    _wallMap[gridX, gridY] = true;
-                    _debugService?.LogDebug("TestWall", $"Setting wall at grid pos: ({gridX}, {gridY})");
+                    _wallMap[x, y] = true;
                 }
             }
+
+            _debugService?.LogDebug("TestWall", $"Generated {width}x{height} wall grid");
         }
     }
 } 

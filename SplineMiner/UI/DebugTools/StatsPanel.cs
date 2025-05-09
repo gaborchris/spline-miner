@@ -29,7 +29,6 @@ namespace SplineMiner.UI.DebugTools
         // References to game objects for stats
         private Game.World.WorldGrid.WorldGrid _worldGrid;
         private Vector2 _playerPosition;
-        private Vector2 _playerVelocity;
         private float _playerDistance;
 
         public bool IsVisible
@@ -62,10 +61,9 @@ namespace SplineMiner.UI.DebugTools
             _worldGrid = worldGrid;
         }
 
-        public void UpdatePlayerStats(Vector2 position, Vector2 velocity, float currentDistance)
+        public void UpdatePlayerStats(Vector2 position, float currentDistance)
         {
             _playerPosition = position;
-            _playerVelocity = velocity;
             _playerDistance = currentDistance;
         }
 
@@ -108,7 +106,6 @@ namespace SplineMiner.UI.DebugTools
                 "Player",
                 "----------",
                 $"Position: ({_playerPosition.X:F1}, {_playerPosition.Y:F1})",
-                $"Velocity: ({_playerVelocity.X:F1}, {_playerVelocity.Y:F1})",
                 $"Distance: {_playerDistance:F1}"
             };
 
