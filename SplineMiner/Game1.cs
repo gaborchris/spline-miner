@@ -89,7 +89,7 @@ namespace SplineMiner
                 logger?.Log("GameInit", "Game initialization started");
 
                 // Initialize the player at the start of the track
-                _player = new CartController(inputManager);
+                _player = new CartController(inputManager, GraphicsDevice);
 
                 // Initialize camera
                 CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
@@ -151,7 +151,6 @@ namespace SplineMiner
 
             // Use this texture for your player or minecart
             _player.Texture = minecartTexture;
-            _player.LoadDebugTexture(GraphicsDevice);
 
             // Load fonts
             SpriteFont debugFont = null;

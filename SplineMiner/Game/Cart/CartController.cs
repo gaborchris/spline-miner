@@ -5,9 +5,10 @@ using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Physics.Components;
 using SplineMiner.Core.Physics.Entities;
 using SplineMiner.Core.Utils;
+using SplineMiner.Game.Debug;
+using SplineMiner.Game.Debug.Visualizers;
 
 namespace SplineMiner.Game.Cart
-
 {
     /// <summary>
     /// Controls the player's cart movement and physics along the track.
@@ -24,15 +25,15 @@ namespace SplineMiner.Game.Cart
         private readonly CartMovementController _movementController;
         private readonly CartWheelSystem _wheelSystem;
         private readonly IInputService _inputService;
-        private Texture2D _debugTexture;
-        private readonly bool _showDebugInfo = true;
+        private readonly CartDebugManager _debugManager;
 
         private readonly DynamicEntity _physicsEntity;
 
         public Texture2D Texture { get; set; }
-        public Texture2D DebugTexture => _debugTexture;
         public float CurrentDistance => _t;
         public Vector2 Position => _movementController.Position;
+        public float Rotation => _movementController.Rotation;
+        public CartWheelSystem WheelSystem => _wheelSystem;
 
         // ICollidable implementation
         public IBoundingBox BoundingBox => _physicsEntity.BoundingBox;
@@ -50,13 +51,14 @@ namespace SplineMiner.Game.Cart
         /// Initializes a new instance of the CartController.
         /// </summary>
         /// <param name="inputService">The input service for handling player controls.</param>
-        /// 
-        /// <exception cref="ArgumentNullException">Thrown when inputService or debugService is null.</exception>
-        public CartController(IInputService inputService)
+        /// <param name="graphicsDevice">The graphics device used for rendering.</param>
+        /// <exception cref="ArgumentNullException">Thrown when inputService is null.</exception>
+        public CartController(IInputService inputService, GraphicsDevice graphicsDevice)
         {
             _inputService = inputService;
             _movementController = new CartMovementController();
             _wheelSystem = new CartWheelSystem();
+            _debugManager = new CartDebugManager();
 
             // Initialize with appropriate mass, bounce, and friction values
             _physicsEntity = new DynamicEntity(
@@ -66,6 +68,13 @@ namespace SplineMiner.Game.Cart
                 bounceFactor: 0.5f,
                 frictionCoefficient: 0.1f
             );
+
+            // Initialize debug visualizers
+            CartWheelVectorVisualizer wheelVectorVisualizer = new(graphicsDevice);
+            _debugManager.AddVisualizer(wheelVectorVisualizer);
+
+            CartBoundingBoxVisualizer boundingBoxVisualizer = new(graphicsDevice);
+            _debugManager.AddVisualizer(boundingBoxVisualizer);
         }
 
         /// <summary>
@@ -107,7 +116,6 @@ namespace SplineMiner.Game.Cart
                 // Reset velocity to prevent drift
                 _physicsEntity.Velocity = Vector2.Zero;
             }
-
         }
 
         /// <summary>
@@ -135,39 +143,8 @@ namespace SplineMiner.Game.Cart
                 0f
             );
 
-            if (_showDebugInfo)
-            {
-                // Draw the bounding box
-                if (_physicsEntity.BoundingBox is SplineMiner.Core.Physics.Components.BoundingBox boundingBox)
-                {
-                    DrawingHelpers.DrawRectangle(
-                        spriteBatch,
-                        DebugTexture,
-                        new Rectangle(
-                            (int)boundingBox.Left,
-                            (int)boundingBox.Top,
-                            (int)(boundingBox.Right - boundingBox.Left),
-                            (int)(boundingBox.Bottom - boundingBox.Top)
-                        ),
-                        Color.Yellow,
-                        2
-                    );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Loads debug textures for visualization purposes.
-        /// </summary>
-        /// <param name="graphicsDevice">The graphics device used for rendering.</param>
-        /// <remarks>
-        /// TODO: Remove debug textures in release builds
-        /// TODO: Implement proper debug visualization system
-        /// </remarks>
-        public void LoadDebugTexture(GraphicsDevice graphicsDevice)
-        {
-            _debugTexture = new Texture2D(graphicsDevice, 1, 1);
-            _debugTexture.SetData([Color.White]);
+            // Draw debug visualization
+            _debugManager.Draw(spriteBatch, this);
         }
     }
 
