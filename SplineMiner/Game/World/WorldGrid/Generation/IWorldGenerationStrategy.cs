@@ -50,6 +50,7 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
         // Common parameters across generation strategies
         public float CaveProbability { get; set; } = 0.45f;
         public int Seed { get; set; } = 0;
+        public float CellSize { get; set; } = 20f;
 
         // Parameters for specific strategies
         public int CellularAutomataIterations { get; set; } = 4;
@@ -58,10 +59,11 @@ namespace SplineMiner.Game.World.WorldGrid.Generation
         public float DrunkWalkTurnChance { get; set; } = 0.3f;
 
         // Constructor
-        public GenerationParameters(float caveProbability = 0.45f, int seed = 0)
+        public GenerationParameters(float caveProbability = 0.45f, int seed = 0, float cellSize = 20f)
         {
             CaveProbability = caveProbability;
             Seed = seed;
+            CellSize = cellSize;
         }
     }
 }

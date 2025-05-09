@@ -28,6 +28,8 @@ namespace SplineMiner.UI.DebugTools
 
         // References to game objects for stats
         private Game.World.WorldGrid.WorldGrid _worldGrid;
+        private Vector2 _playerPosition;
+        private float _playerDistance;
 
         public bool IsVisible
         {
@@ -46,9 +48,9 @@ namespace SplineMiner.UI.DebugTools
             // Set up panel bounds (left side of screen)
             _panelBounds = new Rectangle(
                 PADDING,
-                graphicsDevice.Viewport.Height - 250,
+                graphicsDevice.Viewport.Height - 350, // Increased height to accommodate player stats
                 250,
-                240
+                340
             );
 
             _frameTimer.Start();
@@ -57,6 +59,12 @@ namespace SplineMiner.UI.DebugTools
         public void SetWorldGrid(Game.World.WorldGrid.WorldGrid worldGrid)
         {
             _worldGrid = worldGrid;
+        }
+
+        public void UpdatePlayerStats(Vector2 position, float currentDistance)
+        {
+            _playerPosition = position;
+            _playerDistance = currentDistance;
         }
 
         public void Update(GameTime gameTime)
@@ -93,7 +101,12 @@ namespace SplineMiner.UI.DebugTools
                 "----------",
                 $"FPS: {_fps:F1}",
                 $"Actual FPS: {_actualFps:F1}",
-                $"Frame Time: {_frameTimeMs:F1} ms"
+                $"Frame Time: {_frameTimeMs:F1} ms",
+                string.Empty,
+                "Player",
+                "----------",
+                $"Position: ({_playerPosition.X:F1}, {_playerPosition.Y:F1})",
+                $"Distance: {_playerDistance:F1}"
             };
 
             // Add grid stats if available

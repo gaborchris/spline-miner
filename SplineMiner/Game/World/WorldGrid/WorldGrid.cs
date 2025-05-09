@@ -5,6 +5,7 @@ using SplineMiner.Core.Services;
 using SplineMiner.Game.World.WorldGrid.Generation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SplineMiner.Game.World.WorldGrid
 {
@@ -29,19 +30,14 @@ namespace SplineMiner.Game.World.WorldGrid
         private int _height;
         private float _cellSize;
         private float _caveProbability = 0.45f;
+        private Vector2 _worldOrigin;  // Store the world origin position
 
         // Generation strategy
         private IWorldGenerationStrategy _generationStrategy;
         private GenerationParameters _generationParameters;
 
-        // Available generation strategies
-        private static readonly List<IWorldGenerationStrategy> _availableStrategies = new List<IWorldGenerationStrategy>
-        {
-            new CenterCaveStrategy(),
-            new CellularAutomataStrategy(),
-            new DrunkardWalkStrategy(),
-            new MazeGenerationStrategy()
-        };
+        // Current available strategies
+        private readonly List<IWorldGenerationStrategy> _availableStrategies;
 
         // Add spatial partitioning
         private Dictionary<Point, List<GridCell>> _spatialGrid;
@@ -59,6 +55,7 @@ namespace SplineMiner.Game.World.WorldGrid
         public int Height => _height;
         public float CellSize => _cellSize;
         public float CaveProbability => _caveProbability;
+        public Vector2 WorldOrigin => _worldOrigin;
 
         // Statistics properties for debugging
         public int TotalCells => _totalCells;
@@ -68,7 +65,13 @@ namespace SplineMiner.Game.World.WorldGrid
         public IWorldGenerationStrategy GenerationStrategy => _generationStrategy;
         public IReadOnlyList<IWorldGenerationStrategy> AvailableStrategies => _availableStrategies.AsReadOnly();
 
-        public WorldGrid(int width, int height, float cellSize, IDebugService debugService = null)
+        public WorldGrid(
+            int width, 
+            int height, 
+            float cellSize, 
+            IEnumerable<IWorldGenerationStrategy> strategies,
+            IDebugService debugService = null,
+            Vector2? worldOrigin = null)
         {
             _width = width;
             _height = height;
@@ -76,18 +79,30 @@ namespace SplineMiner.Game.World.WorldGrid
             _debugService = debugService;
             _random = new Random();
             _generationParameters = new GenerationParameters(_caveProbability, _random.Next());
+            _worldOrigin = worldOrigin ?? Vector2.Zero;
+            
+            // Set available strategies from constructor parameter
+            _availableStrategies = new List<IWorldGenerationStrategy>(strategies);
+            if (_availableStrategies.Count == 0)
+            {
+                throw new ArgumentException("At least one generation strategy must be provided", nameof(strategies));
+            }
             _generationStrategy = _availableStrategies[0];
         }
 
         /// <summary>
         /// Updates the grid parameters without regenerating the grid
         /// </summary>
-        public void UpdateParameters(int width, int height, float cellSize, float caveProbability)
+        public void UpdateParameters(int width, int height, float cellSize, float caveProbability, Vector2? worldOrigin = null)
         {
             _width = width;
             _height = height;
             _cellSize = cellSize;
             _caveProbability = caveProbability;
+            if (worldOrigin.HasValue)
+            {
+                _worldOrigin = worldOrigin.Value;
+            }
 
             // Update generation parameters
             _generationParameters.CaveProbability = caveProbability;
@@ -133,8 +148,10 @@ namespace SplineMiner.Game.World.WorldGrid
             // Calculate world bounds
             float worldWidth = _width * _cellSize;
             float worldHeight = _height * _cellSize;
-            float startX = -worldWidth / 2;
-            float startY = -worldHeight / 2;
+            
+            // Calculate start position based on world origin
+            float startX = _worldOrigin.X - worldWidth / 2;
+            float startY = _worldOrigin.Y - worldHeight / 2;
 
             // Update generation parameters with current settings
             _generationParameters.CaveProbability = _caveProbability;
@@ -218,8 +235,10 @@ namespace SplineMiner.Game.World.WorldGrid
             // Calculate grid coordinates from world position
             float worldWidth = _width * _cellSize;
             float worldHeight = _height * _cellSize;
-            float startX = -worldWidth / 2;
-            float startY = -worldHeight / 2;
+            
+            // Calculate start position based on world origin
+            float startX = _worldOrigin.X - worldWidth / 2;
+            float startY = _worldOrigin.Y - worldHeight / 2;
 
             int gridX = (int)((worldPosition.X - startX) / _cellSize);
             int gridY = (int)((worldPosition.Y - startY) / _cellSize);

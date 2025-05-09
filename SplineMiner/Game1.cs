@@ -9,6 +9,7 @@ using SplineMiner.Game.Track;
 using SplineMiner.Game.World.WorldGrid;
 using SplineMiner.Core.Interfaces;
 using SplineMiner.Core.Physics.Systems;
+using SplineMiner.Presets;
 
 namespace SplineMiner
 {
@@ -32,7 +33,8 @@ namespace SplineMiner
         private CartController _player;
         private SplineTrack _track;
         private MouseInteractionManager _mouseInteractionManager;
-        private bool _useLargeTrack = false;
+        private TrackPresetId _currentTrackPreset = TrackPresetId.Small;
+        private readonly WorldPresetId _currentWorldPreset = WorldPresetId.Test;
         
         // World grid components
         private Game.World.WorldGrid.WorldGrid _worldGrid;
@@ -40,7 +42,6 @@ namespace SplineMiner
         
         private PhysicsSystem _physicsSystem;
         private CollisionSystem _collisionSystem;
-        private CartController _cart;
 
         /// <summary>
         /// Initializes a new instance of the Game1 class.
@@ -86,8 +87,12 @@ namespace SplineMiner
             CameraManager.Instance.Initialize(GraphicsDevice.Viewport);
             CameraManager.Instance.SetTarget(_player);
             
-            // Initialize world grid with debug service
-            _worldGrid = new WorldGrid(500, 200, 20, debugManager);
+            // Initialize world grid using presets
+            _worldGrid = GamePresets.CreateWorldGrid(
+                _currentWorldPreset,
+                debugManager,
+                GraphicsDevice
+            );
 
             // Initialize physics systems
             _physicsSystem = new PhysicsSystem(
@@ -186,12 +191,12 @@ namespace SplineMiner
             if (parameterPanel != null)
             {
                 // Set initial track size
-                parameterPanel.UseLargeTrack = _useLargeTrack;
+                parameterPanel.UseLargeTrack = _currentTrackPreset == TrackPresetId.Large;
                 
                 // Subscribe to track size toggle event
                 parameterPanel.OnTrackSizeToggle += (useLargeTrack) =>
                 {
-                    _useLargeTrack = useLargeTrack;
+                    _currentTrackPreset = useLargeTrack ? TrackPresetId.Large : TrackPresetId.Small;
                     InitializeTrack();
                     _track.LoadContent(GraphicsDevice);
                     _track.RecalculateArcLength();
@@ -201,11 +206,8 @@ namespace SplineMiner
 
         private void InitializeTrack()
         {
-            // TODO: In the future, this will be replaced with world generation and track state deserialization
-            // from saved game files. For now, we use test data as a placeholder.
-            var trackNodes = _useLargeTrack 
-                ? TestData.TestTrack.GetLargeTrackNodes() 
-                : TestData.TestTrack.GetSmallTrackNodes();
+            // Get track nodes from presets
+            var trackNodes = GamePresets.GetTrack(_currentTrackPreset);
             
             _track = new SplineTrack(trackNodes, _services.GetService<IUIService>());
             _mouseInteractionManager = new MouseInteractionManager(_services.GetService<IInputService>(), _track);
@@ -249,7 +251,16 @@ namespace SplineMiner
 
             // Update debug manager
             var debugManager = _services.GetService<IDebugService>();
-            debugManager.UpdateDebug(gameTime);
+            debugManager.Update(gameTime);
+
+            // Update player stats in debug panel
+            if (debugManager is DebugManager debugManagerImpl)
+            {
+                debugManagerImpl.UpdatePlayerStats(
+                    position: _player.Position,
+                    currentDistance: _player.CurrentDistance
+                );
+            }
 
             // Toggle debug info with F1
             if (inputService.IsKeyPressed(Keys.F1))
@@ -301,7 +312,7 @@ namespace SplineMiner
             // Draw UI (not affected by camera)
             _spriteBatch.Begin();
             uiManager.Draw(_spriteBatch);
-            debugManager.DrawDebug(_spriteBatch);
+            debugManager.Draw(_spriteBatch);
             _spriteBatch.End();
 
             base.Draw(gameTime);

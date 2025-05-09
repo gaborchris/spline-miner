@@ -19,13 +19,13 @@ namespace SplineMiner.Core.Interfaces
         /// Updates the debug state.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        void UpdateDebug(GameTime gameTime);
+        void Update(GameTime gameTime);
 
         /// <summary>
         /// Draws debug information.
         /// </summary>
         /// <param name="spriteBatch">The sprite batch used for rendering.</param>
-        void DrawDebug(SpriteBatch spriteBatch);
+        void Draw(SpriteBatch spriteBatch);
 
         /// <summary>
         /// Logs a debug message.
