@@ -22,7 +22,6 @@ namespace SplineMiner.Game.Cart
         private readonly CartModel _model;
         private readonly CartView _view;
         private readonly IInputService _inputService;
-        private readonly CartMovementController _movementController;
 
         public Texture2D Texture 
         { 
@@ -35,6 +34,7 @@ namespace SplineMiner.Game.Cart
         public Vector2 Position => _model.Position;
         public float Rotation => _model.Rotation;
         public CartWheelSystem WheelSystem => _model.WheelSystem;
+        public Vector2 Size => _model.Size;
 
         // ICollidable implementation
         public IBoundingBox BoundingBox => _model.BoundingBox;
@@ -45,14 +45,12 @@ namespace SplineMiner.Game.Cart
         /// </summary>
         /// <param name="inputService">The input service for handling player controls.</param>
         /// <param name="graphicsDevice">The graphics device used for rendering.</param>
-        /// <param name="cartSize">The size of the cart in world space units.</param>
         /// <exception cref="ArgumentNullException">Thrown when inputService is null.</exception>
         public CartController(IInputService inputService, GraphicsDevice graphicsDevice, Vector2 cartSize)
         {
             _inputService = inputService ?? throw new ArgumentNullException(nameof(inputService));
             _model = new CartModel(cartSize);
             _view = new CartView(_model, graphicsDevice);
-            _movementController = new CartMovementController();
         }
 
         /// <summary>
@@ -65,23 +63,12 @@ namespace SplineMiner.Game.Cart
         /// </remarks>
         public void Update(GameTime gameTime, ITrack track)
         {
-            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            // Get input state
+            bool isMovingForward = _inputService.Forward();
+            bool isMovingBackward = _inputService.Backward();
 
-            // Update distance based on input
-            _model.UpdateDistance(
-                deltaTime,
-                _inputService.Forward(),
-                _inputService.Backward()
-            );
-
-            // Update movement controller
-            _movementController.CurrentDistance = _model.CurrentDistance;
-            _movementController.UpdatePosition(gameTime, track);
-            _model.WheelSystem.UpdateWheelPositions(track, _model.CurrentDistance);
-            _movementController.UpdateRotation(track);
-
-            // Update model position and rotation
-            _model.UpdatePosition(_movementController.Position, _movementController.Rotation);
+            // Update model with input and track
+            _model.Update(gameTime, track, isMovingForward, isMovingBackward);
         }
 
         /// <summary>
