@@ -37,9 +37,7 @@ namespace SplineMiner.Game.Cart
             _physicsEntity = new DynamicEntity(
                 position: Vector2.Zero,
                 size: new Vector2(size.X * 0.5f, size.Y * 0.5f),
-                mass: 1.0f,
-                bounceFactor: 0.5f,
-                frictionCoefficient: 0.1f
+                mass: 1.0f
             );
 
             // Initialize bounding box

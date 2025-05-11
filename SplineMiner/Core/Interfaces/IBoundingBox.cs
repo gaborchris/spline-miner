@@ -43,10 +43,10 @@ namespace SplineMiner.Core.Interfaces
         float Bottom { get; }
 
         /// <summary>
-        /// Checks if this bounding box intersects with another.
+        /// Gets the corners of the bounding box.
         /// </summary>
-        /// <param name="other">The other bounding box to check against.</param>
-        /// <returns>True if the boxes intersect, false otherwise.</returns>
-        bool Intersects(IBoundingBox other);
+        /// <returns>An array of 4 Vector2 points representing the corners of the box in clockwise order starting from top-left.</returns>
+        Vector2[] GetCorners();
+
     }
 }

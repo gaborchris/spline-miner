@@ -37,9 +37,7 @@ namespace SplineMiner.Core.Physics.Components
         /// <inheritdoc />
         public Vector2 Center => _position;
 
-        /// <summary>
-        /// Gets the corners of the rotated bounding box.
-        /// </summary>
+        /// <inheritdoc />
         public Vector2[] GetCorners()
         {
             // Calculate the corners relative to the origin (matching sprite drawing)
@@ -102,88 +100,6 @@ namespace SplineMiner.Core.Physics.Components
                 var corners = GetCorners();
                 return Math.Max(Math.Max(corners[0].Y, corners[1].Y), Math.Max(corners[2].Y, corners[3].Y));
             }
-        }
-
-        /// <inheritdoc />
-        public bool Intersects(IBoundingBox other)
-        {
-            // If the other box is also a CartBoundingBox, use SAT
-            if (other is CartBoundingBox otherCart)
-            {
-                return CheckRotatedIntersection(otherCart);
-            }
-
-            // For non-rotated boxes, use AABB intersection
-            return !(Right < other.Left || Left > other.Right ||
-                    Bottom < other.Top || Top > other.Bottom);
-        }
-
-        private bool CheckRotatedIntersection(CartBoundingBox other)
-        {
-            Vector2[] corners1 = GetCorners();
-            Vector2[] corners2 = other.GetCorners();
-
-            // Get the axes to test (normals of each edge)
-            Vector2[] axes = new Vector2[8];
-            int axisCount = 0;
-
-            // Add axes from first box
-            for (int i = 0; i < 4; i++)
-            {
-                Vector2 edge = corners1[(i + 1) % 4] - corners1[i];
-                axes[axisCount++] = new Vector2(-edge.Y, edge.X);
-            }
-
-            // Add axes from second box
-            for (int i = 0; i < 4; i++)
-            {
-                Vector2 edge = corners2[(i + 1) % 4] - corners2[i];
-                axes[axisCount++] = new Vector2(-edge.Y, edge.X);
-            }
-
-            // Normalize all axes
-            for (int i = 0; i < axisCount; i++)
-            {
-                axes[i].Normalize();
-            }
-
-            // Check for separation on each axis
-            for (int i = 0; i < axisCount; i++)
-            {
-                if (IsSeparatedOnAxis(corners1, corners2, axes[i]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private bool IsSeparatedOnAxis(Vector2[] corners1, Vector2[] corners2, Vector2 axis)
-        {
-            float min1 = float.MaxValue;
-            float max1 = float.MinValue;
-            float min2 = float.MaxValue;
-            float max2 = float.MinValue;
-
-            // Project corners of first box
-            for (int i = 0; i < 4; i++)
-            {
-                float projection = Vector2.Dot(corners1[i], axis);
-                min1 = Math.Min(min1, projection);
-                max1 = Math.Max(max1, projection);
-            }
-
-            // Project corners of second box
-            for (int i = 0; i < 4; i++)
-            {
-                float projection = Vector2.Dot(corners2[i], axis);
-                min2 = Math.Min(min2, projection);
-                max2 = Math.Max(max2, projection);
-            }
-
-            // Check for overlap
-            return max1 < min2 || max2 < min1;
         }
 
         /// <summary>
