@@ -19,62 +19,40 @@ namespace SplineMiner.Game.Cart
     /// </remarks>
     public class CartController : ICart, ICameraObserver, ICollidable
     {
-        private float _t = 0f;
-        private float _previousT;
-
-        private readonly CartMovementController _movementController;
-        private readonly CartWheelSystem _wheelSystem;
+        private readonly CartModel _model;
+        private readonly CartView _view;
         private readonly IInputService _inputService;
-        private readonly CartDebugManager _debugManager;
+        private readonly CartMovementController _movementController;
 
-        private readonly DynamicEntity _physicsEntity;
+        public Texture2D Texture 
+        { 
+            get => _view.Texture;
+            set => _view.SetTexture(value);
+        }
 
-        public Texture2D Texture { get; set; }
-        public float CurrentDistance => _t;
-        public Vector2 Position => _movementController.Position;
-        public float Rotation => _movementController.Rotation;
-        public CartWheelSystem WheelSystem => _wheelSystem;
+        // ICart implementation
+        public float CurrentDistance => _model.CurrentDistance;
+        public Vector2 Position => _model.Position;
+        public float Rotation => _model.Rotation;
+        public CartWheelSystem WheelSystem => _model.WheelSystem;
 
         // ICollidable implementation
-        public IBoundingBox BoundingBox => _physicsEntity.BoundingBox;
-        public float Mass => _physicsEntity.Mass;
-        public void OnCollision(CollisionInfo info)
-        {
-            // First, let the physics entity handle basic collision response
-            _physicsEntity.OnCollision(info);
-
-            // Stop movement in both directions by resetting the distance parameter
-            _t = _previousT;
-        }
+        public IBoundingBox BoundingBox => _model.BoundingBox;
+        public float Mass => _model.Mass;
 
         /// <summary>
         /// Initializes a new instance of the CartController.
         /// </summary>
         /// <param name="inputService">The input service for handling player controls.</param>
         /// <param name="graphicsDevice">The graphics device used for rendering.</param>
+        /// <param name="cartSize">The size of the cart in world space units.</param>
         /// <exception cref="ArgumentNullException">Thrown when inputService is null.</exception>
-        public CartController(IInputService inputService, GraphicsDevice graphicsDevice)
+        public CartController(IInputService inputService, GraphicsDevice graphicsDevice, Vector2 cartSize)
         {
-            _inputService = inputService;
+            _inputService = inputService ?? throw new ArgumentNullException(nameof(inputService));
+            _model = new CartModel(cartSize);
+            _view = new CartView(_model, graphicsDevice);
             _movementController = new CartMovementController();
-            _wheelSystem = new CartWheelSystem();
-            _debugManager = new CartDebugManager();
-
-            // Initialize with appropriate mass, bounce, and friction values
-            _physicsEntity = new DynamicEntity(
-                position: Vector2.Zero,
-                size: new Vector2(16, 16), // Smaller box size
-                mass: 1.0f,
-                bounceFactor: 0.5f,
-                frictionCoefficient: 0.1f
-            );
-
-            // Initialize debug visualizers
-            CartWheelVectorVisualizer wheelVectorVisualizer = new(graphicsDevice);
-            _debugManager.AddCartVisualizer(wheelVectorVisualizer);
-
-            BoundingBoxVisualizer boundingBoxVisualizer = new(graphicsDevice);
-            _debugManager.AddBoundingBoxVisualizer(boundingBoxVisualizer);
         }
 
         /// <summary>
@@ -89,33 +67,21 @@ namespace SplineMiner.Game.Cart
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            // Store the previous t value before updating
-            _previousT = _t;
+            // Update distance based on input
+            _model.UpdateDistance(
+                deltaTime,
+                _inputService.Forward(),
+                _inputService.Backward()
+            );
 
-            // Normal user-controlled movement
-            if (_inputService.Forward())
-            {
-                _t += _movementController.Speed * deltaTime;
-            }
-            else if (_inputService.Backward())
-            {
-                _t -= _movementController.Speed * deltaTime;
-            }
-
-            _movementController.CurrentDistance = _t;
+            // Update movement controller
+            _movementController.CurrentDistance = _model.CurrentDistance;
             _movementController.UpdatePosition(gameTime, track);
-            _wheelSystem.UpdateWheelPositions(track, _t);
+            _model.WheelSystem.UpdateWheelPositions(track, _model.CurrentDistance);
             _movementController.UpdateRotation(track);
 
-            // Update physics entity position to match cart position, accounting for the origin point
-            if (_physicsEntity.BoundingBox is SplineMiner.Core.Physics.Components.BoundingBox boundingBox)
-            {
-                // Calculate the position that centers the bounding box horizontally and places it higher on the cart
-                Vector2 boundingBoxPosition = _movementController.Position - new Vector2(8, 40); // Center horizontally (half of 16), place higher up
-                boundingBox.UpdatePosition(boundingBoxPosition);
-                // Reset velocity to prevent drift
-                _physicsEntity.Velocity = Vector2.Zero;
-            }
+            // Update model position and rotation
+            _model.UpdatePosition(_movementController.Position, _movementController.Rotation);
         }
 
         /// <summary>
@@ -129,22 +95,12 @@ namespace SplineMiner.Game.Cart
         /// </remarks>
         public void Draw(SpriteBatch spriteBatch)
         {
-            Vector2 origin = new(Texture.Width / 2f, Texture.Height);
+            _view.Draw(spriteBatch);
+        }
 
-            spriteBatch.Draw(
-                Texture,
-                Position,
-                null,
-                Color.Red,
-                _movementController.Rotation,
-                origin,
-                1.0f,
-                SpriteEffects.None,
-                0f
-            );
-
-            // Draw debug visualization
-            _debugManager.Draw(spriteBatch, this);
+        public void OnCollision(CollisionInfo info)
+        {
+            _model.OnCollision(info);
         }
     }
 }

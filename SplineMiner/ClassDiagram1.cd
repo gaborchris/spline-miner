@@ -1,0 +1,476 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" GroupingSetting="Alphabetical" MembersFormat="NameAndType">
+  <Class Name="TimedDebugLogger" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAIAgAAEAAAEABAAgAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Services\TimedDebugLogger.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Core.Physics.Components.BoundingBox" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgCAgAAAQAAAAAAAIgAAACACAgAIIAIA=</HashCode>
+      <FileName>Core\Physics\Components\BoundingBox.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Core.Physics.Components.CollisionInfo" Collapsed="true">
+    <Position X="10" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAEAAAAAAAAAAAAAAAAAAAAAQAIAAAAAAAAAAAAABA=</HashCode>
+      <FileName>Core\Physics\Components\CollisionInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Physics.Components.CollisionResponse" Collapsed="true">
+    <Position X="11.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
+      <FileName>Core\Physics\Components\CollisionResponse.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Physics.Entities.DynamicEntity">
+    <Position X="0.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAQIAAAAAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Core\Physics\Entities\DynamicEntity.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Physics.Entities.PhysicalEntity">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAACAAAAAAAAAAECAAgAAAIAAAAACEAQA=</HashCode>
+      <FileName>Core\Physics\Entities\PhysicalEntity.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="SplineMiner.Core.Physics.Systems.CollisionSystem" Collapsed="true">
+    <Position X="3" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAIAgAAAAIAAIAAAAAAAAAIAAAAACABIAABABAAAA=</HashCode>
+      <FileName>Core\Physics\Systems\CollisionSystem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Physics.Systems.PhysicsSystem" Collapsed="true">
+    <Position X="10" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Core\Physics\Systems\PhysicsSystem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Services.CameraManager" Collapsed="true">
+    <Position X="6.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQEQACAAAAEAQAgEQAACAQAQAAMAAAAQAAAgAQAAAI=</HashCode>
+      <FileName>Core\Services\CameraManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Services.DebugManager" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EARAAIAAAgAAAwAACAAAAAAAAChDAAAAAAQAAgAAAAA=</HashCode>
+      <FileName>Core\Services\DebugManager.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Core.Services.InputManager" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAQBAACAAAAAAAAAAAAAAAAAEIiBgAAAACIAEhACAAM=</HashCode>
+      <FileName>Core\Services\InputManager.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Core.Services.MouseInteractionManager" Collapsed="true">
+    <Position X="8.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAgABAAQAAAAAAAAAAAAAAAAAIAgIAA=</HashCode>
+      <FileName>Core\Services\MouseInteractionManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Services.ServiceContainer" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAYAAAAAAAAAACAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Core\Services\ServiceContainer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Core.Services.UIManager" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>KAQCAAAAAAQAsoEAAgAgAAAAABCBEAAACAAAoAACAQI=</HashCode>
+      <FileName>Core\Services\UIManager.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Core.Utils.DrawingHelpers" Collapsed="true">
+    <Position X="6.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAQAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAA=</HashCode>
+      <FileName>Core\Utils\DrawingHelpers.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Core.Utils.SplineCalculator" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAQAAAABAAAAIAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>Core\Utils\SplineCalculator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Core.Utils.SplineUtils" Collapsed="true">
+    <Position X="10" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Utils\SplineUtils.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Game.Cart.CartController" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAEAAAAAAoAgAIAAAAAAAiBAAAQIIEIAAACgAAQ=</HashCode>
+      <FileName>Game\Cart\CartController.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Cart.CartMovementController" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="11.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAEAAAAAAiKAwAAAABgADAhAAAAAIBAAAgAAAAAA=</HashCode>
+      <FileName>Game\Cart\CartMovementController.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Cart.CartWheelSystem" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>DAAAAABAAAABQAAAAAAAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\Cart\CartWheelSystem.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Debug.Visualizers.BoundingBoxVisualizer" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAgAAAAAAAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\Debug\Visualizers\BoundingBoxVisualizer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Debug.Visualizers.CartWheelVectorVisualizer" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAEAAAAAgAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>Game\Debug\Visualizers\CartWheelVectorVisualizer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Debug.CartDebugManager" Collapsed="true">
+    <Position X="10" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAgCAAgGAAAAAAAABAAAAAAACAEAAAAA=</HashCode>
+      <FileName>Game\Debug\CartDebugManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Game.Track.SplineTrack" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BChAgAwAAIABAhAAQAAACACBEiAgigCABAAAQAAwIAw=</HashCode>
+      <FileName>Game\Track\Track.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Track.TrackCache" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CQAAAAAACAAAAgAAAAAAAAAAAAAAAAAAAAAAQABAAAA=</HashCode>
+      <FileName>Game\Track\TrackCache.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Track.PlacedTrackNode" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="11.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAgAwAAAACAAAAAAAABAAAAAAgAAAAAA=</HashCode>
+      <FileName>Game\Track\TrackNode.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Track.ShadowTrackNode" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAgAwAAAACAAAAAAAABAAAAAAgAAAAAA=</HashCode>
+      <FileName>Game\Track\TrackNode.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.Track.TrackPreview" Collapsed="true">
+    <Position X="6.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAgAAAAAEAAAgAAAACBYAAUAAAIAgAAA=</HashCode>
+      <FileName>Game\Track\TrackPreview.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Game.Track.TrackRenderer" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAACAAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>Game\Track\TrackRenderer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.Generation.CellularAutomataStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAgAAAAgAAAAAQAAAAQAAAAIAAAAAAAIAAAAAgA=</HashCode>
+      <FileName>Game\World\WorldGrid\Generation\CellularAutomataStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.Generation.CenterCaveStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAQAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\World\WorldGrid\Generation\CenterCaveStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.Generation.DrunkardWalkStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAABAAQQQAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\World\WorldGrid\Generation\DrunkardWalkStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.Generation.GenerationParameters" Collapsed="true">
+    <Position X="10" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAABAAAEEAAAAAAEABEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\World\WorldGrid\Generation\IWorldGenerationStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.Generation.MazeGenerationStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAQAAAAIBAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\World\WorldGrid\Generation\MazeGenerationStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.Generation.TestWallStrategy" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="11.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAgAAEAAAAAAgQAAAAIAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Game\World\WorldGrid\Generation\TestWallStrategy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.GridCell" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="11.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAoAkAAgEAACAEAAsCBAAAAAAAAAgACUAQA=</HashCode>
+      <FileName>Game\World\WorldGrid\GridCell.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.GridInteractionManager" Collapsed="true">
+    <Position X="3" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAABAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>Game\World\WorldGrid\GridInteractionManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SplineMiner.Game.World.WorldGrid.WorldGrid" Collapsed="true">
+    <Position X="11.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QMABQACABICAAy0BgAEBAEAAoFAAQAAAAAAABAMIIAE=</HashCode>
+      <FileName>Game\World\WorldGrid\WorldGrid.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="SplineMiner.Core.Interfaces.IBoundingBox" Collapsed="true">
+    <Position X="3" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAgAAAQAAAAAAAIAAAACACAAAAIAIA=</HashCode>
+      <FileName>Core\Interfaces\IBoundingBox.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ICache&lt;TKey, TValue&gt;" Collapsed="true">
+    <Position X="4.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Core\Interfaces\ICache.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ICameraObserver" Collapsed="true">
+    <Position X="6.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\ICameraObserver.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ICameraService" Collapsed="true">
+    <Position X="8.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAQAAAAAAEAQAgEAAAAAQAAAAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>Core\Interfaces\ICameraService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ICart" Collapsed="true">
+    <Position X="10" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAgAgAAAAAAAAAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\ICart.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ICollidable" Collapsed="true">
+    <Position X="3" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\ICollidable.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IDebugService" Collapsed="true">
+    <Position X="6.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAIAAAAAAAgAACAAAAAAAACgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IDebugService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IGameState" Collapsed="true">
+    <Position X="10" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAwAAAAAAACAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Core\Interfaces\IGameState.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IInputService" Collapsed="true">
+    <Position X="11.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAQAAACAAAAAAAAAAAAAAAAAAIgBgAAAACIAABACAAM=</HashCode>
+      <FileName>Core\Interfaces\IInputService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IMovementController" Collapsed="true">
+    <Position X="3" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgKAgAAAAAAABAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IMovementController.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IPhysicsService" Collapsed="true">
+    <Position X="4.75" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAACABAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IPhysicsService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IServiceContainer" Collapsed="true">
+    <Position X="6.5" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAIAAAAAAAAAACAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Core\Interfaces\IServiceContainer.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ISplineCalculator" Collapsed="true">
+    <Position X="8.25" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\ISplineCalculator.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ITrack" Collapsed="true">
+    <Position X="10" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACgAAAAAAAABAAAAAAAAAAAAAAAAgAAAAAAAQAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\ITrack.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.ITrackRenderer" Collapsed="true">
+    <Position X="3" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\ITrackRenderer.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IUIService" Collapsed="true">
+    <Position X="4.75" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAgEAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IUIService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IWheelSystem" Collapsed="true">
+    <Position X="6.5" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IWheelSystem.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Core.Interfaces.IWorldBlock" Collapsed="true">
+    <Position X="8.25" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAgAAACAAAAgCBAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IWorldBlock.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="IDebugLogger" Collapsed="true">
+    <Position X="4.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAEABAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IDebugLogger.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Game.Debug.Interfaces.ICartDebugVisualizer" Collapsed="true">
+    <Position X="11.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\Debug\Interfaces\ICartDebugVisualizer.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Game.Debug.Interfaces.IDebugVisualizer" Collapsed="true">
+    <Position X="8.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\Debug\Interfaces\IDebugVisualizer.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Game.Track.ITrackNode" Collapsed="true">
+    <Position X="11.75" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\Track\TrackNode.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SplineMiner.Game.World.WorldGrid.Generation.IWorldGenerationStrategy" Collapsed="true">
+    <Position X="10" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAQAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Game\World\WorldGrid\Generation\IWorldGenerationStrategy.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="SplineMiner.Core.Enums.BlockType" Collapsed="true">
+    <Position X="3" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAEAAAAAAAAAAAAAAAAAAAAAIAAAAAEAAAAA=</HashCode>
+      <FileName>Core\Enums\BlockType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="SplineMiner.Core.Interfaces.GameState" Collapsed="true">
+    <Position X="4.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAggAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Interfaces\IGameState.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="SplineMiner.Game.Items.Tools.UITool" Collapsed="true">
+    <Position X="6.5" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAAAAAAAAAAAABAAAAAAAAQQAEAAAA=</HashCode>
+      <FileName>Game\Items\Tools\UITool.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

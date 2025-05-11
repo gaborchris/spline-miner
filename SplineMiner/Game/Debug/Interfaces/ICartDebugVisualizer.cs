@@ -13,7 +13,7 @@ namespace SplineMiner.Game.Debug.Interfaces
         /// Draws debug visualization for the cart.
         /// </summary>
         /// <param name="spriteBatch">The sprite batch used for rendering.</param>
-        /// <param name="cart">The cart to visualize.</param>
-        void Draw(SpriteBatch spriteBatch, CartController cart);
+        /// <param name="cart">The cart model to visualize.</param>
+        void Draw(SpriteBatch spriteBatch, CartModel cart);
     }
 } 

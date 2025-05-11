@@ -89,7 +89,11 @@ namespace SplineMiner
                 logger?.Log("GameInit", "Game initialization started");
 
                 // Initialize the player at the start of the track
-                _player = new CartController(inputManager, GraphicsDevice);
+                _player = new CartController(
+                    inputManager, 
+                    GraphicsDevice,
+                    new Vector2(64, 43) // Match the texture proportions in world space
+                );
 
                 // Initialize camera
                 CameraManager.Instance.Initialize(GraphicsDevice.Viewport);

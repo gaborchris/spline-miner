@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SplineMiner.Core.Interfaces;
+using SplineMiner.Core.Physics.Components;
 using SplineMiner.Core.Utils;
 using SplineMiner.Game.Debug.Interfaces;
 
@@ -21,6 +22,34 @@ namespace SplineMiner.Game.Debug.Visualizers
         }
 
         public void Draw(SpriteBatch spriteBatch, IBoundingBox boundingBox)
+        {
+            if (boundingBox is CartBoundingBox cartBox)
+            {
+                DrawRotatedBox(spriteBatch, cartBox);
+            }
+            else
+            {
+                DrawAxisAlignedBox(spriteBatch, boundingBox);
+            }
+        }
+
+        private void DrawRotatedBox(SpriteBatch spriteBatch, CartBoundingBox cartBox)
+        {
+            // Get the corners of the rotated box
+            var corners = cartBox.GetCorners();
+
+            // Draw the four sides of the rotated rectangle
+            DrawingHelpers.DrawLine(spriteBatch, _debugTexture, corners[0], corners[1], Color.Red, LINE_THICKNESS);
+            DrawingHelpers.DrawLine(spriteBatch, _debugTexture, corners[1], corners[2], Color.Red, LINE_THICKNESS);
+            DrawingHelpers.DrawLine(spriteBatch, _debugTexture, corners[2], corners[3], Color.Red, LINE_THICKNESS);
+            DrawingHelpers.DrawLine(spriteBatch, _debugTexture, corners[3], corners[0], Color.Red, LINE_THICKNESS);
+
+            // Draw the center point
+            Vector2 center = cartBox.Center;
+            DrawingHelpers.DrawCircle(spriteBatch, _debugTexture, center, 3, Color.Yellow);
+        }
+
+        private void DrawAxisAlignedBox(SpriteBatch spriteBatch, IBoundingBox boundingBox)
         {
             // Draw the bounding box rectangle
             Vector2 topLeft = boundingBox.Position;
