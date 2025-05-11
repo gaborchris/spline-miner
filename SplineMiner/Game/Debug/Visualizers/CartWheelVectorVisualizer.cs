@@ -24,7 +24,6 @@ namespace SplineMiner.Game.Debug.Visualizers
 
         public void Draw(SpriteBatch spriteBatch, CartModel cart)
         {
-            System.Diagnostics.Debug.WriteLine("Drawing cart wheel vectors");
             // Draw wheel positions
             DrawingHelpers.DrawCircle(spriteBatch, _debugTexture, cart.WheelSystem.FrontWheelPosition, 3, Color.Green);
             DrawingHelpers.DrawCircle(spriteBatch, _debugTexture, cart.WheelSystem.BackWheelPosition, 3, Color.Blue);

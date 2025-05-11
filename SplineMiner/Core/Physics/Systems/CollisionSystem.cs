@@ -86,34 +86,36 @@ namespace SplineMiner.Core.Physics.Systems
 
         private static bool CheckCollision(IBoundingBox entityBox, Rectangle blockBox)
         {
-            // Convert Rectangle to corners for SAT
-            Vector2[] blockCorners = new Vector2[]
-            {
-                new Vector2(blockBox.Left, blockBox.Top),     // Top-left
-                new Vector2(blockBox.Right, blockBox.Top),    // Top-right
-                new Vector2(blockBox.Right, blockBox.Bottom), // Bottom-right
-                new Vector2(blockBox.Left, blockBox.Bottom)   // Bottom-left
-            };
-
+            // Get corners of both boxes
+            Vector2[] blockCorners = GetRectangleCorners(blockBox);
             Vector2[] entityCorners = entityBox.GetCorners();
 
-            // Get the axes to test (normals of each edge)
+            // Get all axes to test (normals of each edge)
+            Vector2[] axes = GetAllAxes(entityCorners, blockCorners);
+
+            // If there's separation on any axis, the boxes don't intersect
+            return !IsSeparatedOnAnyAxis(entityCorners, blockCorners, axes);
+        }
+
+        private static Vector2[] GetRectangleCorners(Rectangle rect)
+        {
+            return new Vector2[]
+            {
+                new Vector2(rect.Left, rect.Top),     // Top-left
+                new Vector2(rect.Right, rect.Top),    // Top-right
+                new Vector2(rect.Right, rect.Bottom), // Bottom-right
+                new Vector2(rect.Left, rect.Bottom)   // Bottom-left
+            };
+        }
+
+        private static Vector2[] GetAllAxes(Vector2[] corners1, Vector2[] corners2)
+        {
             Vector2[] axes = new Vector2[8];
             int axisCount = 0;
 
-            // Add axes from entity box
-            for (int i = 0; i < 4; i++)
-            {
-                Vector2 edge = entityCorners[(i + 1) % 4] - entityCorners[i];
-                axes[axisCount++] = new Vector2(-edge.Y, edge.X);
-            }
-
-            // Add axes from block box
-            for (int i = 0; i < 4; i++)
-            {
-                Vector2 edge = blockCorners[(i + 1) % 4] - blockCorners[i];
-                axes[axisCount++] = new Vector2(-edge.Y, edge.X);
-            }
+            // Get axes from both boxes
+            axisCount = AddBoxAxes(corners1, axes, axisCount);
+            axisCount = AddBoxAxes(corners2, axes, axisCount);
 
             // Normalize all axes
             for (int i = 0; i < axisCount; i++)
@@ -121,43 +123,54 @@ namespace SplineMiner.Core.Physics.Systems
                 axes[i].Normalize();
             }
 
-            // Check for separation on each axis
-            for (int i = 0; i < axisCount; i++)
+            return axes;
+        }
+
+        private static int AddBoxAxes(Vector2[] corners, Vector2[] axes, int startIndex)
+        {
+            for (int i = 0; i < 4; i++)
             {
-                if (IsSeparatedOnAxis(entityCorners, blockCorners, axes[i]))
+                // Get edge vector
+                Vector2 edge = corners[(i + 1) % 4] - corners[i];
+                // Get normal vector (perpendicular to edge)
+                axes[startIndex + i] = new Vector2(-edge.Y, edge.X);
+            }
+            return startIndex + 4;
+        }
+
+        private static bool IsSeparatedOnAnyAxis(Vector2[] corners1, Vector2[] corners2, Vector2[] axes)
+        {
+            foreach (var axis in axes)
+            {
+                if (IsSeparatedOnAxis(corners1, corners2, axis))
                 {
-                    return false;
+                    return true;
                 }
             }
-
-            return true;
+            return false;
         }
 
         private static bool IsSeparatedOnAxis(Vector2[] corners1, Vector2[] corners2, Vector2 axis)
         {
-            float min1 = float.MaxValue;
-            float max1 = float.MinValue;
-            float min2 = float.MaxValue;
-            float max2 = float.MinValue;
+            // Project both boxes onto the axis
+            ProjectBox(corners1, axis, out float min1, out float max1);
+            ProjectBox(corners2, axis, out float min2, out float max2);
 
-            // Project corners of first box
-            for (int i = 0; i < 4; i++)
-            {
-                float projection = Vector2.Dot(corners1[i], axis);
-                min1 = Math.Min(min1, projection);
-                max1 = Math.Max(max1, projection);
-            }
-
-            // Project corners of second box
-            for (int i = 0; i < 4; i++)
-            {
-                float projection = Vector2.Dot(corners2[i], axis);
-                min2 = Math.Min(min2, projection);
-                max2 = Math.Max(max2, projection);
-            }
-
-            // Check for overlap
+            // Check if projections overlap
             return max1 < min2 || max2 < min1;
+        }
+
+        private static void ProjectBox(Vector2[] corners, Vector2 axis, out float min, out float max)
+        {
+            min = float.MaxValue;
+            max = float.MinValue;
+
+            foreach (var corner in corners)
+            {
+                float projection = Vector2.Dot(corner, axis);
+                min = Math.Min(min, projection);
+                max = Math.Max(max, projection);
+            }
         }
 
         private void ResolveCollision(ICollidable entity, IWorldBlock block)

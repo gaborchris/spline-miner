@@ -10,9 +10,9 @@ namespace SplineMiner.Core.Physics.Components
     public class CartBoundingBox : IBoundingBox
     {
         private Vector2 _position;
-        private Vector2 _size;
+        private Vector2 _scaledSize;
         private float _rotation;
-        private Vector2 _origin;
+        private Vector2 _offset;
 
         /// <summary>
         /// Initializes a new instance of the CartBoundingBox class.
@@ -20,19 +20,22 @@ namespace SplineMiner.Core.Physics.Components
         /// <param name="position">The position of the cart.</param>
         /// <param name="size">The size of the cart texture.</param>
         /// <param name="rotation">The rotation of the cart in radians.</param>
-        public CartBoundingBox(Vector2 position, Vector2 size, float rotation)
+        /// <param name="scale">Scale factor for the bounding box size (default: 0.5).</param>
+        public CartBoundingBox(Vector2 position, Vector2 size, float rotation, float scale = 0.7f)
         {
+            _scaledSize = size * scale;
+            // Calculate offset as 50% of the scale difference
+            float scaleDiff = (1 - scale) * 0.5f;
+            _offset = new Vector2(0, -size.Y * scaleDiff);
             _position = position;
-            _size = size;
             _rotation = rotation;
-            _origin = new Vector2(size.X / 2f, size.Y); // Match the sprite's origin point
         }
 
         /// <inheritdoc />
         public Vector2 Position => _position;
 
         /// <inheritdoc />
-        public Vector2 Size => _size;
+        public Vector2 Size => _scaledSize;
 
         /// <inheritdoc />
         public Vector2 Center => _position;
@@ -40,23 +43,26 @@ namespace SplineMiner.Core.Physics.Components
         /// <inheritdoc />
         public Vector2[] GetCorners()
         {
-            // Calculate the corners relative to the origin (matching sprite drawing)
             Vector2[] corners = new Vector2[4];
-            corners[0] = new Vector2(-_size.X / 2, -_size.Y); // Top-left
-            corners[1] = new Vector2(_size.X / 2, -_size.Y);  // Top-right
-            corners[2] = new Vector2(_size.X / 2, 0);         // Bottom-right
-            corners[3] = new Vector2(-_size.X / 2, 0);        // Bottom-left
+            corners[0] = new Vector2(-_scaledSize.X / 2, -_scaledSize.Y); // Top-left
+            corners[1] = new Vector2(_scaledSize.X / 2, -_scaledSize.Y);  // Top-right
+            corners[2] = new Vector2(_scaledSize.X / 2, 0);              // Bottom-right
+            corners[3] = new Vector2(-_scaledSize.X / 2, 0);             // Bottom-left
 
-            // Rotate each corner around the origin
             float cos = (float)Math.Cos(_rotation);
             float sin = (float)Math.Sin(_rotation);
+
+            // Rotate the offset
+            Vector2 rotatedOffset = new Vector2(
+                _offset.X * cos - _offset.Y * sin,
+                _offset.X * sin + _offset.Y * cos
+            );
+
             for (int i = 0; i < 4; i++)
             {
-                // Rotate around origin
                 float x = corners[i].X * cos - corners[i].Y * sin;
                 float y = corners[i].X * sin + corners[i].Y * cos;
-                // Translate to world position
-                corners[i] = new Vector2(x, y) + _position;
+                corners[i] = new Vector2(x, y) + _position + rotatedOffset;
             }
 
             return corners;
