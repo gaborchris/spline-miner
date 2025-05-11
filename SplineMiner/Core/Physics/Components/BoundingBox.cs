@@ -44,11 +44,17 @@ namespace SplineMiner.Core.Physics.Components
         public float Bottom => _position.Y + _size.Y;
 
         /// <inheritdoc />
-        public bool Intersects(IBoundingBox other)
+        public Vector2[] GetCorners()
         {
-            return !(Right < other.Left || Left > other.Right ||
-                    Bottom < other.Top || Top > other.Bottom);
+            return [
+                new Vector2(Left, Top),     // Top-left
+                new Vector2(Right, Top),    // Top-right
+                new Vector2(Right, Bottom), // Bottom-right
+                new Vector2(Left, Bottom)   // Bottom-left
+            ];
         }
+
+        /// <inheritdoc />
 
         /// <summary>
         /// Updates the position of the bounding box.

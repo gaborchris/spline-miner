@@ -86,12 +86,78 @@ namespace SplineMiner.Core.Physics.Systems
 
         private static bool CheckCollision(IBoundingBox entityBox, Rectangle blockBox)
         {
-            bool noCollision = entityBox.Right < blockBox.Left ||
-                             entityBox.Left > blockBox.Right ||
-                             entityBox.Bottom < blockBox.Top ||
-                             entityBox.Top > blockBox.Bottom;
+            // Convert Rectangle to corners for SAT
+            Vector2[] blockCorners = new Vector2[]
+            {
+                new Vector2(blockBox.Left, blockBox.Top),     // Top-left
+                new Vector2(blockBox.Right, blockBox.Top),    // Top-right
+                new Vector2(blockBox.Right, blockBox.Bottom), // Bottom-right
+                new Vector2(blockBox.Left, blockBox.Bottom)   // Bottom-left
+            };
 
-            return !noCollision;
+            Vector2[] entityCorners = entityBox.GetCorners();
+
+            // Get the axes to test (normals of each edge)
+            Vector2[] axes = new Vector2[8];
+            int axisCount = 0;
+
+            // Add axes from entity box
+            for (int i = 0; i < 4; i++)
+            {
+                Vector2 edge = entityCorners[(i + 1) % 4] - entityCorners[i];
+                axes[axisCount++] = new Vector2(-edge.Y, edge.X);
+            }
+
+            // Add axes from block box
+            for (int i = 0; i < 4; i++)
+            {
+                Vector2 edge = blockCorners[(i + 1) % 4] - blockCorners[i];
+                axes[axisCount++] = new Vector2(-edge.Y, edge.X);
+            }
+
+            // Normalize all axes
+            for (int i = 0; i < axisCount; i++)
+            {
+                axes[i].Normalize();
+            }
+
+            // Check for separation on each axis
+            for (int i = 0; i < axisCount; i++)
+            {
+                if (IsSeparatedOnAxis(entityCorners, blockCorners, axes[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsSeparatedOnAxis(Vector2[] corners1, Vector2[] corners2, Vector2 axis)
+        {
+            float min1 = float.MaxValue;
+            float max1 = float.MinValue;
+            float min2 = float.MaxValue;
+            float max2 = float.MinValue;
+
+            // Project corners of first box
+            for (int i = 0; i < 4; i++)
+            {
+                float projection = Vector2.Dot(corners1[i], axis);
+                min1 = Math.Min(min1, projection);
+                max1 = Math.Max(max1, projection);
+            }
+
+            // Project corners of second box
+            for (int i = 0; i < 4; i++)
+            {
+                float projection = Vector2.Dot(corners2[i], axis);
+                min2 = Math.Min(min2, projection);
+                max2 = Math.Max(max2, projection);
+            }
+
+            // Check for overlap
+            return max1 < min2 || max2 < min1;
         }
 
         private void ResolveCollision(ICollidable entity, IWorldBlock block)
@@ -147,7 +213,7 @@ namespace SplineMiner.Core.Physics.Systems
             }
         }
 
-        private Vector2 CalculateCollisionPoint(ICollidable entity, Rectangle blockBox)
+        private static Vector2 CalculateCollisionPoint(ICollidable entity, Rectangle blockBox)
         {
             // Calculate the point of collision based on the direction of movement
             float x = entity.BoundingBox.Right;

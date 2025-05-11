@@ -71,8 +71,8 @@ namespace SplineMiner.Game.Debug
         /// Draws debug visualization for a cart using all registered visualizers.
         /// </summary>
         /// <param name="spriteBatch">The sprite batch used for rendering.</param>
-        /// <param name="cart">The cart to visualize.</param>
-        public void Draw(SpriteBatch spriteBatch, CartController cart)
+        /// <param name="cart">The cart model to visualize.</param>
+        public void Draw(SpriteBatch spriteBatch, CartModel cart)
         {
             if (!_isEnabled) return;
 

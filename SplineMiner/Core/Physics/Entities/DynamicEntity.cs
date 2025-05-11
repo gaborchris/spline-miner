@@ -8,8 +8,6 @@ namespace SplineMiner.Core.Physics.Entities
     /// </summary>
     public class DynamicEntity : PhysicalEntity
     {
-        private readonly float _bounceFactor;
-        private readonly float _frictionCoefficient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicEntity"/> class.
@@ -22,13 +20,9 @@ namespace SplineMiner.Core.Physics.Entities
         public DynamicEntity(
             Vector2 position,
             Vector2 size,
-            float mass,
-            float bounceFactor = 0.2f,
-            float frictionCoefficient = 0.1f)
+            float mass)
             : base(position, size, mass)
         {
-            _bounceFactor = bounceFactor;
-            _frictionCoefficient = frictionCoefficient;
         }
 
         /// <inheritdoc />
